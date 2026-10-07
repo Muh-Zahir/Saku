@@ -24,7 +24,34 @@ export default function BudgetCard({ budgets, onOpenManageBudget }) {
         </button>
       </div>
 
-      <div className="budget-items-list">
+      {/* Desktop Budget View (persis sesuai screenshot laptop) */}
+      <div className="budget-items-list desktop-only">
+        {budgets.map((item) => {
+          const percentage = Math.min(100, (item.spent / item.limit) * 100);
+          const isOverOrMax = percentage >= 100;
+          const barColorClass = isOverOrMax ? 'bar-amber' : 'bar-green';
+
+          return (
+            <div key={item.id} className="budget-item">
+              <div className="budget-item-top">
+                <span className="budget-name">{item.name}</span>
+                <span className="budget-amount">
+                  {formatSimpleIDR(item.spent)} / {item.limit.toLocaleString('id-ID')}
+                </span>
+              </div>
+              <div className="progress-track">
+                <div 
+                  className={`progress-bar ${barColorClass}`} 
+                  style={{ width: `${percentage}%` }}
+                />
+              </div>
+            </div>
+          );
+        })}
+      </div>
+
+      {/* Mobile Budget View (persis sesuai screenshot mobile) */}
+      <div className="budget-items-list mobile-only">
         {budgets.map((item) => {
           const ratio = (item.spent / item.limit) * 100;
           const isOverOrMax = ratio >= 100;
@@ -37,7 +64,7 @@ export default function BudgetCard({ budgets, onOpenManageBudget }) {
           const percentColorClass = isOverOrMax ? 'text-amber-percent' : 'text-green-percent';
 
           return (
-            <div key={item.id} className="budget-item">
+            <div key={item.id} className="budget-item-mobile">
               <div className="budget-item-header-row">
                 <span className="budget-name">{item.name}</span>
                 <span className={`budget-percentage ${percentColorClass}`}>

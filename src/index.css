@@ -2324,6 +2324,10 @@ select {
   display: none !important;
 }
 
+.trend-icon-desktop {
+  display: inline-flex;
+}
+
 .mobile-breadcrumb {
   display: none;
 }
@@ -2745,6 +2749,10 @@ select {
 
   .metric-sub-text {
     font-size: 12.5px;
+  }
+
+  .trend-icon-desktop {
+    display: none !important;
   }
 
   .metric-card-primary {

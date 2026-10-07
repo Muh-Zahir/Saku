@@ -34,15 +34,13 @@ export default function Header({ currentPeriod, onSelectPeriod, onOpenAddTransac
       {/* Desktop: period selector + tombol tambah dalam satu row */}
       <div className="page-actions">
         {/* Period Selector */}
-        <div className="dropdown-wrapper" ref={dropdownRef} style={{ position: 'relative', width: '100%' }}>
+        <div className="dropdown-wrapper" ref={dropdownRef}>
           <button
             className="btn-period-select"
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
           >
-            <div className="btn-period-left">
-              <Calendar size={16} strokeWidth={2} />
-              <span>{currentPeriod}</span>
-            </div>
+            <Calendar size={16} strokeWidth={2} />
+            <span>{currentPeriod}</span>
             <ChevronDown size={14} strokeWidth={2.5} />
           </button>
 
@@ -71,14 +69,14 @@ export default function Header({ currentPeriod, onSelectPeriod, onOpenAddTransac
         </button>
       </div>
 
-      {/* Mobile full-width CTA — sesuai Screenshot 1 */}
-      <button className="btn-catat-mobile" onClick={onOpenAddTransaction}>
+      {/* Mobile full-width CTA — hanya tampil di mobile */}
+      <button className="btn-catat-mobile mobile-only" onClick={onOpenAddTransaction}>
         <Plus size={18} strokeWidth={2.5} />
         <span>Tambah transaksi</span>
       </button>
 
-      {/* Mobile last updated info — sesuai Screenshot 1 */}
-      <div className="mobile-last-sync">
+      {/* Mobile last updated info — hanya tampil di mobile */}
+      <div className="mobile-last-sync mobile-only">
         <span className="sync-bullet">•</span>
         <span>{lastSync}</span>
       </div>
