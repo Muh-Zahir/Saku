@@ -2242,10 +2242,14 @@ input, select {
   padding: 12px 16px;
   background-color: #ffffff;
   border-bottom: 1px solid var(--border-subtle);
-  position: sticky;
+  /* Fixed agar tetap di atas saat scroll */
+  position: fixed;
   top: 0;
-  z-index: 40;
+  left: 0;
+  right: 0;
+  z-index: 60;
   min-height: 56px;
+  box-shadow: 0 1px 8px rgba(0,0,0,0.04);
 }
 
 .menu-toggle-btn, .icon-btn-ghost {
@@ -2452,9 +2456,9 @@ input, select {
     display: none;
   }
 
-  /* Main content — extra bottom padding agar tidak tertutup bottom nav */
+  /* Main content — padding-top untuk fixed header (56px) + bottom untuk bottom nav */
   .main-content {
-    padding: 14px 14px calc(52px + env(safe-area-inset-bottom, 0px) + 12px);
+    padding: calc(56px + 14px) 14px calc(52px + env(safe-area-inset-bottom, 0px) + 12px);
   }
 
   /* Page header — title group tetap block, actions jadi row */
@@ -2473,24 +2477,20 @@ input, select {
     margin-top: 3px;
   }
 
-  /* Actions row: period selector tumbuh, tombol ikon kecil di kanan */
+  /* Actions row: hanya period selector, tombol + dihapus (pakai bottom nav) */
   .page-actions {
     flex-direction: row;
     align-items: center;
-    gap: 8px;
   }
   .btn-period-select {
-    flex: 1; /* ambil sisa ruang */
-    justify-content: flex-start;
+    /* Period selector tetap ada, tapi sekarang bisa lebih compact */
     padding: 10px 12px;
     font-size: 13px;
   }
-  /* Sembunyikan tombol desktop, tampilkan tombol ikon di mobile */
-  .btn-add-tx-desktop {
-    display: none !important;
-  }
+  /* Sembunyikan SEMUA tombol tambah transaksi di header — pakai bottom nav */
+  .btn-add-tx-desktop,
   .btn-add-tx-mobile {
-    display: flex !important;
+    display: none !important;
   }
 
   /* Metric cards — 2 kolom agar tidak terlalu panjang scroll */
@@ -2632,7 +2632,8 @@ input, select {
    ========================================================================== */
 @media (max-width: 390px) {
   .main-content {
-    padding: 12px 12px calc(52px + env(safe-area-inset-bottom, 0px) + 10px);
+    /* padding-top juga harus cukup untuk fixed header 56px */
+    padding: calc(56px + 12px) 12px calc(50px + env(safe-area-inset-bottom, 0px) + 10px);
   }
   .page-title {
     font-size: 18px;
