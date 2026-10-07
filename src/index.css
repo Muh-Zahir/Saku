@@ -2370,7 +2370,7 @@ select {
 }
 
 .mobile-nav-item.active {
-  color: var(--brand-dark);
+  color: var(--brand-accent);
 }
 
 .mobile-nav-icon {
@@ -2386,7 +2386,8 @@ select {
 }
 
 .mobile-nav-item.active .mobile-nav-icon svg {
-  stroke-width: 2.5;
+  stroke-width: 2.4;
+  stroke: var(--brand-accent);
 }
 
 .mobile-nav-label {
@@ -2400,7 +2401,7 @@ select {
 
 .mobile-nav-item.active .mobile-nav-label {
   font-weight: 700;
-  color: var(--brand-dark);
+  color: var(--brand-accent);
 }
 
 /* Tombol aksi tengah — pill/capsule shape yang lebih premium */

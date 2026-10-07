@@ -378,47 +378,80 @@ export default function App() {
         >
           {[
             {
-              id: 'ringkasan', label: 'Ringkasan',
-              icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" rx="1" /><rect x="14" y="3" width="7" height="7" rx="1" /><rect x="3" y="14" width="7" height="7" rx="1" /><rect x="14" y="14" width="7" height="7" rx="1" /></svg>
+              id: 'ringkasan',
+              label: 'Ringkasan',
+              icon: (
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <rect x="3" y="3" width="7" height="7" rx="1.5" />
+                  <rect x="14" y="3" width="7" height="7" rx="1.5" />
+                  <rect x="3" y="14" width="7" height="7" rx="1.5" />
+                  <rect x="14" y="14" width="7" height="7" rx="1.5" />
+                </svg>
+              ),
             },
             {
-              id: 'transaksi', label: 'Transaksi',
-              icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M7 16V4m0 0L3 8m4-4l4 4" /><path d="M17 8v12m0 0l4-4m-4 4l-4-4" /></svg>
+              id: 'transaksi',
+              label: 'Transaksi',
+              icon: (
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M7 16V4m0 0L3 8m4-4l4 4" />
+                  <path d="M17 8v12m0 0l4-4m-4 4l-4-4" />
+                </svg>
+              ),
             },
             {
-              id: 'add-tx', label: 'Catat', isAction: true,
-              icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14M5 12h14" /></svg>
+              id: 'dompet',
+              label: 'Dompet',
+              icon: (
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M19 7V4a1 1 0 0 0-1-1H5a2 2 0 0 0 0 4h15a1 1 0 0 1 1 1v4h-3a2 2 0 0 0 0 4h3a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1" />
+                  <path d="M3 5v14a2 2 0 0 0 2 2h15a1 1 0 0 0 1-1v-4" />
+                </svg>
+              ),
             },
             {
-              id: 'anggaran', label: 'Anggaran',
-              icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83" /><path d="M22 12A10 10 0 0 0 12 2v10z" /></svg>
+              id: 'rencana',
+              label: 'Rencana',
+              icon: (
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M21.21 15.89A10 10 0 1 1 8 2.83" />
+                  <path d="M22 12A10 10 0 0 0 12 2v10z" />
+                </svg>
+              ),
             },
             {
-              id: 'target-tabungan', label: 'Tabungan',
-              icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 6v6l4 2" /></svg>
+              id: 'lainnya',
+              label: 'Lainnya',
+              icon: (
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="3" />
+                  <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z" />
+                </svg>
+              ),
             },
           ].map((item) => {
-            if (item.isAction) {
-              return (
-                <button
-                  key={item.id}
-                  className="mobile-nav-action"
-                  onClick={() => setIsAddTxOpen(true)}
-                  aria-label="Catat transaksi"
-                >
-                  <span className="mobile-nav-action-icon">
-                    {item.icon}
-                    <span className="nav-action-label">Catat</span>
-                  </span>
-                </button>
-              );
-            }
-            const isActive = activeNav === item.id;
+            const isActive =
+              item.id === 'ringkasan' ? activeNav === 'ringkasan' :
+              item.id === 'transaksi' ? activeNav === 'transaksi' :
+              item.id === 'dompet' ? activeNav === 'dompet' :
+              item.id === 'rencana' ? (activeNav === 'anggaran' || activeNav === 'target-tabungan') :
+              item.id === 'lainnya' ? (isMobileMenuOpen || activeNav === 'laporan') : false;
+
+            const handleClick = () => {
+              if (item.id === 'rencana') {
+                setActiveNav('anggaran');
+              } else if (item.id === 'lainnya') {
+                setIsMobileMenuOpen(true);
+              } else {
+                setActiveNav(item.id);
+              }
+            };
+
             return (
               <button
                 key={item.id}
                 className={`mobile-nav-item${isActive ? ' active' : ''}`}
-                onClick={() => setActiveNav(item.id)}
+                onClick={handleClick}
                 aria-label={item.label}
               >
                 <span className="mobile-nav-icon">{item.icon}</span>
