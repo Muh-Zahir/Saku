@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import { ArrowRight, ShoppingBag, Fuel, Coffee, Briefcase, Tag } from 'lucide-react';
 import { formatIDR } from '../utils/formatters';
@@ -74,3 +76,4 @@ export default function TransactionsCard({ transactions }) {
     </div>
   );
 }
+

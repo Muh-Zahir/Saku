@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState } from 'react';
 import { formatSimpleIDR, formatIDR } from '../utils/formatters';
 
@@ -89,3 +91,4 @@ export default function CashflowChart({ cashflowData, netCashflow }) {
     </div>
   );
 }
+

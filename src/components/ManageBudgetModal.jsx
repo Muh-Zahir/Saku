@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState } from 'react';
 import { PieChart, X } from 'lucide-react';
 import { formatSimpleIDR } from '../utils/formatters';
@@ -68,3 +70,4 @@ export default function ManageBudgetModal({ isOpen, onClose, budgets, onSaveBudg
     </div>
   );
 }
+

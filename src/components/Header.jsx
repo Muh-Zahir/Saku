@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState, useRef, useEffect } from 'react';
 import { Calendar, ChevronDown, Plus } from 'lucide-react';
 
@@ -68,3 +70,4 @@ export default function Header({ currentPeriod, onSelectPeriod, onOpenAddTransac
     </div>
   );
 }
+

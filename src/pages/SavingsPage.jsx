@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import {
   Calendar,
@@ -214,3 +216,4 @@ export default function SavingsPage({
     </div>
   );
 }
+

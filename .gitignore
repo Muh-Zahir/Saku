@@ -4,6 +4,8 @@ node_modules/
 # Build output
 dist/
 build/
+.next/
+out/
 
 # Environment variables
 .env
@@ -29,3 +31,7 @@ yarn-error.log*
 # OS files
 .DS_Store
 Thumbs.db
+
+# Next.js
+next-env.d.ts
+*.tsbuildinfo

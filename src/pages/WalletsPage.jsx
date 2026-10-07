@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState } from 'react';
 import {
   Wallet,
@@ -245,3 +247,4 @@ export default function WalletsPage({
     </div>
   );
 }
+

@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState } from 'react';
 import { Plus, X } from 'lucide-react';
 
@@ -181,3 +183,4 @@ export default function AddTransactionModal({ isOpen, onClose, onAddTransaction 
     </div>
   );
 }
+

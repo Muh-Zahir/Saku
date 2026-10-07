@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState } from 'react';
 import Header from '../components/Header';
 import MetricCards from '../components/MetricCards';
@@ -54,3 +56,4 @@ export default function DashboardPage({
     </>
   );
 }
+

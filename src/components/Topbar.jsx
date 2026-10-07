@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import { ChevronRight, Bell } from 'lucide-react';
 
@@ -26,3 +28,4 @@ export default function Topbar({ activeNavLabel = 'Ringkasan', lastSync = 'Diper
     </header>
   );
 }
+

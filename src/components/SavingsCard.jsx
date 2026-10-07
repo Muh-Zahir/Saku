@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import { ArrowRight, ShieldCheck, Plane, Laptop, Target } from 'lucide-react';
 import { formatSimpleIDR } from '../utils/formatters';
@@ -70,3 +72,4 @@ export default function SavingsCard({ savings, onOpenAddGoal }) {
     </div>
   );
 }
+

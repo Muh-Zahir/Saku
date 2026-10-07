@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import { Wallet, ArrowDownLeft, ArrowUpRight, TrendingUp } from 'lucide-react';
 import { formatSimpleIDR } from '../utils/formatters';
@@ -58,3 +60,4 @@ export default function MetricCards({ metrics }) {
     </section>
   );
 }
+

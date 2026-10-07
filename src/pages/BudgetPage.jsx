@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import {
   Calendar,
@@ -282,3 +284,4 @@ export default function BudgetPage({
     </div>
   );
 }
+

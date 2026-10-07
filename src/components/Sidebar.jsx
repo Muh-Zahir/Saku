@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import {
   LayoutGrid,
@@ -125,3 +127,4 @@ export default function Sidebar({ isOpen, onClose, activeNav, setActiveNav }) {
     </>
   );
 }
+

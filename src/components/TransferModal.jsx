@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState } from 'react';
 import { Repeat, X } from 'lucide-react';
 
@@ -105,3 +107,4 @@ export default function TransferModal({ isOpen, onClose, onTransfer }) {
     </div>
   );
 }
+

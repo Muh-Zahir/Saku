@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState, useMemo } from 'react';
 import {
   Calendar,
@@ -362,3 +364,4 @@ export default function TransactionsPage({
     </div>
   );
 }
+

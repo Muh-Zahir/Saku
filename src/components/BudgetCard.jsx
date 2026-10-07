@@ -1,3 +1,5 @@
+'use client';
+
 import React from 'react';
 import { ArrowRight } from 'lucide-react';
 import { formatSimpleIDR } from '../utils/formatters';
@@ -49,3 +51,4 @@ export default function BudgetCard({ budgets, onOpenManageBudget }) {
     </div>
   );
 }
+

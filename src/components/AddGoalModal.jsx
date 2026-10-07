@@ -1,3 +1,5 @@
+'use client';
+
 import React, { useState } from 'react';
 import { Target, X } from 'lucide-react';
 
@@ -132,3 +134,4 @@ export default function AddGoalModal({ isOpen, onClose, onAddGoal }) {
     </div>
   );
 }
+
