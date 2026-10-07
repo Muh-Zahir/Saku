@@ -136,15 +136,7 @@ const INITIAL_DATA = {
 };
 
 export default function App() {
-  const [data, setData] = useState(() => {
-    try {
-      const saved = localStorage.getItem('saku_react_state');
-      if (saved) return JSON.parse(saved);
-    } catch (e) {
-      console.warn('Failed reading localStorage', e);
-    }
-    return INITIAL_DATA;
-  });
+  const [data, setData] = useState(INITIAL_DATA);
 
   const [activeNav, setActiveNav] = useState('ringkasan');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
@@ -159,6 +151,17 @@ export default function App() {
   // Toasts
   const [toasts, setToasts] = useState([]);
 
+  // Hydrate from localStorage on client mount
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('saku_react_state');
+      if (saved) setData(JSON.parse(saved));
+    } catch (e) {
+      console.warn('Failed reading localStorage', e);
+    }
+  }, []);
+
+  // Persist to localStorage on data changes
   useEffect(() => {
     try {
       localStorage.setItem('saku_react_state', JSON.stringify(data));
