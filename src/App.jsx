@@ -406,8 +406,10 @@ export default function App() {
                   onClick={() => setIsAddTxOpen(true)}
                   aria-label="Catat transaksi"
                 >
-                  <span className="mobile-nav-action-icon">{item.icon}</span>
-                  <span className="mobile-nav-label" style={{ fontSize: '9px', marginTop: '2px', color: '#fff' }}>Catat</span>
+                  <span className="mobile-nav-action-icon">
+                    {item.icon}
+                    <span className="nav-action-label">Catat</span>
+                  </span>
                 </button>
               );
             }
