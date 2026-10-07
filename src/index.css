@@ -2237,27 +2237,135 @@ input, select {
 }
 
 /* ==========================================================================
-   MOBILE HEADER
+   MOBILE HEADER — design baru dengan search + avatar
    ========================================================================== */
 .mobile-header {
   display: none;
   align-items: center;
   justify-content: space-between;
-  padding: 12px 16px;
+  padding: 10px 16px;
   background-color: #ffffff;
   border-bottom: 1px solid var(--border-subtle);
-  /* Fixed agar tetap di atas saat scroll */
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
-  /* Kunci: width 100vw + max 100vw — tidak bisa overflow viewport */
   width: 100vw;
   max-width: 100vw;
   box-sizing: border-box;
   z-index: 60;
-  min-height: 56px;
-  box-shadow: 0 1px 8px rgba(0,0,0,0.04);
+  min-height: 52px;
+  box-shadow: 0 1px 6px rgba(0,0,0,0.05);
+}
+
+.mobile-header-logo {
+  display: flex;
+  align-items: center;
+  gap: 7px;
+}
+
+.mobile-header-logo .logo-mark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.mobile-header-logo .logo-text {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--text-main);
+  letter-spacing: -0.3px;
+}
+
+.mobile-header-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.mobile-header-icon-btn {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px;
+  height: 36px;
+  border-radius: 10px;
+  color: var(--text-secondary);
+  border: none;
+  background: none;
+  cursor: pointer;
+  transition: background var(--transition-fast);
+}
+
+.mobile-header-icon-btn:hover {
+  background-color: #f3f7f4;
+}
+
+.mobile-header-avatar {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background-color: var(--brand-dark);
+  color: #ffffff;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
+  border: none;
+  cursor: pointer;
+  transition: opacity var(--transition-fast);
+}
+
+.mobile-header-avatar:hover {
+  opacity: 0.85;
+}
+
+/* Breadcrumb — hanya di mobile */
+.mobile-breadcrumb {
+  display: none;
+  align-items: center;
+  gap: 5px;
+  font-size: 11.5px;
+  color: var(--text-dimmed);
+  margin-bottom: 10px;
+  flex-wrap: wrap;
+}
+
+.mobile-breadcrumb .breadcrumb-sep {
+  color: #c4cdd6;
+  font-size: 10px;
+}
+
+.mobile-breadcrumb .breadcrumb-current {
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+/* Full-width Catat Transaksi button — khusus mobile dashboard */
+.btn-catat-mobile {
+  display: none; /* ditampilkan lewat media query */
+  width: 100%;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 13px 20px;
+  background-color: var(--brand-dark);
+  color: #ffffff;
+  font-size: 14px;
+  font-weight: 600;
+  border-radius: 10px;
+  border: none;
+  cursor: pointer;
+  margin-top: 14px;
+  transition: background var(--transition-fast), transform var(--transition-fast);
+  box-shadow: 0 2px 10px rgba(19, 78, 63, 0.25);
+}
+
+.btn-catat-mobile:active {
+  transform: scale(0.98);
+  background-color: var(--brand-dark-hover);
 }
 
 .menu-toggle-btn, .icon-btn-ghost {
@@ -2274,6 +2382,7 @@ input, select {
 .menu-toggle-btn:hover, .icon-btn-ghost:hover {
   background-color: #f3f7f4;
 }
+
 
 .sidebar-backdrop {
   display: none;
@@ -2359,53 +2468,54 @@ input, select {
   color: var(--brand-dark);
 }
 
-/* Tombol aksi tengah — pill/capsule shape yang lebih premium */
+/* Tombol aksi tengah — lingkaran hijau sesuai design */
 .mobile-nav-action {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 56px;
+  height: 60px;
   width: 100%;
   background: none;
   border: none;
   cursor: pointer;
-  padding: 6px 4px;
-  gap: 0;
+  padding: 4px 4px 6px;
+  gap: 3px;
 }
 
 .mobile-nav-action-icon {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 5px;
-  /* Pill/capsule shape — lebih premium dari kotak */
-  height: 36px;
-  padding: 0 16px;
-  background: linear-gradient(135deg, #1a6b56 0%, var(--brand-dark) 100%);
-  border-radius: 18px;            /* fully rounded pill */
+  width: 40px;
+  height: 40px;
+  background: var(--brand-dark);
+  border-radius: 50%;             /* lingkaran penuh */
   color: #ffffff;
-  box-shadow: 0 3px 12px rgba(19, 78, 63, 0.4), 0 1px 3px rgba(19, 78, 63, 0.2);
+  box-shadow: 0 3px 10px rgba(19, 78, 63, 0.35);
   transition: transform var(--transition-fast), box-shadow var(--transition-fast);
-  white-space: nowrap;
-}
-
-.mobile-nav-action-icon svg {
-  width: 16px;
-  height: 16px;
   flex-shrink: 0;
 }
 
-.mobile-nav-action-icon .nav-action-label {
-  font-size: 12px;
-  font-weight: 700;
-  letter-spacing: 0.2px;
+.mobile-nav-action-icon svg {
+  width: 20px;
+  height: 20px;
+}
+
+/* Label "Catat" di bawah lingkaran */
+.mobile-nav-action .mobile-nav-label {
+  font-size: 9.5px;
+  font-weight: 600;
+  color: var(--brand-dark);
+  letter-spacing: 0.1px;
+  line-height: 1;
 }
 
 .mobile-nav-action:active .mobile-nav-action-icon {
-  transform: scale(0.93);
-  box-shadow: 0 2px 6px rgba(19, 78, 63, 0.25);
+  transform: scale(0.92);
+  box-shadow: 0 2px 6px rgba(19, 78, 63, 0.22);
 }
+
 
 /* ==========================================================================
    TABLET RESPONSIVE (max 1080px)
@@ -2474,9 +2584,25 @@ input, select {
     display: none;
   }
 
-  /* Main content — padding-top untuk fixed header (56px) + breathing room */
+  /* Main content — padding-top untuk fixed header (52px) + breathing room */
   .main-content {
-    padding: calc(56px + 24px) 16px calc(56px + env(safe-area-inset-bottom, 0px) + 16px);
+    padding: calc(52px + 20px) 16px calc(64px + env(safe-area-inset-bottom, 0px) + 8px);
+  }
+
+  /* Tampilkan breadcrumb di mobile */
+  .mobile-breadcrumb {
+    display: flex;
+  }
+
+  /* Tampilkan full-width catat button di mobile */
+  .btn-catat-mobile {
+    display: flex;
+  }
+
+  /* Sembunyikan tombol add tx desktop dan mobile inline */
+  .btn-add-tx-desktop,
+  .btn-add-tx-mobile {
+    display: none !important;
   }
 
   /* Page header — title group tetap block, actions jadi row */

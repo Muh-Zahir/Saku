@@ -250,11 +250,12 @@ export default function App() {
 
   return (
     <div className="app-container">
-      {/* Mobile Top Header */}
+      {/* Mobile Top Header — sesuai design baru */}
       <header className="mobile-header">
-        <div className="brand-logo" style={{ marginBottom: 0 }}>
+        {/* Logo kiri */}
+        <div className="mobile-header-logo">
           <div className="logo-mark">
-            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+            <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
               <rect width="24" height="24" rx="7" fill="#134e3f"/>
               <path d="M9 14.5C9 11.5 11.5 9 14.5 9C14.5 12 12 14.5 9 14.5Z" fill="#34d399"/>
               <path d="M12 9C12 6.5 14 4.5 16.5 4.5C16.5 7 14.5 9 12 9Z" fill="#a7f3d0"/>
@@ -263,9 +264,18 @@ export default function App() {
           </div>
           <span className="logo-text">saku</span>
         </div>
-        <button className="icon-btn-ghost" onClick={() => addToast('Tidak ada notifikasi baru.')}>
-          <Bell size={20} />
-        </button>
+
+        {/* Ikon kanan: search + avatar */}
+        <div className="mobile-header-actions">
+          <button className="mobile-header-icon-btn" onClick={() => addToast('Fitur pencarian segera hadir.')} aria-label="Cari">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="20" height="20">
+              <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
+            </svg>
+          </button>
+          <button className="mobile-header-avatar" onClick={() => addToast('Profil Aditya Pratama')} aria-label="Profil">
+            <span>AT</span>
+          </button>
+        </div>
       </header>
 
       {/* Sidebar Navigation (desktop) */}
@@ -408,8 +418,8 @@ export default function App() {
                 >
                   <span className="mobile-nav-action-icon">
                     {item.icon}
-                    <span className="nav-action-label">Catat</span>
                   </span>
+                  <span className="mobile-nav-label">Catat</span>
                 </button>
               );
             }

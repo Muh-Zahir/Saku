@@ -21,6 +21,14 @@ export default function DashboardPage({
 
   return (
     <>
+      {/* Breadcrumb — hanya tampil di mobile */}
+      <nav className="mobile-breadcrumb" aria-label="Breadcrumb">
+        <span>Beranda</span>
+        <span className="breadcrumb-sep">/</span>
+        <span className="breadcrumb-current">Ringkasan</span>
+      </nav>
+
+      {/* Page header: judul + subtitle + period selector + tombol catat */}
       <Header
         currentPeriod={currentPeriod}
         onSelectPeriod={(p) => {
@@ -33,27 +41,26 @@ export default function DashboardPage({
       {/* 3 Metric Cards */}
       <MetricCards metrics={data.metrics} />
 
-      {/* Middle Grid: Arus Kas & Anggaran */}
-      <section className="dashboard-split-grid">
-        <CashflowChart
-          cashflowData={data.cashflow}
-          netCashflow={netCashflow}
-        />
-        <BudgetCard
-          budgets={data.budgets}
-          onOpenManageBudget={onOpenManageBudget}
-        />
-      </section>
+      {/* Arus Kas */}
+      <CashflowChart
+        cashflowData={data.cashflow}
+        netCashflow={netCashflow}
+      />
 
-      {/* Bottom Grid: Transaksi Terbaru & Target Tabungan */}
-      <section className="dashboard-split-grid bottom-grid">
-        <TransactionsCard transactions={data.transactions} />
-        <SavingsCard
-          savings={data.savings}
-          onOpenAddGoal={onOpenAddGoal}
-        />
-      </section>
+      {/* Anggaran */}
+      <BudgetCard
+        budgets={data.budgets}
+        onOpenManageBudget={onOpenManageBudget}
+      />
+
+      {/* Transaksi Terbaru */}
+      <TransactionsCard transactions={data.transactions} />
+
+      {/* Target Tabungan */}
+      <SavingsCard
+        savings={data.savings}
+        onOpenAddGoal={onOpenAddGoal}
+      />
     </>
   );
 }
-

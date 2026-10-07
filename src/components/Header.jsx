@@ -31,18 +31,16 @@ export default function Header({ currentPeriod, onSelectPeriod, onOpenAddTransac
         <p className="page-subtitle">Halo, Aditya. Ini ringkasan perjalanan keuanganmu bulan ini.</p>
       </div>
 
-      {/* Desktop: period selector + tombol tambah dalam satu row */}
-      {/* Mobile: period selector + tombol ikon bulat dalam satu row inline */}
+      {/* Period Selector */}
       <div className="page-actions">
-        {/* Period Selector */}
         <div className="dropdown-wrapper" ref={dropdownRef} style={{ position: 'relative' }}>
           <button
             className="btn-period-select"
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
           >
-            <Calendar size={16} strokeWidth={2} />
+            <Calendar size={15} strokeWidth={2} />
             <span>{currentPeriod}</span>
-            <ChevronDown size={14} strokeWidth={2.5} />
+            <ChevronDown size={13} strokeWidth={2.5} />
           </button>
 
           {isDropdownOpen && (
@@ -68,13 +66,13 @@ export default function Header({ currentPeriod, onSelectPeriod, onOpenAddTransac
           <Plus size={16} strokeWidth={2.5} />
           <span>Tambah transaksi</span>
         </button>
-
-        {/* Mobile CTA — ikon bulat saja, hemat ruang */}
-        <button className="btn-add-tx-mobile" onClick={onOpenAddTransaction} aria-label="Tambah transaksi">
-          <Plus size={20} strokeWidth={2.5} />
-        </button>
       </div>
+
+      {/* Mobile CTA — full width button sesuai design */}
+      <button className="btn-catat-mobile" onClick={onOpenAddTransaction}>
+        <Plus size={18} strokeWidth={2.5} />
+        <span>Catat transaksi</span>
+      </button>
     </div>
   );
 }
-
