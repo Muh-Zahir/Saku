@@ -5,6 +5,7 @@ import {
   Calendar,
   Plus,
   PieChart,
+  Target,
   ArrowUpRight,
   Wallet,
   Edit3,
@@ -24,6 +25,7 @@ export default function BudgetPage({
   budgets,
   onOpenManageBudget,
   onOpenAddBudget,
+  onSwitchTab,
   addToast
 }) {
   const totalBudget = 9000000;
@@ -101,6 +103,25 @@ export default function BudgetPage({
 
   return (
     <div className="page-wrapper">
+      {/* Mobile Plan Nav Switcher (Rencana) — Screenshot 2 */}
+      <div className="mobile-plan-nav mobile-only">
+        <span className="plan-nav-title">Rencana</span>
+        <div className="plan-nav-grid">
+          <button className="plan-nav-card active" type="button">
+            <PieChart size={24} stroke="#134e3f" strokeWidth={2} />
+            <span>Anggaran</span>
+          </button>
+          <button 
+            className="plan-nav-card" 
+            type="button"
+            onClick={() => onSwitchTab && onSwitchTab('target-tabungan')}
+          >
+            <Target size={24} stroke="#6b7280" strokeWidth={2} />
+            <span>Target tabungan</span>
+          </button>
+        </div>
+      </div>
+
       {/* Page Header */}
       <div className="page-header">
         <div className="page-title-group">
@@ -113,11 +134,17 @@ export default function BudgetPage({
             <Calendar size={16} strokeWidth={2} />
             <span>{currentPeriod}</span>
           </button>
-          <button className="btn-primary-action" onClick={onOpenAddBudget}>
+          <button className="btn-primary-action btn-add-tx-desktop" onClick={onOpenAddBudget}>
             <Plus size={16} strokeWidth={2.5} />
             <span>Tambah anggaran</span>
           </button>
         </div>
+
+        {/* Mobile full-width CTA */}
+        <button className="btn-catat-mobile mobile-only" onClick={onOpenAddBudget}>
+          <Plus size={18} strokeWidth={2.5} />
+          <span>Tambah anggaran</span>
+        </button>
       </div>
 
       {/* Top 3 Cards */}

@@ -5,6 +5,7 @@ import {
   Calendar,
   Plus,
   Target,
+  PieChart,
   Flag,
   ArrowDownLeft,
   ShieldCheck,
@@ -21,6 +22,7 @@ export default function SavingsPage({
   savings,
   onOpenAddGoal,
   onDeposit,
+  onSwitchTab,
   addToast
 }) {
   const contributions = [
@@ -39,6 +41,25 @@ export default function SavingsPage({
 
   return (
     <div className="page-wrapper">
+      {/* Mobile Plan Nav Switcher (Rencana) — Screenshot 2 */}
+      <div className="mobile-plan-nav mobile-only">
+        <span className="plan-nav-title">Rencana</span>
+        <div className="plan-nav-grid">
+          <button 
+            className="plan-nav-card" 
+            type="button"
+            onClick={() => onSwitchTab && onSwitchTab('anggaran')}
+          >
+            <PieChart size={24} stroke="#6b7280" strokeWidth={2} />
+            <span>Anggaran</span>
+          </button>
+          <button className="plan-nav-card active" type="button">
+            <Target size={24} stroke="#134e3f" strokeWidth={2} />
+            <span>Target tabungan</span>
+          </button>
+        </div>
+      </div>
+
       {/* Header */}
       <div className="page-header">
         <div className="page-title-group">
@@ -51,11 +72,17 @@ export default function SavingsPage({
             <Calendar size={16} strokeWidth={2} />
             <span>{currentPeriod}</span>
           </button>
-          <button className="btn-primary-action" onClick={onOpenAddGoal}>
+          <button className="btn-primary-action btn-add-tx-desktop" onClick={onOpenAddGoal}>
             <Plus size={16} strokeWidth={2.5} />
             <span>Tambah target</span>
           </button>
         </div>
+
+        {/* Mobile full-width CTA */}
+        <button className="btn-catat-mobile mobile-only" onClick={onOpenAddGoal}>
+          <Plus size={18} strokeWidth={2.5} />
+          <span>Tambah target</span>
+        </button>
       </div>
 
       {/* Top 3 Cards */}

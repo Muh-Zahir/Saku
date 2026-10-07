@@ -126,11 +126,17 @@ export default function TransactionsPage({
             <Calendar size={16} strokeWidth={2} />
             <span>{currentPeriod}</span>
           </button>
-          <button className="btn-primary-action" onClick={onOpenAddTx}>
+          <button className="btn-primary-action btn-add-tx-desktop" onClick={onOpenAddTx}>
             <Plus size={16} strokeWidth={2.5} />
             <span>Tambah transaksi</span>
           </button>
         </div>
+
+        {/* Mobile full-width CTA */}
+        <button className="btn-catat-mobile mobile-only" onClick={onOpenAddTx}>
+          <Plus size={18} strokeWidth={2.5} />
+          <span>Tambah transaksi</span>
+        </button>
       </div>
 
       {/* Top 3 Cards */}

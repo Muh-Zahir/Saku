@@ -324,6 +324,7 @@ export default function App() {
             budgets={data.budgets}
             onOpenManageBudget={() => setIsManageBudgetOpen(true)}
             onOpenAddBudget={() => setIsManageBudgetOpen(true)}
+            onSwitchTab={setActiveNav}
             addToast={addToast}
           />
         )}
@@ -334,6 +335,7 @@ export default function App() {
             savings={data.savings}
             onOpenAddGoal={() => setIsAddGoalOpen(true)}
             onDeposit={() => setIsAddTxOpen(true)}
+            onSwitchTab={setActiveNav}
             addToast={addToast}
           />
         )}

@@ -79,11 +79,17 @@ export default function WalletsPage({
             <Calendar size={16} strokeWidth={2} />
             <span>{currentPeriod}</span>
           </button>
-          <button className="btn-primary-action" onClick={onOpenAddWalletModal}>
+          <button className="btn-primary-action btn-add-tx-desktop" onClick={onOpenAddWalletModal}>
             <Plus size={16} strokeWidth={2.5} />
             <span>Tambah dompet</span>
           </button>
         </div>
+
+        {/* Mobile full-width CTA */}
+        <button className="btn-catat-mobile mobile-only" onClick={onOpenAddWalletModal}>
+          <Plus size={18} strokeWidth={2.5} />
+          <span>Tambah dompet</span>
+        </button>
       </div>
 
       {/* Top 3 Cards */}
