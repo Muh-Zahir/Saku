@@ -112,7 +112,7 @@ const INITIAL_DATA = {
     {
       id: 's1',
       name: 'Dana darurat',
-      targetDate: 'Target Des 2026',
+      targetDate: 'Target Desember 2026',
       current: 15000000,
       target: 20000000,
       type: 'shield'
@@ -120,7 +120,7 @@ const INITIAL_DATA = {
     {
       id: 's2',
       name: 'Liburan ke Jepang',
-      targetDate: 'Target Jun 2027',
+      targetDate: 'Target Juni 2027',
       current: 5500000,
       target: 10000000,
       type: 'plane'
@@ -128,7 +128,7 @@ const INITIAL_DATA = {
     {
       id: 's3',
       name: 'Laptop baru',
-      targetDate: 'Target Mar 2027',
+      targetDate: 'Target Maret 2027',
       current: 4350000,
       target: 12000000,
       type: 'laptop'
@@ -263,9 +263,14 @@ export default function App() {
           </div>
           <span className="logo-text">saku</span>
         </div>
-        <button className="icon-btn-ghost" onClick={() => addToast('Tidak ada notifikasi baru.')}>
-          <Bell size={20} />
-        </button>
+        <div className="mobile-header-right">
+          <button className="icon-btn-ghost" onClick={() => addToast('Tidak ada notifikasi baru.')} aria-label="Notifikasi">
+            <Bell size={20} />
+          </button>
+          <button className="mobile-avatar-btn" onClick={() => setIsMobileMenuOpen(true)} aria-label="Profil Aditya Pratama">
+            AP
+          </button>
+        </div>
       </header>
 
       {/* Sidebar Navigation (desktop) */}

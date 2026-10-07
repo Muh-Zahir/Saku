@@ -23,7 +23,7 @@ export default function DashboardPage({
     <>
       {/* Breadcrumb — hanya tampil di mobile via CSS */}
       <nav className="mobile-breadcrumb" aria-label="Breadcrumb">
-        <span>Beranda</span>
+        <span>Keuangan pribadi</span>
         <span className="breadcrumb-sep">/</span>
         <span className="breadcrumb-current">Ringkasan</span>
       </nav>
@@ -36,6 +36,7 @@ export default function DashboardPage({
           addToast(`Periode diubah ke ${p}`);
         }}
         onOpenAddTransaction={onOpenAddTx}
+        lastSync={data.profile.lastSync}
       />
 
       {/* 3 Metric Cards */}

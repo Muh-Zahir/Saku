@@ -3,7 +3,7 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Calendar, ChevronDown, Plus } from 'lucide-react';
 
-export default function Header({ currentPeriod, onSelectPeriod, onOpenAddTransaction }) {
+export default function Header({ currentPeriod, onSelectPeriod, onOpenAddTransaction, lastSync = 'Diperbarui 30 Sep 2026, 20.45' }) {
   const [isDropdownOpen, setIsDropdownOpen] = useState(false);
   const dropdownRef = useRef(null);
 
@@ -32,16 +32,17 @@ export default function Header({ currentPeriod, onSelectPeriod, onOpenAddTransac
       </div>
 
       {/* Desktop: period selector + tombol tambah dalam satu row */}
-      {/* Mobile: period selector + tombol ikon bulat dalam satu row inline */}
       <div className="page-actions">
         {/* Period Selector */}
-        <div className="dropdown-wrapper" ref={dropdownRef} style={{ position: 'relative' }}>
+        <div className="dropdown-wrapper" ref={dropdownRef} style={{ position: 'relative', width: '100%' }}>
           <button
             className="btn-period-select"
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
           >
-            <Calendar size={16} strokeWidth={2} />
-            <span>{currentPeriod}</span>
+            <div className="btn-period-left">
+              <Calendar size={16} strokeWidth={2} />
+              <span>{currentPeriod}</span>
+            </div>
             <ChevronDown size={14} strokeWidth={2.5} />
           </button>
 
@@ -68,19 +69,19 @@ export default function Header({ currentPeriod, onSelectPeriod, onOpenAddTransac
           <Plus size={16} strokeWidth={2.5} />
           <span>Tambah transaksi</span>
         </button>
-
-        {/* Mobile inline icon — disembunyikan via CSS (pakai bottom nav) */}
-        <button className="btn-add-tx-mobile" onClick={onOpenAddTransaction} aria-label="Tambah transaksi">
-          <Plus size={20} strokeWidth={2.5} />
-        </button>
       </div>
 
-      {/* Mobile full-width CTA — hanya tampil di mobile sesuai design */}
+      {/* Mobile full-width CTA — sesuai Screenshot 1 */}
       <button className="btn-catat-mobile" onClick={onOpenAddTransaction}>
         <Plus size={18} strokeWidth={2.5} />
-        <span>Catat transaksi</span>
+        <span>Tambah transaksi</span>
       </button>
+
+      {/* Mobile last updated info — sesuai Screenshot 1 */}
+      <div className="mobile-last-sync">
+        <span className="sync-bullet">•</span>
+        <span>{lastSync}</span>
+      </div>
     </div>
   );
 }
-

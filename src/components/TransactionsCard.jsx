@@ -2,10 +2,9 @@
 
 import React from 'react';
 import { ArrowRight, ShoppingBag, Fuel, Coffee, Briefcase, Tag } from 'lucide-react';
-import { formatIDR } from '../utils/formatters';
 
 export default function TransactionsCard({ transactions }) {
-  const getIcon = (iconName, category) => {
+  const getIcon = (iconName) => {
     switch (iconName) {
       case 'shopping-bag':
         return <ShoppingBag size={18} strokeWidth={2} />;
@@ -35,7 +34,8 @@ export default function TransactionsCard({ transactions }) {
         </button>
       </div>
 
-      <div className="table-responsive">
+      {/* Desktop Table View */}
+      <div className="table-responsive desktop-only">
         <table className="transactions-table">
           <thead>
             <tr>
@@ -56,7 +56,7 @@ export default function TransactionsCard({ transactions }) {
                   <td>
                     <div className="tx-cell">
                       <div className="tx-icon-wrap">
-                        {getIcon(tx.icon, tx.category)}
+                        {getIcon(tx.icon)}
                       </div>
                       <div className="tx-meta">
                         <span className="tx-title">{tx.title}</span>
@@ -73,7 +73,31 @@ export default function TransactionsCard({ transactions }) {
           </tbody>
         </table>
       </div>
+
+      {/* Mobile List View (sesuai Screenshot 3) */}
+      <div className="transactions-mobile-list mobile-only">
+        {transactions.slice(0, 5).map((tx) => {
+          const isIncome = tx.amount > 0;
+          const formattedAmount = `${isIncome ? '+' : '-'}Rp${Math.abs(tx.amount).toLocaleString('id-ID')}`;
+          const amountClass = isIncome ? 'tx-income' : 'tx-expense';
+
+          return (
+            <div key={tx.id} className="tx-mobile-item">
+              <div className="tx-mobile-icon-box">
+                {getIcon(tx.icon)}
+              </div>
+              <div className="tx-mobile-info">
+                <span className="tx-mobile-title">{tx.title}</span>
+                <span className="tx-mobile-sub">{tx.date} · {tx.wallet}</span>
+                <span className="tx-mobile-cat">{tx.category}</span>
+              </div>
+              <div className={`tx-mobile-amount ${amountClass}`}>
+                {formattedAmount}
+              </div>
+            </div>
+          );
+        })}
+      </div>
     </div>
   );
 }
-

@@ -2316,6 +2316,36 @@ select {
   background-color: #f3f7f4;
 }
 
+.desktop-only {
+  display: block;
+}
+
+.mobile-only {
+  display: none !important;
+}
+
+.mobile-breadcrumb {
+  display: none;
+}
+
+.btn-catat-mobile {
+  display: none;
+}
+
+.mobile-last-sync {
+  display: none;
+}
+
+.mobile-avatar-btn {
+  display: none;
+}
+
+.btn-period-left {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
 .sidebar-backdrop {
   display: none;
   position: fixed;
@@ -2531,83 +2561,488 @@ select {
     padding: calc(56px + 24px) 16px calc(56px + env(safe-area-inset-bottom, 0px) + 16px);
   }
 
-  /* Page header — title group tetap block, actions jadi row */
+  /* Mobile Avatar & Header Actions */
+  .mobile-header-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+
+  .mobile-avatar-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background-color: #e8f5ee;
+    color: var(--brand-dark);
+    font-size: 13px;
+    font-weight: 700;
+    border: none;
+    cursor: pointer;
+    letter-spacing: 0.5px;
+    transition: opacity var(--transition-fast);
+  }
+
+  .mobile-avatar-btn:active {
+    opacity: 0.8;
+  }
+
+  /* Breadcrumb mobile — sesuai Screenshot 1 */
+  .mobile-breadcrumb {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12.5px;
+    color: #6b7280;
+    margin-bottom: 8px;
+    padding-top: 4px;
+  }
+
+  .mobile-breadcrumb .breadcrumb-sep {
+    color: #9ca3af;
+  }
+
+  .mobile-breadcrumb .breadcrumb-current {
+    color: #6b7280;
+  }
+
+  /* Page header — sesuai Screenshot 1 */
   .page-header {
     flex-direction: column;
     align-items: stretch;
-    gap: 10px;
-    margin-bottom: 14px;
+    gap: 12px;
+    margin-bottom: 12px;
   }
 
   .page-title {
-    font-size: 20px;
+    font-size: 26px;
+    font-weight: 700;
+    color: #111827;
     line-height: 1.2;
+    letter-spacing: -0.5px;
   }
 
   .page-subtitle {
-    font-size: 13px;
-    margin-top: 3px;
+    font-size: 13.5px;
+    color: #6b7280;
+    margin-top: 4px;
+    line-height: 1.4;
   }
 
-  /* Actions row: hanya period selector, tombol + dihapus (pakai bottom nav) */
+  /* Actions row */
   .page-actions {
-    flex-direction: row;
-    align-items: center;
+    flex-direction: column;
+    align-items: stretch;
+    width: 100%;
   }
 
   .btn-period-select {
-    /* Period selector tetap ada, tapi sekarang bisa lebih compact */
-    padding: 10px 12px;
-    font-size: 13px;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 12px 14px;
+    border-radius: 12px;
+    background-color: #ffffff;
+    border: 1px solid #e5e7eb;
+    font-size: 14px;
+    font-weight: 500;
+    color: #111827;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
   }
 
-  /* Sembunyikan SEMUA tombol tambah transaksi di header — pakai bottom nav */
+  .btn-period-left {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  /* Sembunyikan tombol desktop di mobile */
   .btn-add-tx-desktop,
   .btn-add-tx-mobile {
     display: none !important;
   }
 
-  /* Metric cards — 2 kolom agar tidak terlalu panjang scroll */
-  .metrics-grid {
-    grid-template-columns: repeat(2, 1fr);
-    gap: 10px;
-    margin-bottom: 14px;
+  /* Full width button Tambah Transaksi mobile — sesuai Screenshot 1 */
+  .btn-catat-mobile {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    height: 48px;
+    background-color: var(--brand-dark);
+    color: #ffffff;
+    border: none;
+    border-radius: 12px;
+    font-size: 14.5px;
+    font-weight: 600;
+    cursor: pointer;
+    box-shadow: 0 2px 8px rgba(19, 78, 63, 0.25);
+    transition: transform var(--transition-fast), background-color var(--transition-fast);
   }
 
-  /* Card pertama (total saldo) span 2 kolom karena paling penting */
+  .btn-catat-mobile:active {
+    transform: scale(0.98);
+  }
+
+  /* Last sync di mobile — sesuai Screenshot 1 */
+  .mobile-last-sync {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: #6b7280;
+    margin-top: 4px;
+    margin-bottom: 14px;
+    padding-left: 2px;
+  }
+
+  .mobile-last-sync .sync-bullet {
+    color: var(--brand-accent);
+    font-weight: 700;
+    font-size: 14px;
+    line-height: 1;
+  }
+
+  /* Metric cards — 1 kolom (single column) sesuai Screenshot 1 */
+  .metrics-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+    margin-bottom: 16px;
+  }
+
   .metrics-grid .metric-card:first-child {
-    grid-column: 1 / -1;
+    grid-column: auto;
   }
 
   .metric-card {
-    padding: 14px 14px 12px;
+    padding: 18px 18px 16px;
+    border-radius: 16px;
   }
 
-  .metric-value-huge {
-    font-size: 22px;
+  .metric-card-top {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 6px;
   }
 
   .metric-label {
-    font-size: 11.5px;
+    font-size: 13px;
+    font-weight: 500;
   }
 
-  .metric-delta {
-    font-size: 12px;
+  .metric-value-huge {
+    font-size: 28px;
+    font-weight: 700;
+    line-height: 1.15;
+    letter-spacing: -0.5px;
+    margin-bottom: 8px;
   }
 
-  /* Dashboard grids */
+  .metric-sub-text {
+    font-size: 12.5px;
+  }
+
+  .metric-card-primary {
+    background-color: var(--brand-dark);
+    color: #ffffff;
+    border: none;
+    box-shadow: 0 4px 14px rgba(19, 78, 63, 0.2);
+  }
+
+  .metric-card-primary .metric-label {
+    color: rgba(255, 255, 255, 0.82);
+  }
+
+  .metric-card-primary .metric-value-huge {
+    color: #ffffff;
+  }
+
+  .metric-card-primary .text-primary-sub {
+    color: rgba(255, 255, 255, 0.75);
+  }
+
+  .metric-card-white {
+    background-color: #ffffff;
+    border: 1px solid #eef0f2;
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.04);
+  }
+
+  .metric-card-white .metric-label {
+    color: #6b7280;
+  }
+
+  .metric-card-white .text-dark {
+    color: #111827;
+  }
+
+  .metric-card-white .metric-sub-text {
+    color: #6b7280;
+  }
+
+  /* Sembunyikan Chart Arus Kas di mobile agar urutan sesuai Screenshot */
+  .card-cashflow {
+    display: none !important;
+  }
+
+  /* Dashboard cards */
   .dashboard-split-grid {
     grid-template-columns: 1fr;
-    gap: 10px;
-    margin-bottom: 10px;
+    gap: 14px;
+    margin-bottom: 14px;
   }
 
   .dashboard-card {
-    padding: 14px;
+    padding: 18px 18px 16px;
+    border-radius: 16px;
+    border: 1px solid #eef0f2;
+    background-color: #ffffff;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.03);
+  }
+
+  .card-header {
+    margin-bottom: 12px;
   }
 
   .card-title {
+    font-size: 18px;
+    font-weight: 700;
+    color: #111827;
+  }
+
+  .card-subtitle {
+    font-size: 13px;
+    color: #6b7280;
+    margin-top: 4px;
+  }
+
+  .card-action-link {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--brand-accent);
+  }
+
+  /* Transaksi terbaru di mobile — sesuai Screenshot 3 */
+  .desktop-only {
+    display: none !important;
+  }
+
+  .mobile-only {
+    display: flex !important;
+  }
+
+  .transactions-mobile-list {
+    display: flex;
+    flex-direction: column;
+  }
+
+  .tx-mobile-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 0;
+    border-bottom: 1px solid #f3f4f6;
+  }
+
+  .tx-mobile-item:last-child {
+    border-bottom: none;
+    padding-bottom: 0;
+  }
+
+  .tx-mobile-icon-box {
+    width: 40px;
+    height: 40px;
+    border-radius: 10px;
+    background-color: #f4f6f8;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #4b5563;
+    flex-shrink: 0;
+  }
+
+  .tx-mobile-info {
+    display: flex;
+    flex-direction: column;
+    flex: 1;
+    min-width: 0;
+    gap: 2px;
+  }
+
+  .tx-mobile-title {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: #111827;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .tx-mobile-sub {
+    font-size: 11.5px;
+    color: #6b7280;
+  }
+
+  .tx-mobile-cat {
+    font-size: 11px;
+    color: #9ca3af;
+  }
+
+  .tx-mobile-amount {
     font-size: 14px;
+    font-weight: 700;
+    text-align: right;
+    white-space: nowrap;
+    flex-shrink: 0;
+  }
+
+  .tx-mobile-amount.tx-income {
+    color: var(--brand-accent);
+  }
+
+  .tx-mobile-amount.tx-expense {
+    color: #111827;
+  }
+
+  /* Anggaran di mobile — sesuai Screenshot 2 */
+  .budget-items-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+    margin-top: 6px;
+  }
+
+  .budget-item {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  .budget-item-header-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+
+  .budget-name {
+    font-size: 14px;
+    font-weight: 600;
+    color: #111827;
+  }
+
+  .budget-percentage {
+    font-size: 14px;
+    font-weight: 700;
+  }
+
+  .text-green-percent {
+    color: var(--brand-accent);
+  }
+
+  .text-amber-percent {
+    color: #a16207;
+  }
+
+  .budget-item-sub-row {
+    font-size: 12.5px;
+    color: #6b7280;
+    margin-bottom: 4px;
+  }
+
+  .progress-track {
+    height: 6px;
+    border-radius: 3px;
+    background-color: #ebf0ec;
+    overflow: hidden;
+  }
+
+  .bar-green {
+    background-color: var(--brand-dark);
+  }
+
+  .bar-amber {
+    background-color: #a16207;
+  }
+
+  /* Target tabungan di mobile — sesuai Screenshot 3 */
+  .savings-list {
+    display: flex;
+    flex-direction: column;
+    gap: 16px;
+  }
+
+  .savings-card-item {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding-bottom: 14px;
+    border-bottom: 1px solid #f3f4f6;
+  }
+
+  .savings-card-item:last-child {
+    padding-bottom: 0;
+    border-bottom: none;
+  }
+
+  .savings-item-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+
+  .savings-icon-box {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background-color: #ecfdf5;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+
+  .savings-item-meta {
+    flex: 1;
+    min-width: 0;
+  }
+
+  .savings-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #111827;
+    line-height: 1.3;
+  }
+
+  .savings-target-date {
+    font-size: 12px;
+    color: #6b7280;
+    margin-top: 1px;
+  }
+
+  .savings-percent-badge {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--brand-accent);
+  }
+
+  .savings-numbers-row {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    font-size: 12px;
+  }
+
+  .savings-current {
+    font-weight: 600;
+    color: #111827;
+  }
+
+  .savings-total {
+    color: #6b7280;
   }
 
   /* Wallet & savings grids */

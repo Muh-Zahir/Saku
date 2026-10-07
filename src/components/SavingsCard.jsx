@@ -10,7 +10,7 @@ export default function SavingsCard({ savings, onOpenAddGoal }) {
       case 'shield':
         return <ShieldCheck size={18} stroke="#059669" strokeWidth={2.2} />;
       case 'plane':
-        return <Plane size={18} stroke="#0d9488" strokeWidth={2.2} />;
+        return <Plane size={18} stroke="#059669" strokeWidth={2.2} />;
       case 'laptop':
         return <Laptop size={18} stroke="#059669" strokeWidth={2.2} />;
       default:
@@ -40,8 +40,11 @@ export default function SavingsCard({ savings, onOpenAddGoal }) {
       <div className="savings-list">
         {savings.map((goal) => {
           const ratio = (goal.current / goal.target) * 100;
-          const percentage = Math.min(100, ratio).toFixed(goal.type === 'laptop' ? 1 : 0).replace('.', ',');
+          const percentage = ratio % 1 === 0 ? ratio.toFixed(0) : ratio.toFixed(1).replace('.', ',');
           const numericPercent = Math.min(100, ratio);
+          const cleanTargetDate = goal.targetDate.startsWith('Target ') 
+            ? goal.targetDate 
+            : `Target ${goal.targetDate}`;
 
           return (
             <div key={goal.id} className="savings-card-item">
@@ -51,7 +54,7 @@ export default function SavingsCard({ savings, onOpenAddGoal }) {
                 </div>
                 <div className="savings-item-meta">
                   <div className="savings-title">{goal.name}</div>
-                  <div className="savings-target-date">{goal.targetDate}</div>
+                  <div className="savings-target-date">{cleanTargetDate}</div>
                 </div>
                 <div className="savings-percent-badge">{percentage}%</div>
               </div>
@@ -72,4 +75,3 @@ export default function SavingsCard({ savings, onOpenAddGoal }) {
     </div>
   );
 }
-
