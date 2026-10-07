@@ -59,12 +59,13 @@ html {
   background-color: var(--bg-app);
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
+  /* JANGAN overflow:hidden di html/body — akan break position:fixed di mobile! */
 }
 
 body {
   min-height: 100vh;
-  overflow-x: hidden;
   line-height: 1.5;
+  /* overflow-x TIDAK di sini — break fixed positioning di Android/iOS */
 }
 
 button {
@@ -88,6 +89,7 @@ input, select {
   display: flex;
   min-height: 100vh;
   background-color: var(--bg-app);
+  overflow-x: hidden; /* overflow di sini aman karena bukan parent dari fixed elements */
 }
 
 /* ==========================================================================
@@ -2413,9 +2415,10 @@ input, select {
    MOBILE RESPONSIVE (max 820px)
    ========================================================================== */
 @media (max-width: 820px) {
-  /* Layout */
+  /* Layout — overflow visible agar fixed children (header & bottom nav) tidak ter-clip */
   .app-container {
     flex-direction: column;
+    overflow-x: visible;
   }
 
   /* Show mobile header */
