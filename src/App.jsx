@@ -250,32 +250,22 @@ export default function App() {
 
   return (
     <div className="app-container">
-      {/* Mobile Top Header — sesuai design baru */}
+      {/* Mobile Top Header */}
       <header className="mobile-header">
-        {/* Logo kiri */}
-        <div className="mobile-header-logo">
+        <div className="brand-logo" style={{ marginBottom: 0 }}>
           <div className="logo-mark">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
-              <rect width="24" height="24" rx="7" fill="#134e3f"/>
-              <path d="M9 14.5C9 11.5 11.5 9 14.5 9C14.5 12 12 14.5 9 14.5Z" fill="#34d399"/>
-              <path d="M12 9C12 6.5 14 4.5 16.5 4.5C16.5 7 14.5 9 12 9Z" fill="#a7f3d0"/>
-              <path d="M8 13.5v2.5a1.5 1.5 0 001.5 1.5h4" stroke="#ffffff" strokeWidth="1.6" strokeLinecap="round"/>
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
+              <rect width="24" height="24" rx="7" fill="#134e3f" />
+              <path d="M9 14.5C9 11.5 11.5 9 14.5 9C14.5 12 12 14.5 9 14.5Z" fill="#34d399" />
+              <path d="M12 9C12 6.5 14 4.5 16.5 4.5C16.5 7 14.5 9 12 9Z" fill="#a7f3d0" />
+              <path d="M8 13.5v2.5a1.5 1.5 0 001.5 1.5h4" stroke="#ffffff" strokeWidth="1.6" strokeLinecap="round" />
             </svg>
           </div>
           <span className="logo-text">saku</span>
         </div>
-
-        {/* Ikon kanan: search + avatar */}
-        <div className="mobile-header-actions">
-          <button className="mobile-header-icon-btn" onClick={() => addToast('Fitur pencarian segera hadir.')} aria-label="Cari">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" width="20" height="20">
-              <circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/>
-            </svg>
-          </button>
-          <button className="mobile-header-avatar" onClick={() => addToast('Profil Aditya Pratama')} aria-label="Profil">
-            <span>AT</span>
-          </button>
-        </div>
+        <button className="icon-btn-ghost" onClick={() => addToast('Tidak ada notifikasi baru.')}>
+          <Bell size={20} />
+        </button>
       </header>
 
       {/* Sidebar Navigation (desktop) */}
@@ -389,23 +379,23 @@ export default function App() {
           {[
             {
               id: 'ringkasan', label: 'Ringkasan',
-              icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+              icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" rx="1" /><rect x="14" y="3" width="7" height="7" rx="1" /><rect x="3" y="14" width="7" height="7" rx="1" /><rect x="14" y="14" width="7" height="7" rx="1" /></svg>
             },
             {
               id: 'transaksi', label: 'Transaksi',
-              icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M7 16V4m0 0L3 8m4-4l4 4"/><path d="M17 8v12m0 0l4-4m-4 4l-4-4"/></svg>
+              icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M7 16V4m0 0L3 8m4-4l4 4" /><path d="M17 8v12m0 0l4-4m-4 4l-4-4" /></svg>
             },
             {
               id: 'add-tx', label: 'Catat', isAction: true,
-              icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+              icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14M5 12h14" /></svg>
             },
             {
               id: 'anggaran', label: 'Anggaran',
-              icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>
+              icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83" /><path d="M22 12A10 10 0 0 0 12 2v10z" /></svg>
             },
             {
               id: 'target-tabungan', label: 'Tabungan',
-              icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+              icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10" /><path d="M12 6v6l4 2" /></svg>
             },
           ].map((item) => {
             if (item.isAction) {
@@ -418,8 +408,8 @@ export default function App() {
                 >
                   <span className="mobile-nav-action-icon">
                     {item.icon}
+                    <span className="nav-action-label">Catat</span>
                   </span>
-                  <span className="mobile-nav-label">Catat</span>
                 </button>
               );
             }

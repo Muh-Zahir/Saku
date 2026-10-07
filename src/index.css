@@ -47,7 +47,9 @@
 }
 
 /* Base Reset */
-*, *::before, *::after {
+*,
+*::before,
+*::after {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
@@ -67,7 +69,8 @@ html {
 body {
   min-height: 100vh;
   line-height: 1.5;
-  overflow-x: clip; /* sama seperti html: cegah scroll tanpa break fixed positioning */
+  overflow-x: clip;
+  /* sama seperti html: cegah scroll tanpa break fixed positioning */
 }
 
 button {
@@ -82,7 +85,8 @@ a {
   color: inherit;
 }
 
-input, select {
+input,
+select {
   font-family: inherit;
 }
 
@@ -561,7 +565,8 @@ input, select {
 
 /* Mobile circular add button — hidden on desktop, shown on mobile */
 .btn-add-tx-mobile {
-  display: none; /* shown via media query */
+  display: none;
+  /* shown via media query */
   align-items: center;
   justify-content: center;
   width: 40px;
@@ -1798,10 +1803,22 @@ input, select {
   border-bottom: 1px solid var(--border-subtle);
 }
 
-.th-tx { width: 44%; }
-.th-cat { width: 22%; }
-.th-wallet { width: 14%; }
-.th-amount { width: 20%; text-align: right; }
+.th-tx {
+  width: 44%;
+}
+
+.th-cat {
+  width: 22%;
+}
+
+.th-wallet {
+  width: 14%;
+}
+
+.th-amount {
+  width: 20%;
+  text-align: right;
+}
 
 .transactions-table td {
   padding: 11px 10px;
@@ -1857,7 +1874,8 @@ input, select {
   margin-top: 2px;
 }
 
-.tx-cat-text, .tx-wallet-text {
+.tx-cat-text,
+.tx-wallet-text {
   color: var(--text-muted);
   font-size: 12.5px;
 }
@@ -1911,11 +1929,22 @@ input, select {
   flex-shrink: 0;
 }
 
-.box-shield { background-color: #ecfdf5; }
-.box-plane { background-color: #f0fdfa; }
-.box-laptop { background-color: #ecfdf5; }
+.box-shield {
+  background-color: #ecfdf5;
+}
 
-.savings-item-meta { flex: 1; }
+.box-plane {
+  background-color: #f0fdfa;
+}
+
+.box-laptop {
+  background-color: #ecfdf5;
+}
+
+.savings-item-meta {
+  flex: 1;
+}
+
 .savings-title {
   font-size: 13.5px;
   font-weight: 700;
@@ -1983,6 +2012,7 @@ input, select {
     opacity: 0;
     transform: translateY(12px) scale(0.98);
   }
+
   to {
     opacity: 1;
     transform: translateY(0) scale(1);
@@ -2114,7 +2144,8 @@ input, select {
   font-weight: 700;
 }
 
-.form-input, .form-select {
+.form-input,
+.form-select {
   width: 100%;
   padding: 9px 12px;
   border-radius: 9px;
@@ -2126,7 +2157,8 @@ input, select {
   transition: border-color var(--transition-fast), box-shadow var(--transition-fast);
 }
 
-.form-input:focus, .form-select:focus {
+.form-input:focus,
+.form-select:focus {
   border-color: var(--brand-dark);
   box-shadow: 0 0 0 3px rgba(19, 78, 63, 0.12);
 }
@@ -2232,143 +2264,43 @@ input, select {
 }
 
 @keyframes toastIn {
-  from { transform: translateY(16px); opacity: 0; }
-  to { transform: translateY(0); opacity: 1; }
+  from {
+    transform: translateY(16px);
+    opacity: 0;
+  }
+
+  to {
+    transform: translateY(0);
+    opacity: 1;
+  }
 }
 
 /* ==========================================================================
-   MOBILE HEADER — design baru dengan search + avatar
+   MOBILE HEADER
    ========================================================================== */
 .mobile-header {
   display: none;
   align-items: center;
   justify-content: space-between;
-  padding: 10px 16px;
+  padding: 12px 16px;
   background-color: #ffffff;
   border-bottom: 1px solid var(--border-subtle);
+  /* Fixed agar tetap di atas saat scroll */
   position: fixed;
   top: 0;
   left: 0;
   right: 0;
+  /* Kunci: width 100vw + max 100vw — tidak bisa overflow viewport */
   width: 100vw;
   max-width: 100vw;
   box-sizing: border-box;
   z-index: 60;
-  min-height: 52px;
-  box-shadow: 0 1px 6px rgba(0,0,0,0.05);
+  min-height: 56px;
+  box-shadow: 0 1px 8px rgba(0, 0, 0, 0.04);
 }
 
-.mobile-header-logo {
-  display: flex;
-  align-items: center;
-  gap: 7px;
-}
-
-.mobile-header-logo .logo-mark {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-
-.mobile-header-logo .logo-text {
-  font-size: 16px;
-  font-weight: 700;
-  color: var(--text-main);
-  letter-spacing: -0.3px;
-}
-
-.mobile-header-actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-
-.mobile-header-icon-btn {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 36px;
-  height: 36px;
-  border-radius: 10px;
-  color: var(--text-secondary);
-  border: none;
-  background: none;
-  cursor: pointer;
-  transition: background var(--transition-fast);
-}
-
-.mobile-header-icon-btn:hover {
-  background-color: #f3f7f4;
-}
-
-.mobile-header-avatar {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  width: 32px;
-  height: 32px;
-  border-radius: 50%;
-  background-color: var(--brand-dark);
-  color: #ffffff;
-  font-size: 11px;
-  font-weight: 700;
-  letter-spacing: 0.3px;
-  border: none;
-  cursor: pointer;
-  transition: opacity var(--transition-fast);
-}
-
-.mobile-header-avatar:hover {
-  opacity: 0.85;
-}
-
-/* Breadcrumb — hanya di mobile */
-.mobile-breadcrumb {
-  display: none;
-  align-items: center;
-  gap: 5px;
-  font-size: 11.5px;
-  color: var(--text-dimmed);
-  margin-bottom: 10px;
-  flex-wrap: wrap;
-}
-
-.mobile-breadcrumb .breadcrumb-sep {
-  color: #c4cdd6;
-  font-size: 10px;
-}
-
-.mobile-breadcrumb .breadcrumb-current {
-  color: var(--text-secondary);
-  font-weight: 500;
-}
-
-/* Full-width Catat Transaksi button — khusus mobile dashboard */
-.btn-catat-mobile {
-  display: none; /* ditampilkan lewat media query */
-  width: 100%;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 13px 20px;
-  background-color: var(--brand-dark);
-  color: #ffffff;
-  font-size: 14px;
-  font-weight: 600;
-  border-radius: 10px;
-  border: none;
-  cursor: pointer;
-  margin-top: 14px;
-  transition: background var(--transition-fast), transform var(--transition-fast);
-  box-shadow: 0 2px 10px rgba(19, 78, 63, 0.25);
-}
-
-.btn-catat-mobile:active {
-  transform: scale(0.98);
-  background-color: var(--brand-dark-hover);
-}
-
-.menu-toggle-btn, .icon-btn-ghost {
+.menu-toggle-btn,
+.icon-btn-ghost {
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2379,16 +2311,16 @@ input, select {
   min-height: 40px;
 }
 
-.menu-toggle-btn:hover, .icon-btn-ghost:hover {
+.menu-toggle-btn:hover,
+.icon-btn-ghost:hover {
   background-color: #f3f7f4;
 }
-
 
 .sidebar-backdrop {
   display: none;
   position: fixed;
   inset: 0;
-  background: rgba(0,0,0,0.4);
+  background: rgba(0, 0, 0, 0.4);
   z-index: 45;
   backdrop-filter: blur(2px);
 }
@@ -2397,7 +2329,8 @@ input, select {
    MOBILE BOTTOM NAVIGATION BAR
    ========================================================================== */
 .mobile-bottom-nav {
-  display: none;           /* ditampilkan di media query mobile */
+  display: none;
+  /* ditampilkan di media query mobile */
   position: fixed;
   bottom: 0;
   left: 0;
@@ -2425,8 +2358,10 @@ input, select {
   justify-content: center;
   gap: 3px;
   padding: 8px 4px 6px;
-  height: 56px;            /* tinggi konsisten */
-  width: 100%;             /* isi penuh kolom grid */
+  height: 56px;
+  /* tinggi konsisten */
+  width: 100%;
+  /* isi penuh kolom grid */
   color: var(--text-dimmed);
   background: none;
   border: none;
@@ -2468,54 +2403,54 @@ input, select {
   color: var(--brand-dark);
 }
 
-/* Tombol aksi tengah — lingkaran hijau sesuai design */
+/* Tombol aksi tengah — pill/capsule shape yang lebih premium */
 .mobile-nav-action {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  height: 60px;
+  height: 56px;
   width: 100%;
   background: none;
   border: none;
   cursor: pointer;
-  padding: 4px 4px 6px;
-  gap: 3px;
+  padding: 6px 4px;
+  gap: 0;
 }
 
 .mobile-nav-action-icon {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
-  background: var(--brand-dark);
-  border-radius: 50%;             /* lingkaran penuh */
+  gap: 5px;
+  /* Pill/capsule shape — lebih premium dari kotak */
+  height: 36px;
+  padding: 0 16px;
+  background: linear-gradient(135deg, #1a6b56 0%, var(--brand-dark) 100%);
+  border-radius: 18px;
+  /* fully rounded pill */
   color: #ffffff;
-  box-shadow: 0 3px 10px rgba(19, 78, 63, 0.35);
+  box-shadow: 0 3px 12px rgba(19, 78, 63, 0.4), 0 1px 3px rgba(19, 78, 63, 0.2);
   transition: transform var(--transition-fast), box-shadow var(--transition-fast);
-  flex-shrink: 0;
+  white-space: nowrap;
 }
 
 .mobile-nav-action-icon svg {
-  width: 20px;
-  height: 20px;
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
 }
 
-/* Label "Catat" di bawah lingkaran */
-.mobile-nav-action .mobile-nav-label {
-  font-size: 9.5px;
-  font-weight: 600;
-  color: var(--brand-dark);
-  letter-spacing: 0.1px;
-  line-height: 1;
+.mobile-nav-action-icon .nav-action-label {
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.2px;
 }
 
 .mobile-nav-action:active .mobile-nav-action-icon {
-  transform: scale(0.92);
-  box-shadow: 0 2px 6px rgba(19, 78, 63, 0.22);
+  transform: scale(0.93);
+  box-shadow: 0 2px 6px rgba(19, 78, 63, 0.25);
 }
-
 
 /* ==========================================================================
    TABLET RESPONSIVE (max 1080px)
@@ -2525,16 +2460,19 @@ input, select {
     grid-template-columns: repeat(2, 1fr);
     gap: 14px;
   }
+
   .wallet-cards-grid,
   .savings-cards-grid-3,
   .insights-grid-3 {
     grid-template-columns: repeat(2, 1fr);
     gap: 14px;
   }
+
   .dashboard-split-grid {
     grid-template-columns: 1fr;
     gap: 14px;
   }
+
   .main-content {
     padding: 20px 24px 40px;
   }
@@ -2544,6 +2482,7 @@ input, select {
    MOBILE RESPONSIVE (max 820px)
    ========================================================================== */
 @media (max-width: 820px) {
+
   /* Layout — overflow visible agar fixed children (header & bottom nav) tidak ter-clip */
   .app-container {
     flex-direction: column;
@@ -2571,10 +2510,12 @@ input, select {
     box-shadow: none;
     z-index: 50;
   }
+
   .sidebar.open {
     transform: translateX(300px);
-    box-shadow: 0 0 40px rgba(0,0,0,0.18);
+    box-shadow: 0 0 40px rgba(0, 0, 0, 0.18);
   }
+
   .sidebar-backdrop.open {
     display: block;
   }
@@ -2584,25 +2525,9 @@ input, select {
     display: none;
   }
 
-  /* Main content — padding-top untuk fixed header (52px) + breathing room */
+  /* Main content — padding-top untuk fixed header (56px) + breathing room */
   .main-content {
-    padding: calc(52px + 20px) 16px calc(64px + env(safe-area-inset-bottom, 0px) + 8px);
-  }
-
-  /* Tampilkan breadcrumb di mobile */
-  .mobile-breadcrumb {
-    display: flex;
-  }
-
-  /* Tampilkan full-width catat button di mobile */
-  .btn-catat-mobile {
-    display: flex;
-  }
-
-  /* Sembunyikan tombol add tx desktop dan mobile inline */
-  .btn-add-tx-desktop,
-  .btn-add-tx-mobile {
-    display: none !important;
+    padding: calc(56px + 24px) 16px calc(56px + env(safe-area-inset-bottom, 0px) + 16px);
   }
 
   /* Page header — title group tetap block, actions jadi row */
@@ -2612,10 +2537,12 @@ input, select {
     gap: 10px;
     margin-bottom: 14px;
   }
+
   .page-title {
     font-size: 20px;
     line-height: 1.2;
   }
+
   .page-subtitle {
     font-size: 13px;
     margin-top: 3px;
@@ -2626,11 +2553,13 @@ input, select {
     flex-direction: row;
     align-items: center;
   }
+
   .btn-period-select {
     /* Period selector tetap ada, tapi sekarang bisa lebih compact */
     padding: 10px 12px;
     font-size: 13px;
   }
+
   /* Sembunyikan SEMUA tombol tambah transaksi di header — pakai bottom nav */
   .btn-add-tx-desktop,
   .btn-add-tx-mobile {
@@ -2643,19 +2572,24 @@ input, select {
     gap: 10px;
     margin-bottom: 14px;
   }
+
   /* Card pertama (total saldo) span 2 kolom karena paling penting */
   .metrics-grid .metric-card:first-child {
     grid-column: 1 / -1;
   }
+
   .metric-card {
     padding: 14px 14px 12px;
   }
+
   .metric-value-huge {
     font-size: 22px;
   }
+
   .metric-label {
     font-size: 11.5px;
   }
+
   .metric-delta {
     font-size: 12px;
   }
@@ -2666,9 +2600,11 @@ input, select {
     gap: 10px;
     margin-bottom: 10px;
   }
+
   .dashboard-card {
     padding: 14px;
   }
+
   .card-title {
     font-size: 14px;
   }
@@ -2690,6 +2626,7 @@ input, select {
   .tx-amount {
     font-size: 13.5px;
   }
+
   .tx-item {
     padding: 10px 0;
   }
@@ -2701,6 +2638,7 @@ input, select {
     left: 12px;
     align-items: center;
   }
+
   .toast {
     width: 100%;
     max-width: 380px;
@@ -2712,25 +2650,31 @@ input, select {
     align-items: flex-end;
     padding: 0;
   }
+
   .modal-box {
     width: 100%;
     max-width: 100%;
     border-radius: 20px 20px 0 0;
-    max-height: 92dvh; /* dvh lebih akurat untuk mobile browsers */
+    max-height: 92dvh;
+    /* dvh lebih akurat untuk mobile browsers */
     overflow-y: auto;
     margin: 0;
     padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
   }
+
   .modal-header {
     padding: 18px 18px 12px;
   }
+
   .modal-body {
     padding: 0 18px 14px;
   }
+
   .modal-footer {
     padding: 10px 18px 4px;
     flex-direction: row;
   }
+
   .btn-cancel,
   .btn-submit {
     flex: 1;
@@ -2745,10 +2689,12 @@ input, select {
     padding: 14px 18px;
     max-height: 50dvh;
   }
+
   .budget-edit-item {
     flex-wrap: wrap;
     gap: 8px;
   }
+
   .budget-edit-input {
     width: 100%;
   }
@@ -2778,35 +2724,44 @@ input, select {
   .main-content {
     padding: calc(56px + 20px) 12px calc(56px + env(safe-area-inset-bottom, 0px) + 12px);
   }
+
   .page-title {
     font-size: 18px;
   }
+
   .metric-value-huge {
     font-size: 19px;
   }
+
   .metric-card {
     padding: 12px 12px 10px;
   }
+
   .mobile-nav-label {
     font-size: 8.5px;
   }
+
   .mobile-nav-icon svg {
     width: 18px;
     height: 18px;
   }
+
   .mobile-nav-item,
   .mobile-nav-action {
     height: 50px;
   }
+
   .mobile-nav-action-icon {
     width: 36px;
     height: 36px;
     border-radius: 10px;
   }
+
   .mobile-nav-action-icon svg {
     width: 18px;
     height: 18px;
   }
+
   .btn-period-select {
     font-size: 12px;
     padding: 9px 10px;

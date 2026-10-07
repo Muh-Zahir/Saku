@@ -31,16 +31,18 @@ export default function Header({ currentPeriod, onSelectPeriod, onOpenAddTransac
         <p className="page-subtitle">Halo, Aditya. Ini ringkasan perjalanan keuanganmu bulan ini.</p>
       </div>
 
-      {/* Period Selector */}
+      {/* Desktop: period selector + tombol tambah dalam satu row */}
+      {/* Mobile: period selector + tombol ikon bulat dalam satu row inline */}
       <div className="page-actions">
+        {/* Period Selector */}
         <div className="dropdown-wrapper" ref={dropdownRef} style={{ position: 'relative' }}>
           <button
             className="btn-period-select"
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
           >
-            <Calendar size={15} strokeWidth={2} />
+            <Calendar size={16} strokeWidth={2} />
             <span>{currentPeriod}</span>
-            <ChevronDown size={13} strokeWidth={2.5} />
+            <ChevronDown size={14} strokeWidth={2.5} />
           </button>
 
           {isDropdownOpen && (
@@ -66,9 +68,14 @@ export default function Header({ currentPeriod, onSelectPeriod, onOpenAddTransac
           <Plus size={16} strokeWidth={2.5} />
           <span>Tambah transaksi</span>
         </button>
+
+        {/* Mobile inline icon — disembunyikan via CSS (pakai bottom nav) */}
+        <button className="btn-add-tx-mobile" onClick={onOpenAddTransaction} aria-label="Tambah transaksi">
+          <Plus size={20} strokeWidth={2.5} />
+        </button>
       </div>
 
-      {/* Mobile CTA — full width button sesuai design */}
+      {/* Mobile full-width CTA — hanya tampil di mobile sesuai design */}
       <button className="btn-catat-mobile" onClick={onOpenAddTransaction}>
         <Plus size={18} strokeWidth={2.5} />
         <span>Catat transaksi</span>
@@ -76,3 +83,4 @@ export default function Header({ currentPeriod, onSelectPeriod, onOpenAddTransac
     </div>
   );
 }
+

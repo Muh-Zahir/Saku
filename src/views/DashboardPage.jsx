@@ -21,7 +21,7 @@ export default function DashboardPage({
 
   return (
     <>
-      {/* Breadcrumb — hanya tampil di mobile */}
+      {/* Breadcrumb — hanya tampil di mobile via CSS */}
       <nav className="mobile-breadcrumb" aria-label="Breadcrumb">
         <span>Beranda</span>
         <span className="breadcrumb-sep">/</span>
@@ -41,26 +41,26 @@ export default function DashboardPage({
       {/* 3 Metric Cards */}
       <MetricCards metrics={data.metrics} />
 
-      {/* Arus Kas */}
-      <CashflowChart
-        cashflowData={data.cashflow}
-        netCashflow={netCashflow}
-      />
+      {/* Desktop: 2-column grid | Mobile: single column via CSS */}
+      <section className="dashboard-split-grid">
+        <CashflowChart
+          cashflowData={data.cashflow}
+          netCashflow={netCashflow}
+        />
+        <BudgetCard
+          budgets={data.budgets}
+          onOpenManageBudget={onOpenManageBudget}
+        />
+      </section>
 
-      {/* Anggaran */}
-      <BudgetCard
-        budgets={data.budgets}
-        onOpenManageBudget={onOpenManageBudget}
-      />
-
-      {/* Transaksi Terbaru */}
-      <TransactionsCard transactions={data.transactions} />
-
-      {/* Target Tabungan */}
-      <SavingsCard
-        savings={data.savings}
-        onOpenAddGoal={onOpenAddGoal}
-      />
+      {/* Desktop: 2-column grid | Mobile: single column via CSS */}
+      <section className="dashboard-split-grid bottom-grid">
+        <TransactionsCard transactions={data.transactions} />
+        <SavingsCard
+          savings={data.savings}
+          onOpenAddGoal={onOpenAddGoal}
+        />
+      </section>
     </>
   );
 }
