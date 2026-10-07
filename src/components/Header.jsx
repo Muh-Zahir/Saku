@@ -31,10 +31,12 @@ export default function Header({ currentPeriod, onSelectPeriod, onOpenAddTransac
         <p className="page-subtitle">Halo, Aditya. Ini ringkasan perjalanan keuanganmu bulan ini.</p>
       </div>
 
+      {/* Desktop: period selector + tombol tambah dalam satu row */}
+      {/* Mobile: period selector + tombol ikon bulat dalam satu row inline */}
       <div className="page-actions">
         {/* Period Selector */}
-        <div className="dropdown-wrapper" ref={dropdownRef}>
-          <button 
+        <div className="dropdown-wrapper" ref={dropdownRef} style={{ position: 'relative' }}>
+          <button
             className="btn-period-select"
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
           >
@@ -61,10 +63,15 @@ export default function Header({ currentPeriod, onSelectPeriod, onOpenAddTransac
           )}
         </div>
 
-        {/* Primary CTA */}
-        <button className="btn-primary-action" onClick={onOpenAddTransaction}>
+        {/* Desktop CTA — teks lengkap */}
+        <button className="btn-primary-action btn-add-tx-desktop" onClick={onOpenAddTransaction}>
           <Plus size={16} strokeWidth={2.5} />
           <span>Tambah transaksi</span>
+        </button>
+
+        {/* Mobile CTA — ikon bulat saja, hemat ruang */}
+        <button className="btn-add-tx-mobile" onClick={onOpenAddTransaction} aria-label="Tambah transaksi">
+          <Plus size={20} strokeWidth={2.5} />
         </button>
       </div>
     </div>

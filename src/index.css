@@ -555,6 +555,28 @@ input, select {
   transform: translateY(-1px);
 }
 
+/* Mobile circular add button — hidden on desktop, shown on mobile */
+.btn-add-tx-mobile {
+  display: none; /* shown via media query */
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  min-width: 40px;
+  background-color: var(--brand-dark);
+  color: #ffffff;
+  border-radius: 12px;
+  box-shadow: 0 2px 8px rgba(19, 78, 63, 0.25);
+  transition: all var(--transition-fast);
+  flex-shrink: 0;
+}
+
+.btn-add-tx-mobile:hover,
+.btn-add-tx-mobile:active {
+  background-color: var(--brand-dark-hover);
+  transform: scale(0.95);
+}
+
 .btn-outline-sm {
   display: inline-flex;
   align-items: center;
@@ -2262,12 +2284,16 @@ input, select {
   background: #ffffff;
   border-top: 1px solid var(--border-subtle);
   z-index: 50;
+  /* Safe area for iPhones with home indicator */
   padding-bottom: env(safe-area-inset-bottom, 0px);
-  box-shadow: 0 -4px 20px rgba(0, 0, 0, 0.06);
+  box-shadow: 0 -2px 16px rgba(0, 0, 0, 0.06);
+  /* Fit exactly to screen width */
+  overflow: hidden;
 }
 
 .mobile-bottom-nav > * {
   flex: 1;
+  min-width: 0; /* prevent overflow */
 }
 
 .mobile-nav-item {
@@ -2275,14 +2301,17 @@ input, select {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 3px;
-  padding: 10px 4px;
+  gap: 2px;
+  padding: 8px 2px 6px;
   color: var(--text-dimmed);
   background: none;
   border: none;
   cursor: pointer;
   transition: color var(--transition-fast);
-  min-height: 56px;
+  /* Fixed height, no min-height to avoid elongation */
+  height: 52px;
+  width: 100%;
+  overflow: hidden;
 }
 
 .mobile-nav-item.active {
@@ -2293,11 +2322,12 @@ input, select {
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 }
 
 .mobile-nav-icon svg {
-  width: 22px;
-  height: 22px;
+  width: 20px;
+  height: 20px;
 }
 
 .mobile-nav-item.active .mobile-nav-icon svg {
@@ -2305,9 +2335,14 @@ input, select {
 }
 
 .mobile-nav-label {
-  font-size: 10px;
+  font-size: 9.5px;
   font-weight: 500;
   letter-spacing: 0.1px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 100%;
+  line-height: 1;
 }
 
 .mobile-nav-item.active .mobile-nav-label {
@@ -2315,50 +2350,40 @@ input, select {
   color: var(--brand-dark);
 }
 
-/* Active indicator dot */
-.mobile-nav-item.active .mobile-nav-icon::after {
-  content: '';
-  position: absolute;
-  bottom: -2px;
-  width: 4px;
-  height: 4px;
-  border-radius: 50%;
-  background: var(--brand-dark);
-}
-
 .mobile-nav-action {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 8px 4px;
+  padding: 6px 2px;
   background: none;
   border: none;
   cursor: pointer;
-  min-height: 56px;
+  height: 52px;
+  width: 100%;
 }
 
 .mobile-nav-action-icon {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 46px;
-  height: 46px;
+  width: 40px;
+  height: 40px;
   background: var(--brand-dark);
-  border-radius: 14px;
+  border-radius: 12px;
   color: #ffffff;
-  box-shadow: 0 4px 12px rgba(19, 78, 63, 0.35);
+  box-shadow: 0 3px 10px rgba(19, 78, 63, 0.35);
   transition: transform var(--transition-fast), box-shadow var(--transition-fast);
 }
 
 .mobile-nav-action-icon svg {
-  width: 22px;
-  height: 22px;
+  width: 20px;
+  height: 20px;
 }
 
 .mobile-nav-action:active .mobile-nav-action-icon {
-  transform: scale(0.94);
-  box-shadow: 0 2px 8px rgba(19, 78, 63, 0.25);
+  transform: scale(0.92);
+  box-shadow: 0 2px 6px rgba(19, 78, 63, 0.22);
 }
 
 /* ==========================================================================
@@ -2427,53 +2452,81 @@ input, select {
     display: none;
   }
 
-  /* Main content */
+  /* Main content — extra bottom padding agar tidak tertutup bottom nav */
   .main-content {
-    padding: 16px 16px 80px; /* 80px bottom for the nav bar */
+    padding: 14px 14px calc(52px + env(safe-area-inset-bottom, 0px) + 12px);
   }
 
-  /* Page header */
+  /* Page header — title group tetap block, actions jadi row */
   .page-header {
     flex-direction: column;
     align-items: stretch;
-    gap: 12px;
-    margin-bottom: 16px;
+    gap: 10px;
+    margin-bottom: 14px;
   }
   .page-title {
-    font-size: 22px;
+    font-size: 20px;
+    line-height: 1.2;
   }
-  .page-actions {
-    flex-direction: column;
-    gap: 8px;
-  }
-  .btn-period-select,
-  .btn-primary-action {
-    justify-content: center;
-    width: 100%;
-    padding: 11px 16px;
+  .page-subtitle {
+    font-size: 13px;
+    margin-top: 3px;
   }
 
-  /* Metric cards - 1 column on mobile */
+  /* Actions row: period selector tumbuh, tombol ikon kecil di kanan */
+  .page-actions {
+    flex-direction: row;
+    align-items: center;
+    gap: 8px;
+  }
+  .btn-period-select {
+    flex: 1; /* ambil sisa ruang */
+    justify-content: flex-start;
+    padding: 10px 12px;
+    font-size: 13px;
+  }
+  /* Sembunyikan tombol desktop, tampilkan tombol ikon di mobile */
+  .btn-add-tx-desktop {
+    display: none !important;
+  }
+  .btn-add-tx-mobile {
+    display: flex !important;
+  }
+
+  /* Metric cards — 2 kolom agar tidak terlalu panjang scroll */
   .metrics-grid {
-    grid-template-columns: 1fr;
-    gap: 12px;
-    margin-bottom: 16px;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  /* Card pertama (total saldo) span 2 kolom karena paling penting */
+  .metrics-grid .metric-card:first-child {
+    grid-column: 1 / -1;
   }
   .metric-card {
-    padding: 18px 18px 16px;
+    padding: 14px 14px 12px;
   }
   .metric-value-huge {
-    font-size: 24px;
+    font-size: 22px;
+  }
+  .metric-label {
+    font-size: 11.5px;
+  }
+  .metric-delta {
+    font-size: 12px;
   }
 
   /* Dashboard grids */
   .dashboard-split-grid {
     grid-template-columns: 1fr;
-    gap: 12px;
-    margin-bottom: 12px;
+    gap: 10px;
+    margin-bottom: 10px;
   }
   .dashboard-card {
-    padding: 18px;
+    padding: 14px;
+  }
+  .card-title {
+    font-size: 14px;
   }
 
   /* Wallet & savings grids */
@@ -2481,30 +2534,33 @@ input, select {
   .savings-cards-grid-3,
   .insights-grid-3 {
     grid-template-columns: 1fr;
-    gap: 12px;
+    gap: 10px;
   }
 
   /* Chart height reduced on mobile */
   .chart-container {
-    height: 140px;
+    height: 130px;
   }
 
   /* Transactions list */
   .tx-amount {
-    font-size: 14px;
+    font-size: 13.5px;
+  }
+  .tx-item {
+    padding: 10px 0;
   }
 
   /* Toast — center bottom on mobile, above bottom nav */
   .toast-container {
-    bottom: 80px;
-    right: 16px;
-    left: 16px;
+    bottom: calc(52px + env(safe-area-inset-bottom, 0px) + 8px);
+    right: 12px;
+    left: 12px;
     align-items: center;
   }
   .toast {
     width: 100%;
     max-width: 380px;
-    font-size: 13.5px;
+    font-size: 13px;
   }
 
   /* Modals — slide up from bottom on mobile */
@@ -2516,25 +2572,25 @@ input, select {
     width: 100%;
     max-width: 100%;
     border-radius: 20px 20px 0 0;
-    max-height: 92vh;
+    max-height: 92dvh; /* dvh lebih akurat untuk mobile browsers */
     overflow-y: auto;
     margin: 0;
     padding-bottom: calc(16px + env(safe-area-inset-bottom, 0px));
   }
   .modal-header {
-    padding: 20px 20px 14px;
+    padding: 18px 18px 12px;
   }
   .modal-body {
-    padding: 0 20px 16px;
+    padding: 0 18px 14px;
   }
   .modal-footer {
-    padding: 12px 20px 4px;
+    padding: 10px 18px 4px;
     flex-direction: row;
   }
   .btn-cancel,
   .btn-submit {
     flex: 1;
-    padding: 12px 16px;
+    padding: 12px 14px;
     font-size: 14px;
     text-align: center;
     justify-content: center;
@@ -2542,8 +2598,8 @@ input, select {
 
   /* Budget modal body */
   .budget-modal-body {
-    padding: 16px 20px;
-    max-height: 50vh;
+    padding: 14px 18px;
+    max-height: 50dvh;
   }
   .budget-edit-item {
     flex-wrap: wrap;
@@ -2562,17 +2618,12 @@ input, select {
 
   /* Savings card */
   .savings-card {
-    padding: 16px;
+    padding: 14px;
   }
 
   /* Budget card */
   .budget-card {
-    padding: 16px;
-  }
-
-  /* Card title on mobile */
-  .card-title {
-    font-size: 15px;
+    padding: 14px;
   }
 }
 
@@ -2581,29 +2632,39 @@ input, select {
    ========================================================================== */
 @media (max-width: 390px) {
   .main-content {
-    padding: 12px 12px 80px;
+    padding: 12px 12px calc(52px + env(safe-area-inset-bottom, 0px) + 10px);
   }
   .page-title {
-    font-size: 20px;
+    font-size: 18px;
   }
   .metric-value-huge {
-    font-size: 21px;
+    font-size: 19px;
+  }
+  .metric-card {
+    padding: 12px 12px 10px;
   }
   .mobile-nav-label {
-    font-size: 9px;
+    font-size: 8.5px;
   }
   .mobile-nav-icon svg {
-    width: 20px;
-    height: 20px;
+    width: 18px;
+    height: 18px;
+  }
+  .mobile-nav-item,
+  .mobile-nav-action {
+    height: 50px;
   }
   .mobile-nav-action-icon {
-    width: 42px;
-    height: 42px;
-    border-radius: 12px;
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
   }
   .mobile-nav-action-icon svg {
-    width: 20px;
-    height: 20px;
+    width: 18px;
+    height: 18px;
+  }
+  .btn-period-select {
+    font-size: 12px;
+    padding: 9px 10px;
   }
 }
-
