@@ -1,6 +1,7 @@
 'use client';
 
 import React, { useState, useEffect } from 'react';
+import ReactDOM from 'react-dom';
 import Sidebar from './components/Sidebar';
 
 import Topbar from './components/Topbar';
@@ -151,8 +152,12 @@ export default function App() {
   // Toasts
   const [toasts, setToasts] = useState([]);
 
+  // Track client mount (untuk SSR-safe portal)
+  const [isMounted, setIsMounted] = useState(false);
+
   // Hydrate from localStorage on client mount
   useEffect(() => {
+    setIsMounted(true);
     try {
       const saved = localStorage.getItem('saku_react_state');
       if (saved) setData(JSON.parse(saved));
@@ -336,42 +341,6 @@ export default function App() {
         )}
       </main>
 
-      {/* Mobile Bottom Navigation Bar */}
-      <nav className="mobile-bottom-nav" aria-label="Navigasi bawah">
-        {[
-          { id: 'ringkasan', label: 'Ringkasan', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg> },
-          { id: 'transaksi', label: 'Transaksi', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M7 16V4m0 0L3 8m4-4l4 4"/><path d="M17 8v12m0 0l4-4m-4 4l-4-4"/></svg> },
-          { id: 'add-tx', label: 'Catat', isAction: true, icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg> },
-          { id: 'anggaran', label: 'Anggaran', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg> },
-          { id: 'target-tabungan', label: 'Tabungan', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> },
-        ].map((item) => {
-          if (item.isAction) {
-            return (
-              <button
-                key={item.id}
-                className="mobile-nav-action"
-                onClick={() => setIsAddTxOpen(true)}
-                aria-label="Catat transaksi"
-              >
-                <span className="mobile-nav-action-icon">{item.icon}</span>
-              </button>
-            );
-          }
-          const isActive = activeNav === item.id;
-          return (
-            <button
-              key={item.id}
-              className={`mobile-nav-item ${isActive ? 'active' : ''}`}
-              onClick={() => setActiveNav(item.id)}
-              aria-label={item.label}
-            >
-              <span className="mobile-nav-icon">{item.icon}</span>
-              <span className="mobile-nav-label">{item.label}</span>
-            </button>
-          );
-        })}
-      </nav>
-
       {/* Modals */}
       <AddTransactionModal
         isOpen={isAddTxOpen}
@@ -400,6 +369,64 @@ export default function App() {
 
       {/* Toast notifications */}
       <Toast toasts={toasts} />
+
+      {/* Mobile Bottom Navigation — Portal langsung ke body, position:fixed dijamin bekerja */}
+      {isMounted && ReactDOM.createPortal(
+        <nav
+          aria-label="Navigasi bawah"
+          className="mobile-bottom-nav"
+        >
+          {[
+            {
+              id: 'ringkasan', label: 'Ringkasan',
+              icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+            },
+            {
+              id: 'transaksi', label: 'Transaksi',
+              icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M7 16V4m0 0L3 8m4-4l4 4"/><path d="M17 8v12m0 0l4-4m-4 4l-4-4"/></svg>
+            },
+            {
+              id: 'add-tx', label: 'Catat', isAction: true,
+              icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><path d="M12 5v14M5 12h14"/></svg>
+            },
+            {
+              id: 'anggaran', label: 'Anggaran',
+              icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg>
+            },
+            {
+              id: 'target-tabungan', label: 'Tabungan',
+              icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg>
+            },
+          ].map((item) => {
+            if (item.isAction) {
+              return (
+                <button
+                  key={item.id}
+                  className="mobile-nav-action"
+                  onClick={() => setIsAddTxOpen(true)}
+                  aria-label="Catat transaksi"
+                >
+                  <span className="mobile-nav-action-icon">{item.icon}</span>
+                  <span className="mobile-nav-label" style={{ fontSize: '9px', marginTop: '2px', color: '#fff' }}>Catat</span>
+                </button>
+              );
+            }
+            const isActive = activeNav === item.id;
+            return (
+              <button
+                key={item.id}
+                className={`mobile-nav-item${isActive ? ' active' : ''}`}
+                onClick={() => setActiveNav(item.id)}
+                aria-label={item.label}
+              >
+                <span className="mobile-nav-icon">{item.icon}</span>
+                <span className="mobile-nav-label">{item.label}</span>
+              </button>
+            );
+          })}
+        </nav>,
+        document.body
+      )}
     </div>
   );
 }
