@@ -247,16 +247,9 @@ export default function App() {
     <div className="app-container">
       {/* Mobile Top Header */}
       <header className="mobile-header">
-        <button
-          className="menu-toggle-btn"
-          onClick={() => setIsMobileMenuOpen(true)}
-          aria-label="Buka navigasi"
-        >
-          <Menu size={22} />
-        </button>
         <div className="brand-logo" style={{ marginBottom: 0 }}>
           <div className="logo-mark">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none">
               <rect width="24" height="24" rx="7" fill="#134e3f"/>
               <path d="M9 14.5C9 11.5 11.5 9 14.5 9C14.5 12 12 14.5 9 14.5Z" fill="#34d399"/>
               <path d="M12 9C12 6.5 14 4.5 16.5 4.5C16.5 7 14.5 9 12 9Z" fill="#a7f3d0"/>
@@ -270,7 +263,7 @@ export default function App() {
         </button>
       </header>
 
-      {/* Sidebar Navigation */}
+      {/* Sidebar Navigation (desktop) */}
       <Sidebar
         isOpen={isMobileMenuOpen}
         onClose={() => setIsMobileMenuOpen(false)}
@@ -343,6 +336,42 @@ export default function App() {
         )}
       </main>
 
+      {/* Mobile Bottom Navigation Bar */}
+      <nav className="mobile-bottom-nav" aria-label="Navigasi bawah">
+        {[
+          { id: 'ringkasan', label: 'Ringkasan', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg> },
+          { id: 'transaksi', label: 'Transaksi', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M7 16V4m0 0L3 8m4-4l4 4"/><path d="M17 8v12m0 0l4-4m-4 4l-4-4"/></svg> },
+          { id: 'add-tx', label: 'Catat', isAction: true, icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 8v8M8 12h8"/></svg> },
+          { id: 'anggaran', label: 'Anggaran', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21.21 15.89A10 10 0 1 1 8 2.83"/><path d="M22 12A10 10 0 0 0 12 2v10z"/></svg> },
+          { id: 'target-tabungan', label: 'Tabungan', icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 6v6l4 2"/></svg> },
+        ].map((item) => {
+          if (item.isAction) {
+            return (
+              <button
+                key={item.id}
+                className="mobile-nav-action"
+                onClick={() => setIsAddTxOpen(true)}
+                aria-label="Catat transaksi"
+              >
+                <span className="mobile-nav-action-icon">{item.icon}</span>
+              </button>
+            );
+          }
+          const isActive = activeNav === item.id;
+          return (
+            <button
+              key={item.id}
+              className={`mobile-nav-item ${isActive ? 'active' : ''}`}
+              onClick={() => setActiveNav(item.id)}
+              aria-label={item.label}
+            >
+              <span className="mobile-nav-icon">{item.icon}</span>
+              <span className="mobile-nav-label">{item.label}</span>
+            </button>
+          );
+        })}
+      </nav>
+
       {/* Modals */}
       <AddTransactionModal
         isOpen={isAddTxOpen}
@@ -374,3 +403,4 @@ export default function App() {
     </div>
   );
 }
+
