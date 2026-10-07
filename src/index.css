@@ -2280,42 +2280,39 @@ input, select {
    MOBILE BOTTOM NAVIGATION BAR
    ========================================================================== */
 .mobile-bottom-nav {
-  display: none;
+  display: none;           /* ditampilkan di media query mobile */
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
+  width: 100%;             /* pastikan full width */
+  /* Grid 5 kolom — TIDAK pakai flex agar tidak ada yang terpotong */
+  grid-template-columns: repeat(5, 1fr);
+  align-items: stretch;
   background: #ffffff;
   border-top: 1px solid var(--border-subtle);
-  z-index: 50;
-  /* Safe area for iPhones with home indicator */
+  z-index: 60;
+  /* Ruang extra untuk iPhone dengan home indicator */
   padding-bottom: env(safe-area-inset-bottom, 0px);
-  box-shadow: 0 -2px 16px rgba(0, 0, 0, 0.06);
-  /* Fit exactly to screen width */
-  overflow: hidden;
+  box-shadow: 0 -2px 12px rgba(0, 0, 0, 0.07);
+  /* JANGAN overflow:hidden — itu yang memotong tab terakhir */
 }
 
-.mobile-bottom-nav > * {
-  flex: 1;
-  min-width: 0; /* prevent overflow */
-}
-
+/* Item biasa (Ringkasan, Transaksi, Anggaran, Tabungan) */
 .mobile-nav-item {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 2px;
-  padding: 8px 2px 6px;
+  gap: 3px;
+  padding: 8px 4px 6px;
+  height: 56px;            /* tinggi konsisten */
+  width: 100%;             /* isi penuh kolom grid */
   color: var(--text-dimmed);
   background: none;
   border: none;
   cursor: pointer;
   transition: color var(--transition-fast);
-  /* Fixed height, no min-height to avoid elongation */
-  height: 52px;
-  width: 100%;
-  overflow: hidden;
 }
 
 .mobile-nav-item.active {
@@ -2343,10 +2340,8 @@ input, select {
   font-weight: 500;
   letter-spacing: 0.1px;
   white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  max-width: 100%;
   line-height: 1;
+  /* JANGAN text-overflow:ellipsis agar teks tidak terpotong */
 }
 
 .mobile-nav-item.active .mobile-nav-label {
@@ -2354,27 +2349,28 @@ input, select {
   color: var(--brand-dark);
 }
 
+/* Tombol aksi tengah (⊕ Catat) */
 .mobile-nav-action {
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  padding: 6px 2px;
+  height: 56px;
+  width: 100%;
   background: none;
   border: none;
   cursor: pointer;
-  height: 52px;
-  width: 100%;
+  padding: 8px 4px;
 }
 
 .mobile-nav-action-icon {
   display: flex;
   align-items: center;
   justify-content: center;
-  width: 40px;
-  height: 40px;
+  width: 42px;
+  height: 42px;
   background: var(--brand-dark);
-  border-radius: 12px;
+  border-radius: 13px;
   color: #ffffff;
   box-shadow: 0 3px 10px rgba(19, 78, 63, 0.35);
   transition: transform var(--transition-fast), box-shadow var(--transition-fast);
@@ -2386,7 +2382,7 @@ input, select {
 }
 
 .mobile-nav-action:active .mobile-nav-action-icon {
-  transform: scale(0.92);
+  transform: scale(0.91);
   box-shadow: 0 2px 6px rgba(19, 78, 63, 0.22);
 }
 
@@ -2427,9 +2423,9 @@ input, select {
     display: flex;
   }
 
-  /* Show mobile bottom nav */
+  /* Show mobile bottom nav — gunakan grid agar semua 5 tab pas */
   .mobile-bottom-nav {
-    display: flex;
+    display: grid;
   }
 
   /* Sidebar becomes a drawer */
