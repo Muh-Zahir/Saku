@@ -11,12 +11,12 @@ import TransferModal from './components/TransferModal';
 import Toast from './components/Toast';
 
 // Pages
-import DashboardPage from './pages/DashboardPage';
-import TransactionsPage from './pages/TransactionsPage';
-import WalletsPage from './pages/WalletsPage';
-import BudgetPage from './pages/BudgetPage';
-import SavingsPage from './pages/SavingsPage';
-import ReportsPage from './pages/ReportsPage';
+import DashboardPage from './views/DashboardPage';
+import TransactionsPage from './views/TransactionsPage';
+import WalletsPage from './views/WalletsPage';
+import BudgetPage from './views/BudgetPage';
+import SavingsPage from './views/SavingsPage';
+import ReportsPage from './views/ReportsPage';
 
 import { Menu, Bell } from 'lucide-react';
 
