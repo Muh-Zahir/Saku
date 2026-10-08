@@ -35,7 +35,12 @@ export default function SavingsPage({
     switch (type) {
       case 'shield': return <ShieldCheck size={24} stroke="#059669" strokeWidth={2.2} />;
       case 'plane': return <Plane size={24} stroke="#059669" strokeWidth={2.2} />;
-      default: return <Laptop size={28} stroke="#059669" strokeWidth={2} />;
+      default: return (
+        <svg width="44" height="32" viewBox="0 0 44 32" fill="none">
+          <rect x="5.5" y="2" width="33" height="22" rx="2.5" stroke="#1f2937" strokeWidth="1.8" fill="#d1fae5" />
+          <path d="M1 26.5h42a1.5 1.5 0 011.5 1.5v0.5a1 1 0 01-1 1H0.5a1 1 0 01-1-1v-0.5A1.5 1.5 0 011 26.5z" fill="#1f2937" />
+        </svg>
+      );
     }
   };
 
@@ -137,7 +142,7 @@ export default function SavingsPage({
           return (
             <div key={goal.id} className="goal-detail-card">
               <div className="goal-card-top">
-                <div className="goal-illustration-box">
+                <div className={`goal-illustration-box ${goal.type === 'laptop' ? 'goal-illustration-laptop' : ''}`}>
                   {getGoalIcon(goal.type)}
                 </div>
                 <button 

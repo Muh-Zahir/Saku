@@ -7,6 +7,7 @@ import {
   PieChart,
   Target,
   ArrowUpRight,
+  ArrowRight,
   Wallet,
   Edit3,
   AlertCircle,
@@ -195,65 +196,67 @@ export default function BudgetPage({
       {/* Split Grid: Left Details & Right Sidebars */}
       <section className="dashboard-split-grid bottom-grid">
         {/* Left Column: Anggaran Per Kategori */}
-        <div className="dashboard-card">
-          <div className="card-header">
-            <div>
-              <h2 className="card-title">Anggaran per kategori</h2>
-              <p className="card-subtitle">Pengeluaran 1–30 September 2026</p>
+        <div className="budget-left-column">
+          <div className="dashboard-card">
+            <div className="card-header">
+              <div>
+                <h2 className="card-title">Anggaran per kategori</h2>
+                <p className="card-subtitle">Pengeluaran 1–30 September 2026</p>
+              </div>
+              <button className="btn-outline-sm" onClick={onOpenManageBudget}>
+                <Edit3 size={13} strokeWidth={2} />
+                <span>Edit anggaran</span>
+              </button>
             </div>
-            <button className="btn-outline-sm" onClick={onOpenManageBudget}>
-              <Edit3 size={13} strokeWidth={2} />
-              <span>Edit anggaran</span>
-            </button>
-          </div>
 
-          <div className="detailed-budget-list">
-            {detailedBudgets.map((item) => {
-              const isLimit = item.status === 'reached_limit';
-              return (
-                <div key={item.id} className="detailed-budget-card">
-                  <div className="detail-budget-header">
-                    <div className="detail-budget-left">
-                      <div className="cat-icon-wrap">
-                        {getCategoryIcon(item.icon)}
+            <div className="detailed-budget-list">
+              {detailedBudgets.map((item) => {
+                const isLimit = item.status === 'reached_limit';
+                return (
+                  <div key={item.id} className="detailed-budget-card">
+                    <div className="detail-budget-header">
+                      <div className="detail-budget-left">
+                        <div className="cat-icon-wrap">
+                          {getCategoryIcon(item.icon)}
+                        </div>
+                        <span className="cat-title">{item.name}</span>
                       </div>
-                      <span className="cat-title">{item.name}</span>
+                      <div className="detail-budget-right">
+                        <span className={`status-pill ${isLimit ? 'pill-amber' : 'pill-green'}`}>
+                          {isLimit ? 'Batas tercapai' : 'Dalam anggaran'}
+                        </span>
+                        <button 
+                          className="btn-icon-ghost"
+                          onClick={onOpenManageBudget}
+                          aria-label="Edit"
+                        >
+                          <Edit3 size={14} stroke="#8c9e94" />
+                        </button>
+                      </div>
                     </div>
-                    <div className="detail-budget-right">
-                      <span className={`status-pill ${isLimit ? 'pill-amber' : 'pill-green'}`}>
-                        {isLimit ? 'Batas tercapai' : 'Dalam anggaran'}
+
+                    <div className="detail-budget-amounts">
+                      <span className="detail-spent">
+                        {formatSimpleIDR(item.spent)} / {formatSimpleIDR(item.limit)}
                       </span>
-                      <button 
-                        className="btn-icon-ghost"
-                        onClick={onOpenManageBudget}
-                        aria-label="Edit"
-                      >
-                        <Edit3 size={14} stroke="#8c9e94" />
-                      </button>
+                      <span className="detail-percent">{item.percent}%</span>
+                    </div>
+
+                    <div className="progress-track" style={{ height: '7px' }}>
+                      <div 
+                        className={`progress-bar ${isLimit ? 'bar-amber' : 'bar-green'}`}
+                        style={{ width: `${item.percent}%` }}
+                      />
+                    </div>
+
+                    <div className="detail-budget-footer">
+                      <span className="detail-remaining">{item.remainingText}</span>
+                      <span className="detail-note">{item.noteText}</span>
                     </div>
                   </div>
-
-                  <div className="detail-budget-amounts">
-                    <span className="detail-spent">
-                      {formatSimpleIDR(item.spent)} / {formatSimpleIDR(item.limit)}
-                    </span>
-                    <span className="detail-percent">{item.percent}%</span>
-                  </div>
-
-                  <div className="progress-track" style={{ height: '7px' }}>
-                    <div 
-                      className={`progress-bar ${isLimit ? 'bar-amber' : 'bar-green'}`}
-                      style={{ width: `${item.percent}%` }}
-                    />
-                  </div>
-
-                  <div className="detail-budget-footer">
-                    <span className="detail-remaining">{item.remainingText}</span>
-                    <span className="detail-note">{item.noteText}</span>
-                  </div>
-                </div>
-              );
-            })}
+                );
+              })}
+            </div>
           </div>
 
           <div className="budget-footnote">
@@ -288,7 +291,7 @@ export default function BudgetPage({
             </p>
             <button className="alert-link" onClick={onOpenManageBudget}>
               <span>Tinjau anggaran</span>
-              <ArrowUpRight size={14} strokeWidth={2.5} />
+              <ArrowRight size={14} strokeWidth={2.5} />
             </button>
           </div>
 

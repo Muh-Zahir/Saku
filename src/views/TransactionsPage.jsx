@@ -258,7 +258,7 @@ export default function TransactionsPage({
               <option value="Tunai">Tunai</option>
             </select>
 
-            <button className="btn-period-select" style={{ padding: '7px 12px', fontSize: '12.5px' }}>
+            <button className="tx-date-pill">
               <span>1–30 Sep 2026</span>
               <ChevronDown size={14} />
             </button>
