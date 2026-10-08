@@ -11,7 +11,6 @@ import {
   Lightbulb,
   Settings,
   HelpCircle,
-  ChevronsUpDown,
   ArrowUpRight
 } from 'lucide-react';
 
@@ -106,21 +105,6 @@ export default function Sidebar({ isOpen, onClose, activeNav, setActiveNav }) {
               <HelpCircle size={18} strokeWidth={1.8} />
               <span>Pusat bantuan</span>
             </a>
-          </div>
-
-          {/* User Profile Card */}
-          <div className="user-profile-card" role="button" tabIndex={0}>
-            <div className="user-avatar-wrapper">
-              <div className="user-avatar">AP</div>
-              <span className="online-indicator"></span>
-            </div>
-            <div className="user-info">
-              <div className="user-name">Aditya Pratama</div>
-              <div className="user-role">Akun pribadi</div>
-            </div>
-            <div className="user-switch-icon">
-              <ChevronsUpDown size={16} strokeWidth={2} />
-            </div>
           </div>
         </div>
       </aside>

@@ -267,9 +267,6 @@ export default function App() {
           <button className="icon-btn-ghost" onClick={() => addToast('Tidak ada notifikasi baru.')} aria-label="Notifikasi">
             <Bell size={20} />
           </button>
-          <button className="mobile-avatar-btn" onClick={() => setIsMobileMenuOpen(true)} aria-label="Profil Aditya Pratama">
-            AP
-          </button>
         </div>
       </header>
 
