@@ -51,13 +51,19 @@ export default function ReportsPage({ currentPeriod, addToast }) {
             <span>{currentPeriod}</span>
           </button>
           <button 
-            className="btn-primary-action" 
+            className="btn-primary-action btn-add-tx-desktop" 
             onClick={() => addToast('Mengunduh paket laporan bulanan (PDF & CSV)...')}
           >
             <Download size={16} strokeWidth={2.2} />
             <span>Ekspor laporan</span>
           </button>
         </div>
+
+        {/* Mobile full-width CTA */}
+        <button className="btn-catat-mobile mobile-only" onClick={() => addToast('Mengunduh paket laporan bulanan (PDF & CSV)...')}>
+          <Download size={18} strokeWidth={2.2} />
+          <span>Ekspor laporan</span>
+        </button>
       </div>
 
       {/* Top 3 Cards */}

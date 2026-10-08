@@ -41,7 +41,6 @@ export default function Header({ currentPeriod, onSelectPeriod, onOpenAddTransac
           >
             <Calendar size={16} strokeWidth={2} />
             <span>{currentPeriod}</span>
-            <ChevronDown size={14} strokeWidth={2.5} />
           </button>
 
           {isDropdownOpen && (
