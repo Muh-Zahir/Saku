@@ -339,22 +339,22 @@ export default function TransactionsPage({
         </div>
 
         {/* Table Transaksi */}
-        <div className="tx-table-container">
-          <table className="tx-table">
+        <div className="table-responsive">
+          <table className="transactions-table">
             <thead>
               <tr>
-                <th style={{ width: '38px', paddingLeft: '12px' }}>
+                <th scope="col" className="th-checkbox">
                   <input
                     type="checkbox"
                     checked={paginatedRows.length > 0 && checkedIds.length === paginatedRows.length}
                     onChange={handleToggleSelectAll}
                   />
                 </th>
-                <th>Transaksi</th>
-                <th>Kategori</th>
-                <th>Dompet</th>
-                <th style={{ textAlign: 'right' }}>Nominal</th>
-                <th style={{ width: '48px' }}></th>
+                <th scope="col" className="th-tx">TRANSAKSI</th>
+                <th scope="col" className="th-cat">KATEGORI</th>
+                <th scope="col" className="th-wallet">DOMPET</th>
+                <th scope="col" className="th-amount">JUMLAH</th>
+                <th scope="col" className="th-action"></th>
               </tr>
             </thead>
             <tbody>
@@ -368,12 +368,12 @@ export default function TransactionsPage({
                 paginatedRows.map((tx) => {
                   const isIncome = tx.type === 'income';
                   const formattedAmount = `${isIncome ? '+' : '-'}${formatSimpleIDR(Math.abs(tx.amount))}`;
-                  const amountClass = isIncome ? 'tx-amount-income' : 'tx-amount-expense';
+                  const amountClass = isIncome ? 'tx-income' : 'tx-expense';
                   const isChecked = checkedIds.includes(tx.id);
 
                   return (
                     <tr key={tx.id} style={{ backgroundColor: isChecked ? '#f3f7f4' : undefined }}>
-                      <td style={{ paddingLeft: '12px' }}>
+                      <td style={{ paddingLeft: '14px' }}>
                         <input
                           type="checkbox"
                           checked={isChecked}
@@ -394,10 +394,10 @@ export default function TransactionsPage({
                       <td><span className="tx-cat-text">{tx.category}</span></td>
                       <td><span className="tx-wallet-text">{tx.wallet}</span></td>
                       <td className={`tx-amount-col ${amountClass}`}>{formattedAmount}</td>
-                      <td>
+                      <td className="tx-action-cell">
                         {onDeleteTransaction ? (
                           <button 
-                            className="btn-icon-ghost" 
+                            className="btn-icon-ghost tx-trash-btn" 
                             title="Hapus transaksi"
                             onClick={() => {
                               if (confirm(`Hapus transaksi "${tx.title}"?`)) {
@@ -405,7 +405,7 @@ export default function TransactionsPage({
                               }
                             }}
                           >
-                            <Trash2 size={15} stroke="#ef4444" />
+                            <Trash2 size={15} stroke="#8c9e94" />
                           </button>
                         ) : null}
                       </td>

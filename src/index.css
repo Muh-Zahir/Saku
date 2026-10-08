@@ -1849,8 +1849,13 @@ select {
   border-bottom: 1px solid var(--border-subtle);
 }
 
+.th-checkbox {
+  width: 42px;
+  padding-left: 14px !important;
+}
+
 .th-tx {
-  width: 44%;
+  width: 40%;
 }
 
 .th-cat {
@@ -1864,6 +1869,30 @@ select {
 .th-amount {
   width: 20%;
   text-align: right;
+}
+
+.th-action {
+  width: 46px;
+  text-align: center !important;
+}
+
+.tx-action-cell {
+  text-align: center;
+  width: 46px;
+}
+
+.tx-trash-btn {
+  opacity: 0.6;
+  transition: all var(--transition-fast);
+}
+
+.tx-trash-btn:hover {
+  opacity: 1;
+  background-color: #fee2e2;
+}
+
+.tx-trash-btn:hover svg {
+  stroke: #ef4444;
 }
 
 .transactions-table td {
