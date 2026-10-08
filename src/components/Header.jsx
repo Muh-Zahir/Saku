@@ -39,8 +39,11 @@ export default function Header({ currentPeriod, onSelectPeriod, onOpenAddTransac
             className="btn-period-select"
             onClick={() => setIsDropdownOpen(!isDropdownOpen)}
           >
-            <Calendar size={16} strokeWidth={2} />
-            <span>{currentPeriod}</span>
+            <span className="btn-period-left">
+              <Calendar size={16} strokeWidth={2} />
+              <span>{currentPeriod}</span>
+            </span>
+            <ChevronDown size={16} strokeWidth={2} className="btn-period-chevron" />
           </button>
 
           {isDropdownOpen && (

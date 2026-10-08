@@ -503,6 +503,17 @@ select {
   white-space: nowrap;
 }
 
+/* Desktop: btn-period-left inline, chevron tersembunyi */
+.btn-period-left {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.btn-period-chevron {
+  display: none;
+}
+
 .btn-period-select:hover {
   background-color: #f9fafb;
   border-color: #d1d5db;
@@ -2757,10 +2768,16 @@ select {
     box-shadow: 0 1px 2px rgba(0, 0, 0, 0.04);
   }
 
+  /* Mobile: tampilkan btn-period-left & chevron */
   .btn-period-left {
     display: flex;
     align-items: center;
     gap: 10px;
+  }
+
+  .btn-period-chevron {
+    display: block;
+    color: #6b7280;
   }
 
   /* Sembunyikan tombol desktop di mobile */
