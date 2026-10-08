@@ -1792,8 +1792,8 @@ select {
 
 .progress-track {
   width: 100%;
-  height: 6px;
-  background-color: #ebf0ec;
+  height: 7px;
+  background-color: #c8e6d0;
   border-radius: var(--radius-full);
   overflow: hidden;
 }
@@ -1813,7 +1813,7 @@ select {
 }
 
 .bar-amber {
-  background-color: var(--brand-amber-bar);
+  background-color: #a16207;
 }
 
 .table-responsive {
@@ -3060,9 +3060,9 @@ select {
   }
 
   .progress-track {
-    height: 6px;
+    height: 7px;
     border-radius: 3px;
-    background-color: #ebf0ec;
+    background-color: #c8e6d0;
     overflow: hidden;
   }
 

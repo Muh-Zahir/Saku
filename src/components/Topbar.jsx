@@ -13,10 +13,6 @@ export default function Topbar({ activeNavLabel = 'Ringkasan', lastSync = 'Diper
       </div>
 
       <div className="topbar-right">
-        <div className="sync-status">
-          <span className="pulse-dot"></span>
-          <span className="sync-text">{lastSync}</span>
-        </div>
         <button 
           className="notif-btn" 
           aria-label="Notifikasi"

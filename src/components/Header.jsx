@@ -73,12 +73,6 @@ export default function Header({ currentPeriod, onSelectPeriod, onOpenAddTransac
         <Plus size={18} strokeWidth={2.5} />
         <span>Tambah transaksi</span>
       </button>
-
-      {/* Mobile last updated info — hanya tampil di mobile */}
-      <div className="mobile-last-sync mobile-only">
-        <span className="sync-bullet">•</span>
-        <span>{lastSync}</span>
-      </div>
     </div>
   );
 }
