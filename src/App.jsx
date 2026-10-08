@@ -1,14 +1,14 @@
 'use client';
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import ReactDOM from 'react-dom';
 import Sidebar from './components/Sidebar';
-
 import Topbar from './components/Topbar';
 import AddTransactionModal from './components/AddTransactionModal';
 import ManageBudgetModal from './components/ManageBudgetModal';
 import AddGoalModal from './components/AddGoalModal';
 import TransferModal from './components/TransferModal';
+import AddWalletModal from './components/AddWalletModal';
 import Toast from './components/Toast';
 
 // Pages
@@ -23,8 +23,6 @@ import { Menu, Bell } from 'lucide-react';
 
 const INITIAL_DATA = {
   profile: {
-    name: 'Aditya Pratama',
-    role: 'Akun pribadi',
     period: 'September 2026',
     lastSync: 'Diperbarui 30 Sep 2026, 20.45'
   },
@@ -49,6 +47,11 @@ const INITIAL_DATA = {
       { label: 'Sep 2026', income: 12500000, expense: 7350000 }
     ]
   },
+  wallets: [
+    { id: 'w-1', name: 'BCA', type: 'Rekening bank · •••• 4821', balance: 22000000, share: '88,5%', icon: 'bank' },
+    { id: 'w-2', name: 'GoPay', type: 'Dompet digital · •••• 7812', balance: 850000, share: '3,4%', icon: 'phone' },
+    { id: 'w-3', name: 'Tunai', type: 'Uang tunai · Dompet sehari-hari', balance: 2000000, share: '8,1%', icon: 'cash' }
+  ],
   budgets: [
     { id: 'b1', name: 'Makan & minum', spent: 2100000, limit: 2500000, color: 'green' },
     { id: 'b2', name: 'Tempat tinggal', spent: 3000000, limit: 3000000, color: 'amber' },
@@ -57,82 +60,16 @@ const INITIAL_DATA = {
     { id: 'b5', name: 'Lainnya', spent: 500000, limit: 800000, color: 'green' }
   ],
   transactions: [
-    {
-      id: 'tx-1',
-      title: 'Belanja mingguan',
-      date: '30 Sep 2026',
-      category: 'Makan & minum',
-      wallet: 'BCA',
-      amount: -350000,
-      type: 'expense',
-      icon: 'shopping-bag'
-    },
-    {
-      id: 'tx-2',
-      title: 'Isi bensin',
-      date: '29 Sep 2026',
-      category: 'Transportasi',
-      wallet: 'BCA',
-      amount: -150000,
-      type: 'expense',
-      icon: 'fuel'
-    },
-    {
-      id: 'tx-3',
-      title: 'Kopi sore',
-      date: '28 Sep 2026',
-      category: 'Makan & minum',
-      wallet: 'GoPay',
-      amount: -45000,
-      type: 'expense',
-      icon: 'coffee'
-    },
-    {
-      id: 'tx-4',
-      title: 'Sepatu olahraga',
-      date: '27 Sep 2026',
-      category: 'Belanja',
-      wallet: 'BCA',
-      amount: -450000,
-      type: 'expense',
-      icon: 'shopping'
-    },
-    {
-      id: 'tx-5',
-      title: 'Gaji September',
-      date: '25 Sep 2026',
-      category: 'Gaji',
-      wallet: 'BCA',
-      amount: 12000000,
-      type: 'income',
-      icon: 'briefcase'
-    }
+    { id: 'tx-1', title: 'Belanja mingguan', date: '30 Sep 2026', category: 'Makan & minum', wallet: 'BCA', amount: -350000, type: 'expense', icon: 'shopping-bag' },
+    { id: 'tx-2', title: 'Isi bensin', date: '29 Sep 2026', category: 'Transportasi', wallet: 'BCA', amount: -150000, type: 'expense', icon: 'fuel' },
+    { id: 'tx-3', title: 'Kopi sore', date: '28 Sep 2026', category: 'Makan & minum', wallet: 'GoPay', amount: -45000, type: 'expense', icon: 'coffee' },
+    { id: 'tx-4', title: 'Sepatu olahraga', date: '27 Sep 2026', category: 'Belanja', wallet: 'BCA', amount: -450000, type: 'expense', icon: 'shopping' },
+    { id: 'tx-5', title: 'Gaji September', date: '25 Sep 2026', category: 'Gaji', wallet: 'BCA', amount: 12000000, type: 'income', icon: 'briefcase' }
   ],
   savings: [
-    {
-      id: 's1',
-      name: 'Dana darurat',
-      targetDate: 'Target Des 2026',
-      current: 15000000,
-      target: 20000000,
-      type: 'shield'
-    },
-    {
-      id: 's2',
-      name: 'Liburan ke Jepang',
-      targetDate: 'Target Jun 2027',
-      current: 5500000,
-      target: 10000000,
-      type: 'plane'
-    },
-    {
-      id: 's3',
-      name: 'Laptop baru',
-      targetDate: 'Target Mar 2027',
-      current: 4350000,
-      target: 12000000,
-      type: 'laptop'
-    }
+    { id: 's1', name: 'Dana darurat', targetDate: 'Target Des 2026', current: 15000000, target: 20000000, type: 'shield' },
+    { id: 's2', name: 'Liburan ke Jepang', targetDate: 'Target Jun 2027', current: 5500000, target: 10000000, type: 'plane' },
+    { id: 's3', name: 'Laptop baru', targetDate: 'Target Mar 2027', current: 4350000, target: 12000000, type: 'laptop' }
   ]
 };
 
@@ -148,6 +85,7 @@ export default function App() {
   const [isManageBudgetOpen, setIsManageBudgetOpen] = useState(false);
   const [isAddGoalOpen, setIsAddGoalOpen] = useState(false);
   const [isTransferOpen, setIsTransferOpen] = useState(false);
+  const [isAddWalletOpen, setIsAddWalletOpen] = useState(false);
 
   // Toasts
   const [toasts, setToasts] = useState([]);
@@ -155,7 +93,35 @@ export default function App() {
   // Track client mount (untuk SSR-safe portal)
   const [isMounted, setIsMounted] = useState(false);
 
-  // Hydrate from localStorage on client mount
+  const addToast = (message, type = 'success') => {
+    const id = Date.now();
+    setToasts((prev) => [...prev, { id, message, type }]);
+    setTimeout(() => {
+      setToasts((prev) => prev.filter((t) => t.id !== id));
+    }, 3200);
+  };
+
+  // Sinkronisasi data dari backend API
+  const fetchServerData = useCallback(async (period = currentPeriod) => {
+    try {
+      const res = await fetch(`/api/data?period=${encodeURIComponent(period)}`);
+      if (res.ok) {
+        const serverData = await res.json();
+        setData((prev) => ({
+          ...prev,
+          ...serverData,
+          profile: {
+            ...prev.profile,
+            ...serverData.profile,
+          },
+        }));
+      }
+    } catch (e) {
+      console.warn('Gagal menghubungi backend API, menggunakan data lokal:', e);
+    }
+  }, [currentPeriod]);
+
+  // Hydrate from localStorage on client mount, lalu fetch dari database backend
   useEffect(() => {
     setIsMounted(true);
     try {
@@ -164,7 +130,8 @@ export default function App() {
     } catch (e) {
       console.warn('Failed reading localStorage', e);
     }
-  }, []);
+    fetchServerData();
+  }, [fetchServerData]);
 
   // Persist to localStorage on data changes
   useEffect(() => {
@@ -175,19 +142,12 @@ export default function App() {
     }
   }, [data]);
 
-  const addToast = (message, type = 'success') => {
-    const id = Date.now();
-    setToasts((prev) => [...prev, { id, message, type }]);
-    setTimeout(() => {
-      setToasts((prev) => prev.filter((t) => t.id !== id));
-    }, 3200);
-  };
+  // 1. TAMBAH TRANSAKSI
+  const handleAddTransaction = async (newTx) => {
+    const isExpense = newTx.amount < 0;
+    const absAmount = Math.abs(newTx.amount);
 
-  const handleAddTransaction = (newTx) => {
     setData((prev) => {
-      const isExpense = newTx.amount < 0;
-      const absAmount = Math.abs(newTx.amount);
-
       const nextMetrics = { ...prev.metrics };
       if (isExpense) {
         nextMetrics.totalSaldo -= absAmount;
@@ -199,42 +159,243 @@ export default function App() {
         nextMetrics.pertambahanSaldo += absAmount;
       }
 
-      const nextBudgets = prev.budgets.map((b) => {
+      const nextBudgets = (prev.budgets || []).map((b) => {
         if (isExpense && b.name === newTx.category) {
-          return { ...b, spent: b.spent + absAmount };
+          return { ...b, spent: Number(b.spent || 0) + absAmount };
         }
         return b;
+      });
+
+      const nextWallets = (prev.wallets || []).map((w) => {
+        if (w.name === newTx.wallet || w.id === newTx.wallet_id) {
+          const delta = isExpense ? -absAmount : absAmount;
+          return { ...w, balance: Math.max(0, Number(w.balance || 0) + delta) };
+        }
+        return w;
       });
 
       return {
         ...prev,
         metrics: nextMetrics,
         budgets: nextBudgets,
-        transactions: [newTx, ...prev.transactions]
+        wallets: nextWallets,
+        transactions: [newTx, ...(prev.transactions || [])],
       };
     });
 
     addToast('Transaksi berhasil ditambahkan!');
+
+    try {
+      await fetch('/api/transactions', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newTx),
+      });
+      fetchServerData();
+    } catch (err) {
+      console.error('Error saving transaction to server:', err);
+    }
   };
 
-  const handleSaveBudgets = (newBudgets) => {
+  // 2. HAPUS TRANSAKSI
+  const handleDeleteTransaction = async (txId) => {
+    setData((prev) => {
+      const targetTx = prev.transactions?.find((t) => t.id === txId);
+      if (!targetTx) return prev;
+
+      const isExpense = targetTx.amount < 0;
+      const absAmount = Math.abs(targetTx.amount);
+      const nextMetrics = { ...prev.metrics };
+
+      if (isExpense) {
+        nextMetrics.totalSaldo += absAmount;
+        nextMetrics.pengeluaran = Math.max(0, nextMetrics.pengeluaran - absAmount);
+        nextMetrics.pertambahanSaldo += absAmount;
+      } else {
+        nextMetrics.totalSaldo = Math.max(0, nextMetrics.totalSaldo - absAmount);
+        nextMetrics.pemasukan = Math.max(0, nextMetrics.pemasukan - absAmount);
+        nextMetrics.pertambahanSaldo -= absAmount;
+      }
+
+      const nextBudgets = (prev.budgets || []).map((b) => {
+        if (isExpense && b.name === targetTx.category) {
+          return { ...b, spent: Math.max(0, Number(b.spent || 0) - absAmount) };
+        }
+        return b;
+      });
+
+      const nextWallets = (prev.wallets || []).map((w) => {
+        if (w.name === targetTx.wallet || w.id === targetTx.wallet_id) {
+          const delta = isExpense ? absAmount : -absAmount;
+          return { ...w, balance: Math.max(0, Number(w.balance || 0) + delta) };
+        }
+        return w;
+      });
+
+      return {
+        ...prev,
+        metrics: nextMetrics,
+        budgets: nextBudgets,
+        wallets: nextWallets,
+        transactions: prev.transactions.filter((t) => t.id !== txId),
+      };
+    });
+
+    addToast('Transaksi berhasil dihapus.');
+
+    try {
+      await fetch(`/api/transactions?id=${txId}`, { method: 'DELETE' });
+      fetchServerData();
+    } catch (err) {
+      console.error('Error deleting transaction on server:', err);
+    }
+  };
+
+  // 3. SIMPAN ANGGARAN
+  const handleSaveBudgets = async (newBudgets) => {
     setData((prev) => ({
       ...prev,
-      budgets: newBudgets
+      budgets: newBudgets,
     }));
     addToast('Anggaran bulanan berhasil diperbarui!');
+
+    try {
+      await fetch('/api/budgets', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ budgets: newBudgets, period: currentPeriod }),
+      });
+      fetchServerData();
+    } catch (err) {
+      console.error('Error saving budgets to server:', err);
+    }
   };
 
-  const handleAddGoal = (newGoal) => {
+  // 4. TAMBAH TARGET TABUNGAN
+  const handleAddGoal = async (newGoal) => {
     setData((prev) => ({
       ...prev,
-      savings: [...prev.savings, newGoal]
+      savings: [...(prev.savings || []), newGoal],
     }));
     addToast('Target tabungan baru berhasil dibuat!');
+
+    try {
+      await fetch('/api/savings', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newGoal),
+      });
+      fetchServerData();
+    } catch (err) {
+      console.error('Error saving goal to server:', err);
+    }
   };
 
-  const handleTransfer = ({ fromWallet, toWallet, amount }) => {
-    addToast(`Berhasil mentransfer Rp${amount.toLocaleString('id-ID')} dari ${fromWallet} ke ${toWallet}!`);
+  // 5. DEPOSIT / SETORAN TABUNGAN
+  const handleDepositGoal = async (goalId, depositAmount) => {
+    setData((prev) => ({
+      ...prev,
+      savings: (prev.savings || []).map((g) =>
+        g.id === goalId ? { ...g, current: Number(g.current || 0) + depositAmount } : g
+      ),
+    }));
+    addToast(`Setoran Rp${depositAmount.toLocaleString('id-ID')} berhasil disimpan!`);
+
+    try {
+      await fetch('/api/savings', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: goalId, deposit_amount: depositAmount }),
+      });
+      fetchServerData();
+    } catch (err) {
+      console.error('Error depositing to goal on server:', err);
+    }
+  };
+
+  // 6. HAPUS TARGET TABUNGAN
+  const handleDeleteGoal = async (goalId) => {
+    setData((prev) => ({
+      ...prev,
+      savings: (prev.savings || []).filter((g) => g.id !== goalId),
+    }));
+    addToast('Target tabungan berhasil dihapus.');
+
+    try {
+      await fetch(`/api/savings?id=${goalId}`, { method: 'DELETE' });
+      fetchServerData();
+    } catch (err) {
+      console.error('Error deleting goal on server:', err);
+    }
+  };
+
+  // 7. TRANSFER ANTAR DOMPET
+  const handleTransfer = async ({ fromWallet, toWallet, amount }) => {
+    setData((prev) => {
+      const nextWallets = (prev.wallets || []).map((w) => {
+        if (w.name === fromWallet) {
+          return { ...w, balance: Math.max(0, Number(w.balance || 0) - amount) };
+        }
+        if (w.name === toWallet) {
+          return { ...w, balance: Number(w.balance || 0) + amount };
+        }
+        return w;
+      });
+      return { ...prev, wallets: nextWallets };
+    });
+
+    addToast(`Berhasil transfer Rp${amount.toLocaleString('id-ID')} dari ${fromWallet} ke ${toWallet}!`);
+
+    try {
+      await fetch('/api/wallets', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ fromWallet, toWallet, amount }),
+      });
+      fetchServerData();
+    } catch (err) {
+      console.error('Error transferring on server:', err);
+    }
+  };
+
+  // 8. TAMBAH DOMPET BARU
+  const handleAddWallet = async (newWallet) => {
+    setData((prev) => ({
+      ...prev,
+      wallets: [...(prev.wallets || []), newWallet],
+      metrics: {
+        ...prev.metrics,
+        totalSaldo: (prev.metrics?.totalSaldo || 0) + Number(newWallet.balance || 0),
+      },
+    }));
+    addToast(`Dompet "${newWallet.name}" berhasil dibuat!`);
+
+    try {
+      await fetch('/api/wallets', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(newWallet),
+      });
+      fetchServerData();
+    } catch (err) {
+      console.error('Error adding wallet on server:', err);
+    }
+  };
+
+  // 9. HAPUS DOMPET
+  const handleDeleteWallet = async (walletId) => {
+    setData((prev) => ({
+      ...prev,
+      wallets: (prev.wallets || []).filter((w) => w.id !== walletId),
+    }));
+    addToast('Dompet berhasil dihapus.');
+
+    try {
+      await fetch(`/api/wallets?id=${walletId}`, { method: 'DELETE' });
+      fetchServerData();
+    } catch (err) {
+      console.error('Error deleting wallet on server:', err);
+    }
   };
 
   const getPageTitle = () => {
@@ -258,11 +419,11 @@ export default function App() {
               <rect width="24" height="24" rx="7" fill="#134e3f" />
               <path d="M9 14.5C9 11.5 11.5 9 14.5 9C14.5 12 12 14.5 9 14.5Z" fill="#34d399" />
               <path d="M12 9C12 6.5 14 4.5 16.5 4.5C16.5 7 14.5 9 12 9Z" fill="#a7f3d0" />
-              <path d="M8 13.5v2.5a1.5 1.5 0 001.5 1.5h4" stroke="#ffffff" strokeWidth="1.6" strokeLinecap="round" />
             </svg>
           </div>
-          <span className="logo-text">saku</span>
+          <span className="brand-name">Saku</span>
         </div>
+
         <div className="mobile-header-right">
           <button className="icon-btn-ghost" onClick={() => addToast('Tidak ada notifikasi baru.')} aria-label="Notifikasi">
             <Bell size={20} />
@@ -290,7 +451,10 @@ export default function App() {
           <DashboardPage
             data={data}
             currentPeriod={currentPeriod}
-            setCurrentPeriod={setCurrentPeriod}
+            setCurrentPeriod={(p) => {
+              setCurrentPeriod(p);
+              fetchServerData(p);
+            }}
             onOpenAddTx={() => setIsAddTxOpen(true)}
             onOpenManageBudget={() => setIsManageBudgetOpen(true)}
             onOpenAddGoal={() => setIsAddGoalOpen(true)}
@@ -300,6 +464,8 @@ export default function App() {
 
         {activeNav === 'transaksi' && (
           <TransactionsPage
+            transactions={data.transactions}
+            onDeleteTransaction={handleDeleteTransaction}
             currentPeriod={currentPeriod}
             onOpenAddTx={() => setIsAddTxOpen(true)}
             addToast={addToast}
@@ -308,10 +474,13 @@ export default function App() {
 
         {activeNav === 'dompet' && (
           <WalletsPage
+            wallets={data.wallets}
+            transactions={data.transactions}
             currentPeriod={currentPeriod}
             addToast={addToast}
             onOpenTransferModal={() => setIsTransferOpen(true)}
-            onOpenAddWalletModal={() => addToast('Form pendaftaran rekening/dompet baru')}
+            onOpenAddWalletModal={() => setIsAddWalletOpen(true)}
+            onDeleteWallet={handleDeleteWallet}
           />
         )}
 
@@ -331,7 +500,8 @@ export default function App() {
             currentPeriod={currentPeriod}
             savings={data.savings}
             onOpenAddGoal={() => setIsAddGoalOpen(true)}
-            onDeposit={() => setIsAddTxOpen(true)}
+            onDepositGoal={handleDepositGoal}
+            onDeleteGoal={handleDeleteGoal}
             onSwitchTab={setActiveNav}
             addToast={addToast}
           />
@@ -350,6 +520,8 @@ export default function App() {
         isOpen={isAddTxOpen}
         onClose={() => setIsAddTxOpen(false)}
         onAddTransaction={handleAddTransaction}
+        wallets={data.wallets}
+        budgets={data.budgets}
       />
 
       <ManageBudgetModal
@@ -369,12 +541,19 @@ export default function App() {
         isOpen={isTransferOpen}
         onClose={() => setIsTransferOpen(false)}
         onTransfer={handleTransfer}
+        wallets={data.wallets}
+      />
+
+      <AddWalletModal
+        isOpen={isAddWalletOpen}
+        onClose={() => setIsAddWalletOpen(false)}
+        onAddWallet={handleAddWallet}
       />
 
       {/* Toast notifications */}
       <Toast toasts={toasts} />
 
-      {/* Mobile Bottom Navigation — Portal langsung ke body, position:fixed dijamin bekerja */}
+      {/* Mobile Bottom Navigation */}
       {isMounted && ReactDOM.createPortal(
         <nav
           aria-label="Navigasi bawah"
@@ -469,4 +648,3 @@ export default function App() {
     </div>
   );
 }
-

@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React from 'react';
 import {
   Wallet,
   Calendar,
@@ -15,56 +15,56 @@ import {
   ArrowUpRight,
   ArrowDownLeft,
   ShieldCheck,
-  Repeat
+  Repeat,
+  Trash2
 } from 'lucide-react';
 import { formatSimpleIDR } from '../utils/formatters';
 
+const DEFAULT_WALLETS = [
+  { id: 'w-1', name: 'BCA', type: 'Rekening bank · •••• 4821', balance: 22000000, share: '88,5%', icon: 'bank' },
+  { id: 'w-2', name: 'GoPay', type: 'Dompet digital · •••• 7812', balance: 850000, share: '3,4%', icon: 'phone' },
+  { id: 'w-3', name: 'Tunai', type: 'Uang tunai · Dompet sehari-hari', balance: 2000000, share: '8,1%', icon: 'cash' },
+];
+
 export default function WalletsPage({
+  wallets = [],
+  transactions = [],
   currentPeriod,
   addToast,
   onOpenTransferModal,
-  onOpenAddWalletModal
+  onOpenAddWalletModal,
+  onDeleteWallet,
 }) {
-  const [wallets, setWallets] = useState([
-    {
-      id: 'w-1',
-      name: 'BCA',
-      type: 'Rekening bank · •••• 4821',
-      balance: 22000000,
-      share: '88,5%',
-      icon: 'bank'
-    },
-    {
-      id: 'w-2',
-      name: 'GoPay',
-      type: 'Dompet digital · •••• 7812',
-      balance: 850000,
-      share: '3,4%',
-      icon: 'phone'
-    },
-    {
-      id: 'w-3',
-      name: 'Tunai',
-      type: 'Uang tunai · Dompet sehari-hari',
-      balance: 2000000,
-      share: '8,1%',
-      icon: 'cash'
-    }
-  ]);
+  const walletList = wallets && wallets.length > 0 ? wallets : DEFAULT_WALLETS;
 
-  const recentMovements = [
-    { id: 'm-1', title: 'Belanja mingguan', meta: '30 Sep 2026 · BCA', amount: -350000, type: 'out' },
-    { id: 'm-2', title: 'Isi bensin', meta: '29 Sep 2026 · BCA', amount: -150000, type: 'out' },
-    { id: 'm-3', title: 'Kopi sore', meta: '28 Sep 2026 · GoPay', amount: -45000, type: 'out' },
-    { id: 'm-4', title: 'Sepatu olahraga', meta: '27 Sep 2026 · BCA', amount: -450000, type: 'out' },
-    { id: 'm-5', title: 'Gaji September', meta: '25 Sep 2026 · BCA', amount: 12000000, type: 'in' }
-  ];
+  const totalSaldo = walletList.reduce((sum, w) => sum + (Number(w.balance) || 0), 0);
+
+  // Perhitungan pemasukan dan pengeluaran dari transaksi
+  const incomeTotal = transactions
+    ? transactions.filter((t) => t.type === 'income').reduce((s, t) => s + Math.abs(t.amount), 0)
+    : 12500000;
+  const expenseTotal = transactions
+    ? transactions.filter((t) => t.type === 'expense').reduce((s, t) => s + Math.abs(t.amount), 0)
+    : 7350000;
+  const netChange = incomeTotal - expenseTotal;
+
+  // Recent movements dari transaksi aktual
+  const recentMovements = (transactions && transactions.length > 0 ? transactions.slice(0, 5) : []).map((t) => ({
+    id: t.id,
+    title: t.title,
+    meta: `${t.date} · ${t.wallet || 'BCA'}`,
+    amount: Math.abs(t.amount),
+    type: t.type === 'income' ? 'in' : 'out',
+  }));
 
   const getWalletIcon = (icon) => {
     if (icon === 'bank') return <Landmark size={18} stroke="#059669" strokeWidth={2.2} />;
     if (icon === 'phone') return <Smartphone size={18} stroke="#059669" strokeWidth={2.2} />;
     return <Banknote size={18} stroke="#059669" strokeWidth={2.2} />;
   };
+
+  const firstWallet = walletList[0]?.name || 'BCA';
+  const secondWallet = walletList[1]?.name || (walletList[0]?.name || 'GoPay');
 
   return (
     <div className="page-wrapper">
@@ -96,7 +96,7 @@ export default function WalletsPage({
         </button>
       </div>
 
-      {/* Top 3 Cards */}
+      {/* Top 3 Cards Dinamis */}
       <section className="metrics-grid">
         <div className="metric-card metric-card-primary">
           <div className="metric-card-top">
@@ -105,20 +105,22 @@ export default function WalletsPage({
               <Wallet size={18} strokeWidth={2} />
             </div>
           </div>
-          <div className="metric-value-huge">Rp24.850.000</div>
+          <div className="metric-value-huge">{formatSimpleIDR(totalSaldo)}</div>
           <div className="metric-trend trend-positive-tint">
-            <span>Saldo gabungan dari 3 dompet aktif</span>
+            <span>Saldo gabungan dari {walletList.length} dompet aktif</span>
           </div>
         </div>
 
         <div className="metric-card">
           <div className="metric-card-top">
-            <span className="metric-label">Saldo awal September</span>
+            <span className="metric-label">Saldo awal {currentPeriod}</span>
             <div className="metric-icon-wrap-light">
               <Calendar size={17} stroke="#059669" strokeWidth={2.2} />
             </div>
           </div>
-          <div className="metric-value-huge text-dark">Rp19.700.000</div>
+          <div className="metric-value-huge text-dark">
+            {formatSimpleIDR(Math.max(0, totalSaldo - netChange))}
+          </div>
           <div className="metric-trend text-muted-sub">
             <span>Sebelum pemasukan &amp; pengeluaran bulan ini</span>
           </div>
@@ -131,9 +133,11 @@ export default function WalletsPage({
               <ArrowUpDown size={17} stroke="#059669" strokeWidth={2.2} />
             </div>
           </div>
-          <div className="metric-value-huge text-dark">+Rp5.150.000</div>
+          <div className="metric-value-huge text-dark">
+            {netChange >= 0 ? '+' : '-'}{formatSimpleIDR(Math.abs(netChange))}
+          </div>
           <div className="metric-trend text-muted-sub">
-            <span>Rp12.500.000 masuk · Rp7.350.000 keluar</span>
+            <span>{formatSimpleIDR(incomeTotal)} masuk · {formatSimpleIDR(expenseTotal)} keluar</span>
           </div>
         </div>
       </section>
@@ -141,44 +145,64 @@ export default function WalletsPage({
       {/* Dompet Saya Section */}
       <div className="section-header-row">
         <h2 className="section-title">Dompet saya</h2>
-        <span className="section-badge">3 dompet aktif</span>
+        <span className="section-badge">{walletList.length} dompet aktif</span>
       </div>
 
       <div className="wallet-cards-grid">
-        {wallets.map((wallet) => (
-          <div key={wallet.id} className="wallet-item-card">
-            <div className="wallet-card-header">
-              <div className="wallet-icon-box">
-                {getWalletIcon(wallet.icon)}
-              </div>
-              <div className="wallet-title-wrap">
-                <h3 className="wallet-name">{wallet.name}</h3>
-                <span className="wallet-type">{wallet.type}</span>
-              </div>
-              <button 
-                className="wallet-action-dots" 
-                onClick={() => addToast(`Pengaturan dompet ${wallet.name}`)}
-              >
-                <MoreHorizontal size={18} />
-              </button>
-            </div>
+        {walletList.map((wallet) => {
+          const shareStr = totalSaldo > 0
+            ? `${((wallet.balance / totalSaldo) * 100).toFixed(1).replace('.', ',')}%`
+            : '0%';
 
-            <div className="wallet-balance-box">
-              <span className="balance-label">Saldo saat ini</span>
-              <div className="balance-val">{formatSimpleIDR(wallet.balance)}</div>
-            </div>
+          return (
+            <div key={wallet.id} className="wallet-item-card">
+              <div className="wallet-card-header">
+                <div className="wallet-icon-box">
+                  {getWalletIcon(wallet.icon)}
+                </div>
+                <div className="wallet-title-wrap">
+                  <h3 className="wallet-name">{wallet.name}</h3>
+                  <span className="wallet-type">{wallet.type}</span>
+                </div>
+                {onDeleteWallet && walletList.length > 1 ? (
+                  <button 
+                    className="wallet-action-dots" 
+                    title={`Hapus dompet ${wallet.name}`}
+                    onClick={() => {
+                      if (confirm(`Yakin ingin menghapus dompet "${wallet.name}"?`)) {
+                        onDeleteWallet(wallet.id);
+                      }
+                    }}
+                  >
+                    <Trash2 size={16} stroke="#ef4444" />
+                  </button>
+                ) : (
+                  <button 
+                    className="wallet-action-dots" 
+                    onClick={() => addToast(`Dompet ${wallet.name} aktif`)}
+                  >
+                    <MoreHorizontal size={18} />
+                  </button>
+                )}
+              </div>
 
-            <div className="wallet-card-footer">
-              <span className="share-text">{wallet.share} dari total saldo</span>
-              <button 
-                className="btn-outline-sm" 
-                onClick={() => addToast(`Buka rincian ${wallet.name}`)}
-              >
-                Kelola
-              </button>
+              <div className="wallet-balance-box">
+                <span className="balance-label">Saldo saat ini</span>
+                <div className="balance-val">{formatSimpleIDR(wallet.balance)}</div>
+              </div>
+
+              <div className="wallet-card-footer">
+                <span className="share-text">{shareStr} dari total saldo</span>
+                <button 
+                  className="btn-outline-sm" 
+                  onClick={onOpenTransferModal}
+                >
+                  Transfer
+                </button>
+              </div>
             </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
 
       {/* Bottom Split Grid */}
@@ -190,36 +214,38 @@ export default function WalletsPage({
               <h2 className="card-title">Pergerakan saldo terbaru</h2>
               <p className="card-subtitle">Transaksi terakhir di seluruh dompet</p>
             </div>
-            <button className="card-action-link" onClick={() => addToast('Membuka riwayat lengkap pergerakan saldo')}>
-              <span>Lihat semua</span>
-              <ArrowRight size={14} strokeWidth={2.5} />
-            </button>
           </div>
 
           <div className="movement-list">
-            {recentMovements.map((m) => {
-              const isIncome = m.type === 'in';
-              return (
-                <div key={m.id} className="movement-row">
-                  <div className="movement-left">
-                    <div className="movement-icon-circle">
-                      {isIncome ? (
-                        <ArrowDownLeft size={16} stroke="#059669" strokeWidth={2.4} />
-                      ) : (
-                        <ArrowUpRight size={16} stroke="#4a5c52" strokeWidth={2.4} />
-                      )}
+            {recentMovements.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '24px', color: '#8c9e94' }}>
+                Belum ada pergerakan transaksi tercatat.
+              </div>
+            ) : (
+              recentMovements.map((m) => {
+                const isIncome = m.type === 'in';
+                return (
+                  <div key={m.id} className="movement-row">
+                    <div className="movement-left">
+                      <div className="movement-icon-circle">
+                        {isIncome ? (
+                          <ArrowDownLeft size={16} stroke="#059669" strokeWidth={2.4} />
+                        ) : (
+                          <ArrowUpRight size={16} stroke="#4a5c52" strokeWidth={2.4} />
+                        )}
+                      </div>
+                      <div className="movement-meta">
+                        <span className="movement-title">{m.title}</span>
+                        <span className="movement-sub">{m.meta}</span>
+                      </div>
                     </div>
-                    <div className="movement-meta">
-                      <span className="movement-title">{m.title}</span>
-                      <span className="movement-sub">{m.meta}</span>
+                    <div className={`movement-amount ${isIncome ? 'text-income-green' : 'text-dark-bold'}`}>
+                      {isIncome ? '+' : '-'}{formatSimpleIDR(m.amount)}
                     </div>
                   </div>
-                  <div className={`movement-amount ${isIncome ? 'text-income-green' : 'text-dark-bold'}`}>
-                    {isIncome ? '+' : '-'}{formatSimpleIDR(m.amount)}
-                  </div>
-                </div>
-              );
-            })}
+                );
+              })
+            )}
           </div>
         </div>
 
@@ -231,9 +257,9 @@ export default function WalletsPage({
             <p className="card-subtitle">Transfer antar dompet tanpa mengubah total saldo.</p>
 
             <div className="transfer-quick-box">
-              <div className="wallet-pill">BCA</div>
+              <div className="wallet-pill">{firstWallet}</div>
               <ArrowRight size={16} stroke="#8c9e94" strokeWidth={2.5} />
-              <div className="wallet-pill">GoPay</div>
+              <div className="wallet-pill">{secondWallet}</div>
             </div>
 
             <button className="btn-transfer-action" onClick={onOpenTransferModal}>
@@ -249,7 +275,7 @@ export default function WalletsPage({
               <h3 className="tip-title-clean">Satu saldo, tujuan yang terarah.</h3>
             </div>
             <p className="tip-desc-clean">
-              Rp24.850.000 telah dialokasikan ke target tabungan. Alokasi ini bagian dari saldo dompet, bukan saldo tambahan.
+              Saldo terhubung langsung ke database Saku. Setiap penambahan atau transfer langsung disinkronkan secara aman.
             </p>
           </div>
         </div>
@@ -257,4 +283,3 @@ export default function WalletsPage({
     </div>
   );
 }
-

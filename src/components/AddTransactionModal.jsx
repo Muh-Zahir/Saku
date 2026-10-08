@@ -1,17 +1,51 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Plus, X } from 'lucide-react';
 
-export default function AddTransactionModal({ isOpen, onClose, onAddTransaction }) {
+export default function AddTransactionModal({
+  isOpen,
+  onClose,
+  onAddTransaction,
+  wallets = [],
+  budgets = [],
+}) {
   const [type, setType] = useState('expense');
   const [amountStr, setAmountStr] = useState('');
   const [title, setTitle] = useState('');
   const [category, setCategory] = useState('Makan & minum');
   const [wallet, setWallet] = useState('BCA');
-  const [date, setDate] = useState(new Date().toISOString().split('T')[0]);
+  const [date, setDate] = useState('');
+
+  useEffect(() => {
+    if (isOpen) {
+      setDate(new Date().toISOString().split('T')[0]);
+      if (wallets && wallets.length > 0) {
+        setWallet(wallets[0].name);
+      }
+    }
+  }, [isOpen, wallets]);
 
   if (!isOpen) return null;
+
+  const defaultCategories = [
+    'Makan & minum',
+    'Transportasi',
+    'Belanja',
+    'Tempat tinggal',
+    'Gaji',
+    'Investasi',
+    'Lainnya',
+  ];
+
+  // Gabungkan kategori dari anggaran jika ada
+  const budgetCategories = budgets ? budgets.map((b) => b.name) : [];
+  const allCategories = Array.from(new Set([...budgetCategories, ...defaultCategories]));
+
+  const walletOptions =
+    wallets && wallets.length > 0
+      ? wallets.map((w) => w.name)
+      : ['BCA', 'GoPay', 'Tunai'];
 
   const handleAmountChange = (e) => {
     const raw = e.target.value.replace(/\D/g, '');
@@ -30,21 +64,38 @@ export default function AddTransactionModal({ isOpen, onClose, onAddTransaction 
       return;
     }
 
-    const formattedDate = date ? new Date(date).toLocaleDateString('id-ID', {
-      day: 'numeric',
-      month: 'short',
-      year: 'numeric'
-    }) : 'Hari ini';
+    const formattedDate = date
+      ? new Date(date).toLocaleDateString('id-ID', {
+          day: 'numeric',
+          month: 'short',
+          year: 'numeric',
+        })
+      : 'Hari ini';
+
+    const selectedWalletObj = wallets.find((w) => w.name === wallet);
 
     const newTx = {
       id: `tx-${Date.now()}`,
       title: title.trim(),
       amount: type === 'expense' ? -rawAmount : rawAmount,
       category,
+      wallet_id: selectedWalletObj?.id || null,
       wallet,
+      wallet_name: wallet,
       date: formattedDate,
       type,
-      icon: type === 'income' ? 'briefcase' : category === 'Transportasi' ? 'fuel' : category === 'Belanja' ? 'shopping' : 'shopping-bag'
+      icon:
+        type === 'income'
+          ? 'briefcase'
+          : category === 'Transportasi'
+          ? 'fuel'
+          : category === 'Belanja'
+          ? 'shopping-bag'
+          : category === 'Makan & minum'
+          ? 'coffee'
+          : category === 'Tempat tinggal'
+          ? 'home'
+          : 'shopping-bag',
     };
 
     onAddTransaction(newTx);
@@ -133,13 +184,11 @@ export default function AddTransactionModal({ isOpen, onClose, onAddTransaction 
                 value={category}
                 onChange={(e) => setCategory(e.target.value)}
               >
-                <option value="Makan & minum">Makan &amp; minum</option>
-                <option value="Transportasi">Transportasi</option>
-                <option value="Belanja">Belanja</option>
-                <option value="Tempat tinggal">Tempat tinggal</option>
-                <option value="Gaji">Gaji</option>
-                <option value="Investasi">Investasi</option>
-                <option value="Lainnya">Lainnya</option>
+                {allCategories.map((cat) => (
+                  <option key={cat} value={cat}>
+                    {cat}
+                  </option>
+                ))}
               </select>
             </div>
 
@@ -150,10 +199,11 @@ export default function AddTransactionModal({ isOpen, onClose, onAddTransaction 
                 value={wallet}
                 onChange={(e) => setWallet(e.target.value)}
               >
-                <option value="BCA">BCA</option>
-                <option value="GoPay">GoPay</option>
-                <option value="Mandiri">Mandiri</option>
-                <option value="Tunai">Tunai</option>
+                {walletOptions.map((w) => (
+                  <option key={w} value={w}>
+                    {w}
+                  </option>
+                ))}
               </select>
             </div>
           </div>
@@ -183,4 +233,3 @@ export default function AddTransactionModal({ isOpen, onClose, onAddTransaction 
     </div>
   );
 }
-

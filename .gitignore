@@ -35,3 +35,9 @@ Thumbs.db
 # Next.js
 next-env.d.ts
 *.tsbuildinfo
+
+# SQLite databases
+*.db
+*.db-journal
+*.db-wal
+*.db-shm

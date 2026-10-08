@@ -1,12 +1,23 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { Repeat, X } from 'lucide-react';
+import { formatSimpleIDR } from '../utils/formatters';
 
-export default function TransferModal({ isOpen, onClose, onTransfer }) {
-  const [fromWallet, setFromWallet] = useState('BCA');
-  const [toWallet, setToWallet] = useState('GoPay');
+export default function TransferModal({ isOpen, onClose, onTransfer, wallets = [] }) {
+  const [fromWallet, setFromWallet] = useState('');
+  const [toWallet, setToWallet] = useState('');
   const [amountStr, setAmountStr] = useState('');
+
+  useEffect(() => {
+    if (wallets.length >= 2) {
+      setFromWallet(wallets[0].name);
+      setToWallet(wallets[1].name);
+    } else if (wallets.length === 1) {
+      setFromWallet(wallets[0].name);
+      setToWallet(wallets[0].name);
+    }
+  }, [wallets]);
 
   if (!isOpen) return null;
 
@@ -44,7 +55,7 @@ export default function TransferModal({ isOpen, onClose, onTransfer }) {
               <p className="modal-desc">Pindahkan saldo antar rekening tanpa mengubah total saldo.</p>
             </div>
           </div>
-          <button className="modal-close-btn" onClick={onClose}>
+          <button className="modal-close-btn" onClick={onClose} aria-label="Tutup modal">
             <X size={18} />
           </button>
         </div>
@@ -58,9 +69,11 @@ export default function TransferModal({ isOpen, onClose, onTransfer }) {
                 value={fromWallet}
                 onChange={(e) => setFromWallet(e.target.value)}
               >
-                <option value="BCA">BCA (Rp22.000.000)</option>
-                <option value="GoPay">GoPay (Rp850.000)</option>
-                <option value="Tunai">Tunai (Rp2.000.000)</option>
+                {wallets.map((w) => (
+                  <option key={w.id} value={w.name}>
+                    {w.name} ({formatSimpleIDR(w.balance)})
+                  </option>
+                ))}
               </select>
             </div>
 
@@ -71,9 +84,11 @@ export default function TransferModal({ isOpen, onClose, onTransfer }) {
                 value={toWallet}
                 onChange={(e) => setToWallet(e.target.value)}
               >
-                <option value="GoPay">GoPay</option>
-                <option value="BCA">BCA</option>
-                <option value="Tunai">Tunai</option>
+                {wallets.map((w) => (
+                  <option key={w.id} value={w.name}>
+                    {w.name} ({formatSimpleIDR(w.balance)})
+                  </option>
+                ))}
               </select>
             </div>
           </div>
@@ -107,4 +122,3 @@ export default function TransferModal({ isOpen, onClose, onTransfer }) {
     </div>
   );
 }
-

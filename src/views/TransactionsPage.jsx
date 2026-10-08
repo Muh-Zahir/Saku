@@ -10,7 +10,6 @@ import {
   Download,
   Search,
   ChevronDown,
-  Filter,
   ShoppingBag,
   Fuel,
   Coffee,
@@ -19,7 +18,7 @@ import {
   Car,
   Home,
   RefreshCw,
-  MoreHorizontal
+  Trash2
 } from 'lucide-react';
 import { formatSimpleIDR } from '../utils/formatters';
 
@@ -34,7 +33,6 @@ const DEFAULT_FULL_TRANSACTIONS = [
   { id: 'tx-8', title: 'Perlengkapan rumah', date: '20 Sep 2026', category: 'Belanja', wallet: 'BCA', amount: -450000, type: 'expense', icon: 'shopping-bag' },
   { id: 'tx-9', title: 'Belanja bahan makanan', date: '18 Sep 2026', category: 'Makan & minum', wallet: 'BCA', amount: -600000, type: 'expense', icon: 'shopping-bag' },
   { id: 'tx-10', title: 'Langganan aplikasi', date: '16 Sep 2026', category: 'Lainnya', wallet: 'BCA', amount: -150000, type: 'expense', icon: 'refresh' },
-  // Extra items for page 2
   { id: 'tx-11', title: 'Bonus freelance proyek', date: '15 Sep 2026', category: 'Gaji', wallet: 'BCA', amount: 500000, type: 'income', icon: 'briefcase' },
   { id: 'tx-12', title: 'Sewa apartemen', date: '10 Sep 2026', category: 'Tempat tinggal', wallet: 'BCA', amount: -3000000, type: 'expense', icon: 'home' },
   { id: 'tx-13', title: 'Listrik & air', date: '08 Sep 2026', category: 'Tempat tinggal', wallet: 'BCA', amount: -450000, type: 'expense', icon: 'home' },
@@ -46,6 +44,8 @@ const DEFAULT_FULL_TRANSACTIONS = [
 ];
 
 export default function TransactionsPage({
+  transactions = [],
+  onDeleteTransaction,
   currentPeriod,
   onOpenAddTx,
   addToast
@@ -57,10 +57,32 @@ export default function TransactionsPage({
   const [currentPage, setCurrentPage] = useState(1);
   const [checkedIds, setCheckedIds] = useState([]);
 
+  const txList = transactions && transactions.length > 0 ? transactions : DEFAULT_FULL_TRANSACTIONS;
   const pageSize = 10;
 
+  // Perhitungan dinamis
+  const incomeList = txList.filter((tx) => tx.type === 'income');
+  const expenseList = txList.filter((tx) => tx.type === 'expense');
+  const totalIncome = incomeList.reduce((sum, tx) => sum + Math.abs(tx.amount), 0);
+  const totalExpense = expenseList.reduce((sum, tx) => sum + Math.abs(tx.amount), 0);
+  const netCashflow = totalIncome - totalExpense;
+  const savingRate = totalIncome > 0
+    ? `${((netCashflow / totalIncome) * 100).toFixed(1).replace('.', ',')}%`
+    : '0%';
+
+  // Ambil opsi kategori & dompet dari data real
+  const categoryOptions = useMemo(() => {
+    const set = new Set(txList.map((t) => t.category).filter(Boolean));
+    return ['Semua', ...Array.from(set)];
+  }, [txList]);
+
+  const walletOptions = useMemo(() => {
+    const set = new Set(txList.map((t) => t.wallet).filter(Boolean));
+    return ['Semua', ...Array.from(set)];
+  }, [txList]);
+
   const filtered = useMemo(() => {
-    return DEFAULT_FULL_TRANSACTIONS.filter((tx) => {
+    return txList.filter((tx) => {
       // Tab filter
       if (activeTab === 'income' && tx.type !== 'income') return false;
       if (activeTab === 'expense' && tx.type !== 'expense') return false;
@@ -74,12 +96,16 @@ export default function TransactionsPage({
       // Search query
       if (searchQuery.trim()) {
         const q = searchQuery.toLowerCase();
-        return tx.title.toLowerCase().includes(q) || tx.category.toLowerCase().includes(q);
+        return (
+          (tx.title && tx.title.toLowerCase().includes(q)) ||
+          (tx.category && tx.category.toLowerCase().includes(q)) ||
+          (tx.wallet && tx.wallet.toLowerCase().includes(q))
+        );
       }
 
       return true;
     });
-  }, [activeTab, searchQuery, selectedCategory, selectedWallet]);
+  }, [txList, activeTab, searchQuery, selectedCategory, selectedWallet]);
 
   const totalPages = Math.ceil(filtered.length / pageSize) || 1;
   const paginatedRows = filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize);
@@ -112,6 +138,42 @@ export default function TransactionsPage({
     );
   };
 
+  const handleDeleteSelected = () => {
+    if (!onDeleteTransaction) return;
+    if (confirm(`Yakin ingin menghapus ${checkedIds.length} transaksi terpilih?`)) {
+      checkedIds.forEach((id) => onDeleteTransaction(id));
+      setCheckedIds([]);
+      addToast(`${checkedIds.length} transaksi berhasil dihapus.`);
+    }
+  };
+
+  const handleExportCSV = () => {
+    const headers = ['ID', 'Judul', 'Tanggal', 'Kategori', 'Dompet', 'Tipe', 'Nominal'];
+    const rows = filtered.map((t) => [
+      t.id,
+      `"${(t.title || '').replace(/"/g, '""')}"`,
+      t.date || '',
+      `"${t.category || ''}"`,
+      `"${t.wallet || ''}"`,
+      t.type,
+      t.amount,
+    ]);
+    const csvContent =
+      'data:text/csv;charset=utf-8,' +
+      [headers.join(','), ...rows.map((e) => e.join(','))].join('\n');
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement('a');
+    link.setAttribute('href', encodedUri);
+    link.setAttribute(
+      'download',
+      `transaksi-saku-${(currentPeriod || 'periode').replace(/\s+/g, '-').toLowerCase()}.csv`
+    );
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+    addToast(`Berhasil mengekspor ${filtered.length} transaksi ke CSV!`);
+  };
+
   return (
     <div className="page-wrapper">
       {/* Header */}
@@ -142,7 +204,7 @@ export default function TransactionsPage({
         </button>
       </div>
 
-      {/* Top 3 Cards */}
+      {/* Top 3 Cards Dinamis */}
       <section className="metrics-grid">
         <div className="metric-card">
           <div className="metric-card-top">
@@ -151,9 +213,9 @@ export default function TransactionsPage({
               <ArrowDownLeft size={17} stroke="#059669" strokeWidth={2.4} />
             </div>
           </div>
-          <div className="metric-value-huge text-dark">Rp12.500.000</div>
+          <div className="metric-value-huge text-dark">{formatSimpleIDR(totalIncome)}</div>
           <div className="metric-trend text-muted-sub">
-            <span>2 transaksi · Gaji &amp; pekerjaan lepas</span>
+            <span>{incomeList.length} transaksi pemasukan</span>
           </div>
         </div>
 
@@ -164,9 +226,9 @@ export default function TransactionsPage({
               <ArrowUpRight size={17} stroke="#059669" strokeWidth={2.4} />
             </div>
           </div>
-          <div className="metric-value-huge text-dark">Rp7.350.000</div>
+          <div className="metric-value-huge text-dark">{formatSimpleIDR(totalExpense)}</div>
           <div className="metric-trend text-muted-sub">
-            <span>16 transaksi · 5 kategori pengeluaran</span>
+            <span>{expenseList.length} transaksi pengeluaran</span>
           </div>
         </div>
 
@@ -177,9 +239,11 @@ export default function TransactionsPage({
               <TrendingUp size={18} strokeWidth={2} />
             </div>
           </div>
-          <div className="metric-value-huge">+Rp5.150.000</div>
+          <div className="metric-value-huge">
+            {netCashflow >= 0 ? '+' : '-'}{formatSimpleIDR(Math.abs(netCashflow))}
+          </div>
           <div className="metric-trend trend-positive-tint">
-            <span>41,2% dari pemasukan berhasil disimpan</span>
+            <span>{savingRate} dari pemasukan berhasil disimpan</span>
           </div>
         </div>
       </section>
@@ -189,15 +253,27 @@ export default function TransactionsPage({
         <div className="card-header" style={{ marginBottom: '14px' }}>
           <div>
             <h2 className="card-title">Riwayat transaksi</h2>
-            <p className="card-subtitle">18 transaksi tercatat pada September 2026</p>
+            <p className="card-subtitle">{txList.length} transaksi tercatat pada {currentPeriod}</p>
           </div>
-          <button 
-            className="btn-outline-sm"
-            onClick={() => addToast('Mengekspor 18 transaksi ke CSV...')}
-          >
-            <Download size={14} />
-            <span>Ekspor CSV</span>
-          </button>
+          <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+            {checkedIds.length > 0 && onDeleteTransaction && (
+              <button
+                className="btn-outline-sm"
+                style={{ borderColor: '#ef4444', color: '#ef4444' }}
+                onClick={handleDeleteSelected}
+              >
+                <Trash2 size={14} />
+                <span>Hapus ({checkedIds.length})</span>
+              </button>
+            )}
+            <button 
+              className="btn-outline-sm"
+              onClick={handleExportCSV}
+            >
+              <Download size={14} />
+              <span>Ekspor CSV</span>
+            </button>
+          </div>
         </div>
 
         {/* Tab Filter: Semua, Pemasukan, Pengeluaran */}
@@ -206,19 +282,19 @@ export default function TransactionsPage({
             className={`tx-tab-btn ${activeTab === 'all' ? 'active' : ''}`}
             onClick={() => { setActiveTab('all'); setCurrentPage(1); }}
           >
-            Semua transaksi (18)
+            Semua transaksi ({txList.length})
           </button>
           <button
             className={`tx-tab-btn ${activeTab === 'income' ? 'active' : ''}`}
             onClick={() => { setActiveTab('income'); setCurrentPage(1); }}
           >
-            Pemasukan (2)
+            Pemasukan ({incomeList.length})
           </button>
           <button
             className={`tx-tab-btn ${activeTab === 'expense' ? 'active' : ''}`}
             onClick={() => { setActiveTab('expense'); setCurrentPage(1); }}
           >
-            Pengeluaran (16)
+            Pengeluaran ({expenseList.length})
           </button>
         </div>
 
@@ -239,100 +315,104 @@ export default function TransactionsPage({
             <select
               className="tx-select-pill"
               value={selectedCategory}
-              onChange={(e) => setSelectedCategory(e.target.value)}
+              onChange={(e) => { setSelectedCategory(e.target.value); setCurrentPage(1); }}
             >
-              <option value="Semua">Semua kategori</option>
-              <option value="Makan & minum">Makan &amp; minum</option>
-              <option value="Transportasi">Transportasi</option>
-              <option value="Belanja">Belanja</option>
-              <option value="Tempat tinggal">Tempat tinggal</option>
-              <option value="Gaji">Gaji</option>
-              <option value="Lainnya">Lainnya</option>
+              {categoryOptions.map((cat) => (
+                <option key={cat} value={cat}>
+                  {cat === 'Semua' ? 'Semua kategori' : cat}
+                </option>
+              ))}
             </select>
 
             <select
               className="tx-select-pill"
               value={selectedWallet}
-              onChange={(e) => setSelectedWallet(e.target.value)}
+              onChange={(e) => { setSelectedWallet(e.target.value); setCurrentPage(1); }}
             >
-              <option value="Semua">Semua dompet</option>
-              <option value="BCA">BCA</option>
-              <option value="GoPay">GoPay</option>
-              <option value="Tunai">Tunai</option>
+              {walletOptions.map((wal) => (
+                <option key={wal} value={wal}>
+                  {wal === 'Semua' ? 'Semua dompet' : wal}
+                </option>
+              ))}
             </select>
-
-            <button className="tx-date-pill">
-              <span>1–30 Sep 2026</span>
-              <ChevronDown size={14} />
-            </button>
-
-            <button className="btn-outline-sm" style={{ padding: '7px 12px' }}>
-              <Filter size={14} />
-              <span>Filter</span>
-            </button>
           </div>
         </div>
 
-        {/* Table */}
-        <div className="table-responsive">
-          <table className="transactions-table">
+        {/* Table Transaksi */}
+        <div className="tx-table-container">
+          <table className="tx-table">
             <thead>
               <tr>
-                <th scope="col" style={{ width: '40px', paddingLeft: '12px' }}>
+                <th style={{ width: '38px', paddingLeft: '12px' }}>
                   <input
                     type="checkbox"
                     checked={paginatedRows.length > 0 && checkedIds.length === paginatedRows.length}
                     onChange={handleToggleSelectAll}
                   />
                 </th>
-                <th scope="col" className="th-tx">TRANSAKSI</th>
-                <th scope="col" className="th-cat">KATEGORI</th>
-                <th scope="col" className="th-wallet">DOMPET</th>
-                <th scope="col" className="th-amount">JUMLAH</th>
-                <th scope="col" style={{ width: '36px' }}></th>
+                <th>Transaksi</th>
+                <th>Kategori</th>
+                <th>Dompet</th>
+                <th style={{ textAlign: 'right' }}>Nominal</th>
+                <th style={{ width: '48px' }}></th>
               </tr>
             </thead>
             <tbody>
-              {paginatedRows.map((tx) => {
-                const isIncome = tx.amount > 0;
-                const formattedAmount = `${isIncome ? '+' : '-'}Rp${Math.abs(tx.amount).toLocaleString('id-ID')}`;
-                const amountClass = isIncome ? 'tx-income' : 'tx-expense';
-                const isChecked = checkedIds.includes(tx.id);
+              {paginatedRows.length === 0 ? (
+                <tr>
+                  <td colSpan={6} style={{ textAlign: 'center', padding: '36px', color: '#8c9e94' }}>
+                    Tidak ada transaksi yang cocok dengan filter.
+                  </td>
+                </tr>
+              ) : (
+                paginatedRows.map((tx) => {
+                  const isIncome = tx.type === 'income';
+                  const formattedAmount = `${isIncome ? '+' : '-'}${formatSimpleIDR(Math.abs(tx.amount))}`;
+                  const amountClass = isIncome ? 'tx-amount-income' : 'tx-amount-expense';
+                  const isChecked = checkedIds.includes(tx.id);
 
-                return (
-                  <tr key={tx.id} style={{ backgroundColor: isChecked ? '#f3f7f4' : undefined }}>
-                    <td style={{ paddingLeft: '12px' }}>
-                      <input
-                        type="checkbox"
-                        checked={isChecked}
-                        onChange={() => handleToggleRow(tx.id)}
-                      />
-                    </td>
-                    <td>
-                      <div className="tx-cell">
-                        <div className="tx-icon-wrap">
-                          {getIcon(tx.icon)}
+                  return (
+                    <tr key={tx.id} style={{ backgroundColor: isChecked ? '#f3f7f4' : undefined }}>
+                      <td style={{ paddingLeft: '12px' }}>
+                        <input
+                          type="checkbox"
+                          checked={isChecked}
+                          onChange={() => handleToggleRow(tx.id)}
+                        />
+                      </td>
+                      <td>
+                        <div className="tx-cell">
+                          <div className="tx-icon-wrap">
+                            {getIcon(tx.icon)}
+                          </div>
+                          <div className="tx-meta">
+                            <span className="tx-title">{tx.title}</span>
+                            <span className="tx-date">{tx.date}</span>
+                          </div>
                         </div>
-                        <div className="tx-meta">
-                          <span className="tx-title">{tx.title}</span>
-                          <span className="tx-date">{tx.date}</span>
-                        </div>
-                      </div>
-                    </td>
-                    <td><span className="tx-cat-text">{tx.category}</span></td>
-                    <td><span className="tx-wallet-text">{tx.wallet}</span></td>
-                    <td className={`tx-amount-col ${amountClass}`}>{formattedAmount}</td>
-                    <td>
-                      <button 
-                        className="btn-icon-ghost" 
-                        onClick={() => addToast(`Opsi untuk: ${tx.title}`)}
-                      >
-                        <MoreHorizontal size={16} stroke="#8c9e94" />
-                      </button>
-                    </td>
-                  </tr>
-                );
-              })}
+                      </td>
+                      <td><span className="tx-cat-text">{tx.category}</span></td>
+                      <td><span className="tx-wallet-text">{tx.wallet}</span></td>
+                      <td className={`tx-amount-col ${amountClass}`}>{formattedAmount}</td>
+                      <td>
+                        {onDeleteTransaction ? (
+                          <button 
+                            className="btn-icon-ghost" 
+                            title="Hapus transaksi"
+                            onClick={() => {
+                              if (confirm(`Hapus transaksi "${tx.title}"?`)) {
+                                onDeleteTransaction(tx.id);
+                              }
+                            }}
+                          >
+                            <Trash2 size={15} stroke="#ef4444" />
+                          </button>
+                        ) : null}
+                      </td>
+                    </tr>
+                  );
+                })
+              )}
             </tbody>
           </table>
         </div>
@@ -340,7 +420,7 @@ export default function TransactionsPage({
         {/* Pagination Footer */}
         <div className="tx-pagination-footer">
           <span className="pagination-info">
-            Menampilkan {(currentPage - 1) * pageSize + 1}–{Math.min(currentPage * pageSize, filtered.length)} dari {filtered.length} transaksi
+            Menampilkan {filtered.length === 0 ? 0 : (currentPage - 1) * pageSize + 1}–{Math.min(currentPage * pageSize, filtered.length)} dari {filtered.length} transaksi
           </span>
 
           <div className="pagination-controls">
@@ -362,7 +442,7 @@ export default function TransactionsPage({
             ))}
             <button
               className="btn-page-nav"
-              disabled={currentPage === totalPages}
+              disabled={currentPage === totalPages || totalPages === 0}
               onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
             >
               Berikutnya
@@ -373,4 +453,3 @@ export default function TransactionsPage({
     </div>
   );
 }
-

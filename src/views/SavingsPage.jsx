@@ -14,22 +14,39 @@ import {
   Laptop,
   MoreHorizontal,
   Lightbulb,
-  ArrowRight
+  ArrowRight,
+  Trash2
 } from 'lucide-react';
 import { formatSimpleIDR } from '../utils/formatters';
 
+const DEFAULT_SAVINGS = [
+  { id: 's1', name: 'Dana darurat', targetDate: 'Target Des 2026', current: 15000000, target: 20000000, type: 'shield' },
+  { id: 's2', name: 'Liburan ke Jepang', targetDate: 'Target Jun 2027', current: 5500000, target: 10000000, type: 'plane' },
+  { id: 's3', name: 'Laptop baru', targetDate: 'Target Mar 2027', current: 4350000, target: 12000000, type: 'laptop' },
+];
+
 export default function SavingsPage({
   currentPeriod,
-  savings,
+  savings = [],
   onOpenAddGoal,
-  onDeposit,
+  onDepositGoal,
+  onDeleteGoal,
   onSwitchTab,
   addToast
 }) {
+  const savingsList = savings && savings.length > 0 ? savings : DEFAULT_SAVINGS;
+
+  const totalCurrent = savingsList.reduce((sum, g) => sum + (Number(g.current) || 0), 0);
+  const totalTarget = savingsList.reduce((sum, g) => sum + (Number(g.target) || 0), 0);
+  const remainingTarget = Math.max(0, totalTarget - totalCurrent);
+  const collectedPercent = totalTarget > 0 ? ((totalCurrent / totalTarget) * 100).toFixed(1).replace('.', ',') : '0';
+  const activeCount = savingsList.filter((g) => g.current < g.target).length;
+  const completedCount = savingsList.filter((g) => g.current >= g.target).length;
+
   const contributions = [
     { id: 'c-1', target: 'Dana darurat', date: '25 Sep 2026', source: 'BCA', amount: 3000000 },
     { id: 'c-2', target: 'Liburan ke Jepang', date: '25 Sep 2026', source: 'BCA', amount: 1250000 },
-    { id: 'c-3', target: 'Laptop baru', date: '25 Sep 2026', source: 'BCA', amount: 900000 }
+    { id: 'c-3', target: 'Laptop baru', date: '25 Sep 2026', source: 'BCA', amount: 900000 },
   ];
 
   const getGoalIcon = (type) => {
@@ -45,9 +62,24 @@ export default function SavingsPage({
     }
   };
 
+  const handleDepositPrompt = (goal) => {
+    const input = prompt(`Masukkan nominal setoran untuk "${goal.name}" (Rp):`, '500000');
+    if (!input) return;
+    const amount = parseInt(input.replace(/\D/g, ''), 10);
+    if (!amount || amount <= 0) {
+      alert('Nominal tidak valid!');
+      return;
+    }
+    if (onDepositGoal) {
+      onDepositGoal(goal.id, amount);
+    } else {
+      addToast(`Setoran Rp${amount.toLocaleString('id-ID')} ditambahkan ke ${goal.name}!`);
+    }
+  };
+
   return (
     <div className="page-wrapper">
-      {/* Mobile Plan Nav Switcher (Rencana) — Screenshot 2 */}
+      {/* Mobile Plan Nav Switcher (Rencana) */}
       <div className="mobile-plan-nav mobile-only">
         <span className="plan-nav-title">Rencana</span>
         <div className="plan-nav-grid">
@@ -94,7 +126,7 @@ export default function SavingsPage({
         </button>
       </div>
 
-      {/* Top 3 Cards */}
+      {/* Top 3 Cards Dinamis */}
       <section className="metrics-grid">
         <div className="metric-card metric-card-primary">
           <div className="metric-card-top">
@@ -103,9 +135,9 @@ export default function SavingsPage({
               <Target size={18} strokeWidth={2} />
             </div>
           </div>
-          <div className="metric-value-huge">Rp24.850.000</div>
+          <div className="metric-value-huge">{formatSimpleIDR(totalCurrent)}</div>
           <div className="metric-trend trend-positive-tint">
-            <span>59,2% dari total target Rp42.000.000</span>
+            <span>{collectedPercent}% dari total target {formatSimpleIDR(totalTarget)}</span>
           </div>
         </div>
 
@@ -116,32 +148,34 @@ export default function SavingsPage({
               <Flag size={17} stroke="#059669" strokeWidth={2.2} />
             </div>
           </div>
-          <div className="metric-value-huge text-dark">Rp17.150.000</div>
+          <div className="metric-value-huge text-dark">{formatSimpleIDR(remainingTarget)}</div>
           <div className="metric-trend text-muted-sub">
-            <span>3 target aktif · Tidak ada target selesai</span>
+            <span>{activeCount} target aktif · {completedCount} target tercapai</span>
           </div>
         </div>
 
         <div className="metric-card">
           <div className="metric-card-top">
-            <span className="metric-label">Setoran September</span>
+            <span className="metric-label">Alokasi tabungan</span>
             <div className="metric-icon-wrap-light">
               <ArrowDownLeft size={17} stroke="#059669" strokeWidth={2.2} />
             </div>
           </div>
-          <div className="metric-value-huge text-dark">Rp5.150.000</div>
+          <div className="metric-value-huge text-dark">{formatSimpleIDR(totalCurrent)}</div>
           <div className="metric-trend text-muted-sub">
-            <span>Dialokasikan dari surplus bulan ini</span>
+            <span>Tersebar di {savingsList.length} pos target aktif</span>
           </div>
         </div>
       </section>
 
-      {/* 3 Large Goal Cards in a Row */}
+      {/* Large Goal Cards Grid */}
       <div className="savings-cards-grid-3">
-        {savings.map((goal) => {
-          const ratio = (goal.current / goal.target) * 100;
-          const percentStr = ratio.toFixed(goal.type === 'laptop' ? 1 : 0).replace('.', ',');
-          const remaining = goal.target - goal.current;
+        {savingsList.map((goal) => {
+          const cur = Number(goal.current) || 0;
+          const tgt = Number(goal.target) || 0;
+          const ratio = tgt > 0 ? Math.min(100, (cur / tgt) * 100) : 0;
+          const percentStr = ratio.toFixed(1).replace('.', ',');
+          const remaining = Math.max(0, tgt - cur);
 
           return (
             <div key={goal.id} className="goal-detail-card">
@@ -149,12 +183,26 @@ export default function SavingsPage({
                 <div className={`goal-illustration-box ${goal.type === 'laptop' ? 'goal-illustration-laptop' : ''}`}>
                   {getGoalIcon(goal.type)}
                 </div>
-                <button 
-                  className="btn-icon-ghost"
-                  onClick={() => addToast(`Opsi target: ${goal.name}`)}
-                >
-                  <MoreHorizontal size={18} stroke="#8c9e94" />
-                </button>
+                {onDeleteGoal ? (
+                  <button 
+                    className="btn-icon-ghost"
+                    title={`Hapus target ${goal.name}`}
+                    onClick={() => {
+                      if (confirm(`Hapus target tabungan "${goal.name}"?`)) {
+                        onDeleteGoal(goal.id);
+                      }
+                    }}
+                  >
+                    <Trash2 size={16} stroke="#ef4444" />
+                  </button>
+                ) : (
+                  <button 
+                    className="btn-icon-ghost"
+                    onClick={() => addToast(`Target: ${goal.name}`)}
+                  >
+                    <MoreHorizontal size={18} stroke="#8c9e94" />
+                  </button>
+                )}
               </div>
 
               <div className="goal-card-content">
@@ -164,8 +212,8 @@ export default function SavingsPage({
                   <span>{goal.targetDate}</span>
                 </div>
 
-                <div className="goal-current-val">{formatSimpleIDR(goal.current)}</div>
-                <div className="goal-target-val">dari {formatSimpleIDR(goal.target)}</div>
+                <div className="goal-current-val">{formatSimpleIDR(cur)}</div>
+                <div className="goal-target-val">dari {formatSimpleIDR(tgt)}</div>
 
                 <div className="progress-track" style={{ height: '7px', margin: '14px 0 10px' }}>
                   <div className="progress-bar bar-green" style={{ width: `${ratio}%` }} />
@@ -173,12 +221,14 @@ export default function SavingsPage({
 
                 <div className="goal-progress-footer">
                   <span className="goal-percent-text">{percentStr}% tercapai</span>
-                  <span className="goal-remaining-text">Sisa {formatSimpleIDR(remaining)}</span>
+                  <span className="goal-remaining-text">
+                    {remaining === 0 ? 'Target tercapai!' : `Sisa ${formatSimpleIDR(remaining)}`}
+                  </span>
                 </div>
 
                 <button 
                   className="btn-deposit-action"
-                  onClick={() => addToast(`Form setoran untuk ${goal.name} dibuka`)}
+                  onClick={() => handleDepositPrompt(goal)}
                 >
                   <Plus size={15} strokeWidth={2.5} />
                   <span>Tambah setoran</span>
@@ -196,11 +246,8 @@ export default function SavingsPage({
           <div className="card-header">
             <div>
               <h2 className="card-title">Riwayat kontribusi</h2>
-              <p className="card-subtitle">Alokasi tabungan pada September 2026</p>
+              <p className="card-subtitle">Alokasi tabungan pada {currentPeriod}</p>
             </div>
-            <button className="btn-outline-sm" onClick={() => addToast('Membuka riwayat alokasi lengkap')}>
-              Lihat riwayat
-            </button>
           </div>
 
           <div className="table-responsive">
@@ -234,17 +281,17 @@ export default function SavingsPage({
             <h3 className="tip-title-clean">Tabunganmu tetap bagian dari saldo.</h3>
           </div>
           <p className="tip-desc-clean" style={{ margin: '10px 0 16px', lineHeight: 1.55 }}>
-            Rp24.850.000 pada target ini adalah alokasi saldo dompet, bukan uang tambahan. Setoran ke target tidak dihitung sebagai pengeluaran.
+            {formatSimpleIDR(totalCurrent)} pada target ini adalah alokasi saldo dompet, bukan uang tambahan. Setoran ke target tabungan disimpan langsung di database Saku.
           </p>
           <div className="unallocated-badge">
-            Saldo belum dialokasikan: <strong>Rp0</strong>
+            Total target: <strong>{formatSimpleIDR(totalTarget)}</strong>
           </div>
           <button 
             className="card-action-link" 
             style={{ marginTop: '16px' }}
-            onClick={() => addToast('Membuka pengaturan alokasi tabungan')}
+            onClick={onOpenAddGoal}
           >
-            <span>Kelola alokasi tabungan</span>
+            <span>Tambah target baru</span>
             <ArrowRight size={14} strokeWidth={2.5} />
           </button>
         </div>
@@ -252,4 +299,3 @@ export default function SavingsPage({
     </div>
   );
 }
-
