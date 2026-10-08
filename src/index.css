@@ -1763,14 +1763,14 @@ select {
 .budget-items-list {
   display: flex;
   flex-direction: column;
-  gap: 15px;
-  margin-top: 4px;
+  gap: 20px;
+  margin-top: 8px;
 }
 
 .budget-item {
   display: flex;
   flex-direction: column;
-  gap: 6px;
+  gap: 8px;
 }
 
 .budget-item-top {
@@ -3018,14 +3018,14 @@ select {
   .budget-items-list {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 20px;
     margin-top: 6px;
   }
 
   .budget-item {
     display: flex;
     flex-direction: column;
-    gap: 3px;
+    gap: 7px;
   }
 
   .budget-item-header-row {
