@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import {
   Wallet,
   Calendar,
+  ChevronDown,
   ArrowUpDown,
   Plus,
   Landmark,
@@ -76,8 +77,11 @@ export default function WalletsPage({
 
         <div className="page-actions">
           <button className="btn-period-select">
-            <Calendar size={16} strokeWidth={2} />
-            <span>{currentPeriod}</span>
+            <span className="btn-period-left">
+              <Calendar size={16} strokeWidth={2} />
+              <span>{currentPeriod}</span>
+            </span>
+            <ChevronDown size={16} strokeWidth={2} className="btn-period-chevron" />
           </button>
           <button className="btn-primary-action btn-add-tx-desktop" onClick={onOpenAddWalletModal}>
             <Plus size={16} strokeWidth={2.5} />

@@ -3,6 +3,7 @@
 import React from 'react';
 import {
   Calendar,
+  ChevronDown,
   Plus,
   Target,
   PieChart,
@@ -74,8 +75,11 @@ export default function SavingsPage({
 
         <div className="page-actions">
           <button className="btn-period-select">
-            <Calendar size={16} strokeWidth={2} />
-            <span>{currentPeriod}</span>
+            <span className="btn-period-left">
+              <Calendar size={16} strokeWidth={2} />
+              <span>{currentPeriod}</span>
+            </span>
+            <ChevronDown size={16} strokeWidth={2} className="btn-period-chevron" />
           </button>
           <button className="btn-primary-action btn-add-tx-desktop" onClick={onOpenAddGoal}>
             <Plus size={16} strokeWidth={2.5} />
