@@ -21,6 +21,7 @@ import {
   MoreHorizontal
 } from 'lucide-react';
 import { formatSimpleIDR } from '../utils/formatters';
+import PeriodSelector from '../components/PeriodSelector';
 
 const DEFAULT_BUDGETS = [
   { id: 'b1', name: 'Makan & minum', spent: 2100000, limit: 2500000, color: 'green' },
@@ -32,6 +33,7 @@ const DEFAULT_BUDGETS = [
 
 export default function BudgetPage({
   currentPeriod,
+  onSelectPeriod,
   budgets = [],
   onOpenManageBudget,
   onOpenAddBudget,
@@ -86,13 +88,10 @@ export default function BudgetPage({
         </div>
 
         <div className="page-actions">
-          <button className="btn-period-select">
-            <span className="btn-period-left">
-              <Calendar size={16} strokeWidth={2} />
-              <span>{currentPeriod}</span>
-            </span>
-            <ChevronDown size={16} strokeWidth={2} className="btn-period-chevron" />
-          </button>
+          <PeriodSelector
+            currentPeriod={currentPeriod}
+            onSelectPeriod={onSelectPeriod}
+          />
           <button className="btn-primary-action btn-add-tx-desktop" onClick={onOpenManageBudget}>
             <Plus size={16} strokeWidth={2.5} />
             <span>Kelola anggaran</span>

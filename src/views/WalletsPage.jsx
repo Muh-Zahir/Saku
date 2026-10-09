@@ -19,6 +19,7 @@ import {
   Trash2
 } from 'lucide-react';
 import { formatSimpleIDR } from '../utils/formatters';
+import PeriodSelector from '../components/PeriodSelector';
 
 const DEFAULT_WALLETS = [
   { id: 'w-1', name: 'BCA', type: 'Rekening bank · •••• 4821', balance: 22000000, share: '88,5%', icon: 'bank' },
@@ -30,6 +31,7 @@ export default function WalletsPage({
   wallets = [],
   transactions = [],
   currentPeriod,
+  onSelectPeriod,
   addToast,
   onOpenTransferModal,
   onOpenAddWalletModal,
@@ -76,13 +78,10 @@ export default function WalletsPage({
         </div>
 
         <div className="page-actions">
-          <button className="btn-period-select">
-            <span className="btn-period-left">
-              <Calendar size={16} strokeWidth={2} />
-              <span>{currentPeriod}</span>
-            </span>
-            <ChevronDown size={16} strokeWidth={2} className="btn-period-chevron" />
-          </button>
+          <PeriodSelector
+            currentPeriod={currentPeriod}
+            onSelectPeriod={onSelectPeriod}
+          />
           <button className="btn-primary-action btn-add-tx-desktop" onClick={onOpenAddWalletModal}>
             <Plus size={16} strokeWidth={2.5} />
             <span>Tambah dompet</span>

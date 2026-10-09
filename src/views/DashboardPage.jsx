@@ -32,8 +32,7 @@ export default function DashboardPage({
       <Header
         currentPeriod={currentPeriod}
         onSelectPeriod={(p) => {
-          setCurrentPeriod(p);
-          addToast(`Periode diubah ke ${p}`);
+          if (setCurrentPeriod) setCurrentPeriod(p);
         }}
         onOpenAddTransaction={onOpenAddTx}
         lastSync={data.profile.lastSync}

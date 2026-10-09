@@ -18,6 +18,7 @@ import {
   Trash2
 } from 'lucide-react';
 import { formatSimpleIDR } from '../utils/formatters';
+import PeriodSelector from '../components/PeriodSelector';
 
 const DEFAULT_SAVINGS = [
   { id: 's1', name: 'Dana darurat', targetDate: 'Target Des 2026', current: 15000000, target: 20000000, type: 'shield' },
@@ -27,6 +28,7 @@ const DEFAULT_SAVINGS = [
 
 export default function SavingsPage({
   currentPeriod,
+  onSelectPeriod,
   savings = [],
   onOpenAddGoal,
   onDepositGoal,
@@ -106,13 +108,10 @@ export default function SavingsPage({
         </div>
 
         <div className="page-actions">
-          <button className="btn-period-select">
-            <span className="btn-period-left">
-              <Calendar size={16} strokeWidth={2} />
-              <span>{currentPeriod}</span>
-            </span>
-            <ChevronDown size={16} strokeWidth={2} className="btn-period-chevron" />
-          </button>
+          <PeriodSelector
+            currentPeriod={currentPeriod}
+            onSelectPeriod={onSelectPeriod}
+          />
           <button className="btn-primary-action btn-add-tx-desktop" onClick={onOpenAddGoal}>
             <Plus size={16} strokeWidth={2.5} />
             <span>Tambah target</span>

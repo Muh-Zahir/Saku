@@ -21,6 +21,7 @@ import {
   Trash2
 } from 'lucide-react';
 import { formatSimpleIDR } from '../utils/formatters';
+import PeriodSelector from '../components/PeriodSelector';
 
 const DEFAULT_FULL_TRANSACTIONS = [
   { id: 'tx-1', title: 'Belanja mingguan', date: '30 Sep 2026', category: 'Makan & minum', wallet: 'BCA', amount: -350000, type: 'expense', icon: 'shopping-bag' },
@@ -47,6 +48,7 @@ export default function TransactionsPage({
   transactions = [],
   onDeleteTransaction,
   currentPeriod,
+  onSelectPeriod,
   onOpenAddTx,
   addToast
 }) {
@@ -184,13 +186,10 @@ export default function TransactionsPage({
         </div>
 
         <div className="page-actions">
-          <button className="btn-period-select">
-            <span className="btn-period-left">
-              <Calendar size={16} strokeWidth={2} />
-              <span>{currentPeriod}</span>
-            </span>
-            <ChevronDown size={16} strokeWidth={2} className="btn-period-chevron" />
-          </button>
+          <PeriodSelector
+            currentPeriod={currentPeriod}
+            onSelectPeriod={onSelectPeriod}
+          />
           <button className="btn-primary-action btn-add-tx-desktop" onClick={onOpenAddTx}>
             <Plus size={16} strokeWidth={2.5} />
             <span>Tambah transaksi</span>

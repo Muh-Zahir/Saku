@@ -398,6 +398,12 @@ export default function App() {
     }
   };
 
+  const handleSelectPeriod = (p) => {
+    setCurrentPeriod(p);
+    fetchServerData(p);
+    addToast(`Periode diubah ke ${p}`);
+  };
+
   const getPageTitle = () => {
     switch (activeNav) {
       case 'transaksi': return 'Transaksi';
@@ -451,10 +457,7 @@ export default function App() {
           <DashboardPage
             data={data}
             currentPeriod={currentPeriod}
-            setCurrentPeriod={(p) => {
-              setCurrentPeriod(p);
-              fetchServerData(p);
-            }}
+            setCurrentPeriod={handleSelectPeriod}
             onOpenAddTx={() => setIsAddTxOpen(true)}
             onOpenManageBudget={() => setIsManageBudgetOpen(true)}
             onOpenAddGoal={() => setIsAddGoalOpen(true)}
@@ -467,6 +470,7 @@ export default function App() {
             transactions={data.transactions}
             onDeleteTransaction={handleDeleteTransaction}
             currentPeriod={currentPeriod}
+            onSelectPeriod={handleSelectPeriod}
             onOpenAddTx={() => setIsAddTxOpen(true)}
             addToast={addToast}
           />
@@ -477,6 +481,7 @@ export default function App() {
             wallets={data.wallets}
             transactions={data.transactions}
             currentPeriod={currentPeriod}
+            onSelectPeriod={handleSelectPeriod}
             addToast={addToast}
             onOpenTransferModal={() => setIsTransferOpen(true)}
             onOpenAddWalletModal={() => setIsAddWalletOpen(true)}
@@ -487,6 +492,7 @@ export default function App() {
         {activeNav === 'anggaran' && (
           <BudgetPage
             currentPeriod={currentPeriod}
+            onSelectPeriod={handleSelectPeriod}
             budgets={data.budgets}
             onOpenManageBudget={() => setIsManageBudgetOpen(true)}
             onOpenAddBudget={() => setIsManageBudgetOpen(true)}
@@ -498,6 +504,7 @@ export default function App() {
         {activeNav === 'target-tabungan' && (
           <SavingsPage
             currentPeriod={currentPeriod}
+            onSelectPeriod={handleSelectPeriod}
             savings={data.savings}
             onOpenAddGoal={() => setIsAddGoalOpen(true)}
             onDepositGoal={handleDepositGoal}
@@ -510,6 +517,7 @@ export default function App() {
         {activeNav === 'laporan' && (
           <ReportsPage
             currentPeriod={currentPeriod}
+            onSelectPeriod={handleSelectPeriod}
             addToast={addToast}
           />
         )}

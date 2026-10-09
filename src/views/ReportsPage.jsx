@@ -12,8 +12,9 @@ import {
   FileText
 } from 'lucide-react';
 import { formatSimpleIDR } from '../utils/formatters';
+import PeriodSelector from '../components/PeriodSelector';
 
-export default function ReportsPage({ currentPeriod, addToast }) {
+export default function ReportsPage({ currentPeriod, onSelectPeriod, addToast }) {
   const categoryDist = [
     { name: 'Makan & minum', amount: 2100000, percent: '28,6%', dotColor: '#059669' },
     { name: 'Tempat tinggal', amount: 3000000, percent: '40,8%', dotColor: '#134e3f' },
@@ -46,10 +47,10 @@ export default function ReportsPage({ currentPeriod, addToast }) {
         </div>
 
         <div className="page-actions">
-          <button className="btn-period-select">
-            <Calendar size={16} strokeWidth={2} />
-            <span>{currentPeriod}</span>
-          </button>
+          <PeriodSelector
+            currentPeriod={currentPeriod}
+            onSelectPeriod={onSelectPeriod}
+          />
           <button 
             className="btn-primary-action btn-add-tx-desktop" 
             onClick={() => addToast('Mengunduh paket laporan bulanan (PDF & CSV)...')}

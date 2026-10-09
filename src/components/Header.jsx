@@ -1,29 +1,15 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
-import { Calendar, ChevronDown, Plus } from 'lucide-react';
+import React from 'react';
+import { Plus } from 'lucide-react';
+import PeriodSelector from './PeriodSelector';
 
-export default function Header({ currentPeriod, onSelectPeriod, onOpenAddTransaction, lastSync = 'Diperbarui 30 Sep 2026, 20.45' }) {
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const dropdownRef = useRef(null);
-
-  const periods = [
-    'September 2026',
-    'Agustus 2026',
-    'Juli 2026',
-    'Juni 2026'
-  ];
-
-  useEffect(() => {
-    function handleClickOutside(event) {
-      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-        setIsDropdownOpen(false);
-      }
-    }
-    document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, []);
-
+export default function Header({
+  currentPeriod,
+  onSelectPeriod,
+  onOpenAddTransaction,
+  lastSync = 'Diperbarui 30 Sep 2026, 20.45'
+}) {
   return (
     <div className="page-header">
       <div className="page-title-group">
@@ -33,38 +19,13 @@ export default function Header({ currentPeriod, onSelectPeriod, onOpenAddTransac
 
       {/* Desktop: period selector + tombol tambah dalam satu row */}
       <div className="page-actions">
-        {/* Period Selector */}
-        <div className="dropdown-wrapper" ref={dropdownRef}>
-          <button
-            className="btn-period-select"
-            onClick={() => setIsDropdownOpen(!isDropdownOpen)}
-          >
-            <span className="btn-period-left">
-              <Calendar size={16} strokeWidth={2} />
-              <span>{currentPeriod}</span>
-            </span>
-            <ChevronDown size={16} strokeWidth={2} className="btn-period-chevron" />
-          </button>
+        {/* Period Selector Dropdown */}
+        <PeriodSelector
+          currentPeriod={currentPeriod}
+          onSelectPeriod={onSelectPeriod}
+        />
 
-          {isDropdownOpen && (
-            <div className="period-menu show">
-              {periods.map((p) => (
-                <button
-                  key={p}
-                  className={`period-option ${currentPeriod === p ? 'active' : ''}`}
-                  onClick={() => {
-                    onSelectPeriod(p);
-                    setIsDropdownOpen(false);
-                  }}
-                >
-                  {p}
-                </button>
-              ))}
-            </div>
-          )}
-        </div>
-
-        {/* Desktop CTA — teks lengkap */}
+        {/* Desktop CTA */}
         <button className="btn-primary-action btn-add-tx-desktop" onClick={onOpenAddTransaction}>
           <Plus size={16} strokeWidth={2.5} />
           <span>Tambah transaksi</span>
