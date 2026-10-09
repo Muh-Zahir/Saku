@@ -58,7 +58,7 @@ export default function ManageBudgetModal({ isOpen, onClose, budgets, onSaveBudg
           ))}
         </div>
 
-        <div className="modal-footer" style={{ padding: '0 24px 20px' }}>
+        <div className="modal-footer budget-modal-footer">
           <button type="button" className="btn-cancel" onClick={onClose}>
             Batal
           </button>
