@@ -282,29 +282,6 @@ select {
   text-decoration: underline;
 }
 
-.nav-secondary {
-  display: flex;
-  flex-direction: column;
-  gap: 2px;
-}
-
-.nav-item-sub {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 7.5px 12px;
-  border-radius: var(--radius-md);
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--text-muted);
-  transition: all var(--transition-fast);
-}
-
-.nav-item-sub:hover {
-  background-color: #f3f7f4;
-  color: var(--text-main);
-}
-
 .user-profile-card {
   display: flex;
   align-items: center;

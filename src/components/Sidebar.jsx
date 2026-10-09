@@ -9,8 +9,6 @@ import {
   Target,
   BarChart3,
   Lightbulb,
-  Settings,
-  HelpCircle,
   ArrowUpRight
 } from 'lucide-react';
 
@@ -92,18 +90,6 @@ export default function Sidebar({ isOpen, onClose, activeNav, setActiveNav }) {
             >
               <span>Baca tips keuangan</span>
               <ArrowUpRight size={13} strokeWidth={2.5} />
-            </a>
-          </div>
-
-          {/* Secondary Navigation */}
-          <div className="nav-secondary">
-            <a href="#pengaturan" className="nav-item-sub">
-              <Settings size={18} strokeWidth={1.8} />
-              <span>Pengaturan</span>
-            </a>
-            <a href="#bantuan" className="nav-item-sub">
-              <HelpCircle size={18} strokeWidth={1.8} />
-              <span>Pusat bantuan</span>
             </a>
           </div>
         </div>
