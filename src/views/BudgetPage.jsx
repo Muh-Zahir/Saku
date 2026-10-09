@@ -46,6 +46,8 @@ export default function BudgetPage({
   const usedPercent = totalBudget > 0 ? ((usedBudget / totalBudget) * 100).toFixed(1).replace('.', ',') : '0';
   const remainingPercent = totalBudget > 0 ? ((remainingBudget / totalBudget) * 100).toFixed(1).replace('.', ',') : '0';
 
+  const overLimitBudgets = budgetList.filter((b) => Number(b.spent || 0) >= Number(b.limit || 0));
+
   const getCategoryIcon = (name) => {
     const n = (name || '').toLowerCase();
     if (n.includes('makan') || n.includes('minum')) return <Utensils size={16} stroke="#4a5c52" strokeWidth={2} />;
@@ -166,7 +168,8 @@ export default function BudgetPage({
               {budgetList.map((item) => {
                 const limit = Number(item.limit) || 0;
                 const spent = Number(item.spent) || 0;
-                const percent = limit > 0 ? Math.min(100, Math.round((spent / limit) * 100)) : 0;
+                const ratio = limit > 0 ? (spent / limit) * 100 : 0;
+                const percent = Math.min(100, Math.round(ratio));
                 const isLimit = spent >= limit;
                 const remaining = Math.max(0, limit - spent);
 
@@ -202,16 +205,16 @@ export default function BudgetPage({
 
                     <div className="progress-track" style={{ height: '7px' }}>
                       <div 
-                        className={`progress-fill ${isLimit ? 'fill-amber' : 'fill-green'}`}
+                        className={`progress-bar ${isLimit ? 'bar-amber' : 'bar-green'}`}
                         style={{ width: `${percent}%` }}
                       />
                     </div>
 
                     <div className="detail-budget-footer">
-                      <span className="text-remaining">
+                      <span className="detail-remaining">
                         {isLimit ? 'Batas habis' : `Sisa ${formatSimpleIDR(remaining)}`}
                       </span>
-                      <span className="text-note">
+                      <span className="detail-note">
                         {isLimit ? 'Seluruh anggaran terpakai' : 'Belum melewati batas'}
                       </span>
                     </div>
@@ -220,39 +223,80 @@ export default function BudgetPage({
               })}
             </div>
           </div>
+
+          <div className="budget-footnote">
+            <Info size={14} stroke="#8c9e94" />
+            <span>Anggaran dihitung dari transaksi pengeluaran. Transfer antar dompet dan alokasi tabungan tidak termasuk.</span>
+          </div>
         </div>
 
-        {/* Right Column: Ringkasan & Tips */}
-        <div className="budget-right-column">
+        {/* Right Column: Widgets */}
+        <div className="budget-right-stack">
+          {/* Card: Pemakaian Bulan Ini */}
           <div className="dashboard-card">
-            <h2 className="card-title">Ringkasan penggunaan</h2>
-            <p className="card-subtitle">Status pos anggaran {currentPeriod}</p>
-
-            <div className="budget-summary-stat">
-              <div className="stat-circle-box">
-                <span className="stat-big-num">{usedPercent}%</span>
-                <span className="stat-sub-text">terpakai</span>
-              </div>
-              <div className="stat-meta-text">
-                <p><strong>{budgetList.filter(b => b.spent >= b.limit).length} dari {budgetList.length} pos</strong> telah mencapai batas limit.</p>
-                <p className="text-muted-sub">Sisa hari dalam periode ini aman jika pengeluaran harian dijaga.</p>
-              </div>
+            <h2 className="card-title">Pemakaian bulan ini</h2>
+            <p className="card-subtitle">{formatSimpleIDR(usedBudget)} dari {formatSimpleIDR(totalBudget)}</p>
+            <div className="big-stat-number">{usedPercent}%</div>
+            <div className="progress-track" style={{ height: '8px', margin: '14px 0 16px' }}>
+              <div 
+                className={`progress-bar ${usedBudget >= totalBudget ? 'bar-amber' : 'bar-green'}`} 
+                style={{ width: `${Math.min(100, totalBudget > 0 ? (usedBudget / totalBudget) * 100 : 0)}%` }} 
+              />
             </div>
-
-            <button className="btn-secondary-full" onClick={onOpenManageBudget}>
-              <Copy size={15} />
-              <span>Kelola semua batas limit</span>
-            </button>
+            <p className="widget-desc">
+              {remainingBudget > 0
+                ? `Pengeluaran masih sesuai rencana. Kamu menyisakan ${formatSimpleIDR(remainingBudget)} bulan ini.`
+                : 'Pengeluaran telah mencapai batas total anggaran.'}
+            </p>
           </div>
 
-          <div className="tip-card tip-card-clean">
-            <div className="tip-header-row">
-              <AlertCircle size={20} stroke="#059669" strokeWidth={2.2} />
-              <h3 className="tip-title-clean">Anggaran fleksibel</h3>
+          {/* Warning Card jika ada yang capai batas, jika tidak tip card */}
+          {overLimitBudgets.length > 0 ? (
+            <div className="alert-card-warning">
+              <div className="alert-card-top">
+                <AlertCircle size={18} stroke="#d97706" strokeWidth={2.2} />
+                <h3 className="alert-title">{overLimitBudgets[0].name} mencapai batas</h3>
+              </div>
+              <p className="alert-desc">
+                {formatSimpleIDR(overLimitBudgets[0].spent)} dari {formatSimpleIDR(overLimitBudgets[0].limit)} sudah digunakan. Tinjau batas kategori ini sebelum mencatat pengeluaran tambahan.
+              </p>
+              <button className="alert-link" onClick={onOpenManageBudget}>
+                <span>Tinjau anggaran</span>
+                <ArrowRight size={14} strokeWidth={2.5} />
+              </button>
             </div>
-            <p className="tip-desc-clean">
-              Ubah batas anggaran kapan saja sesuai kebutuhan aktual. Data otomatis disinkronkan ke database Saku.
+          ) : (
+            <div className="tip-card tip-card-clean" style={{ padding: '20px' }}>
+              <div className="tip-header-row">
+                <AlertCircle size={20} stroke="#059669" strokeWidth={2.2} />
+                <h3 className="tip-title-clean">Semua kategori aman</h3>
+              </div>
+              <p className="tip-desc-clean" style={{ margin: '8px 0 12px' }}>
+                Seluruh pos pengeluaran masih berada dalam batas anggaran yang ditentukan.
+              </p>
+              <button className="card-action-link" onClick={onOpenManageBudget}>
+                <span>Kelola anggaran</span>
+                <ArrowRight size={14} strokeWidth={2.5} />
+              </button>
+            </div>
+          )}
+
+          {/* Card: Siapkan Bulan Berikutnya */}
+          <div className="dashboard-card">
+            <h2 className="card-title">Siapkan bulan berikutnya</h2>
+            <p className="widget-desc" style={{ marginTop: '8px', marginBottom: '16px' }}>
+              Gunakan alokasi {currentPeriod} sebagai awal rencana berikutnya. Kamu tetap bisa menyesuaikan setiap kategori.
             </p>
+            <button 
+              className="btn-outline-action"
+              onClick={() => {
+                onOpenManageBudget();
+                addToast('Membuka penyesuaian anggaran');
+              }}
+            >
+              <Copy size={15} strokeWidth={2} />
+              <span>Kelola pos anggaran</span>
+            </button>
           </div>
         </div>
       </section>
