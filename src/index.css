@@ -3480,3 +3480,81 @@ select {
     padding: 9px 10px;
   }
 }
+/* ===================== INLINE BUDGET EDIT ===================== */
+.inline-edit-actions {
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.btn-icon-confirm,
+.btn-icon-cancel {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border-radius: 6px;
+  border: none;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+
+.btn-icon-confirm {
+  background: #dcfce7;
+}
+
+.btn-icon-confirm:hover {
+  background: #bbf7d0;
+}
+
+.btn-icon-cancel {
+  background: #fee2e2;
+}
+
+.btn-icon-cancel:hover {
+  background: #fecaca;
+}
+
+.inline-edit-row {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  margin: 6px 0 4px;
+  flex-wrap: wrap;
+}
+
+.inline-edit-input-wrap {
+  display: flex;
+  align-items: center;
+  border: 1.5px solid #059669;
+  border-radius: 8px;
+  padding: 3px 8px;
+  background: #f0fdf4;
+  gap: 2px;
+  flex: 1;
+  min-width: 120px;
+  max-width: 200px;
+}
+
+.inline-edit-prefix {
+  font-size: 13px;
+  font-weight: 500;
+  color: #4a5c52;
+  white-space: nowrap;
+}
+
+.inline-edit-input {
+  border: none;
+  outline: none;
+  background: transparent;
+  font-size: 13px;
+  font-weight: 600;
+  color: #1a2e25;
+  width: 100%;
+  font-family: inherit;
+}
+
+.inline-edit-input::placeholder {
+  color: #a3b5ab;
+  font-weight: 400;
+}

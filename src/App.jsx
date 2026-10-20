@@ -496,6 +496,7 @@ export default function App() {
             budgets={data.budgets}
             onOpenManageBudget={() => setIsManageBudgetOpen(true)}
             onOpenAddBudget={() => setIsManageBudgetOpen(true)}
+            onUpdateBudget={handleSaveBudgets}
             onSwitchTab={setActiveNav}
             addToast={addToast}
           />

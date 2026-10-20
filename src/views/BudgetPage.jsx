@@ -1,6 +1,6 @@
 'use client';
 
-import React from 'react';
+import React, { useState } from 'react';
 import {
   Calendar,
   ChevronDown,
@@ -14,6 +14,8 @@ import {
   AlertCircle,
   Copy,
   Info,
+  Check,
+  X,
   Utensils,
   Home,
   Car,
@@ -37,10 +39,42 @@ export default function BudgetPage({
   budgets = [],
   onOpenManageBudget,
   onOpenAddBudget,
+  onUpdateBudget,
   onSwitchTab,
   addToast
 }) {
   const budgetList = budgets && budgets.length > 0 ? budgets : DEFAULT_BUDGETS;
+
+  // State untuk inline edit per item
+  const [editingId, setEditingId] = useState(null);
+  const [editValue, setEditValue] = useState('');
+
+  const handleStartEdit = (item) => {
+    setEditingId(item.id);
+    setEditValue(String(Number(item.limit) || 0));
+  };
+
+  const handleCancelEdit = () => {
+    setEditingId(null);
+    setEditValue('');
+  };
+
+  const handleSaveEdit = (itemId) => {
+    const newLimit = parseInt(editValue.replace(/\D/g, ''), 10);
+    if (isNaN(newLimit) || newLimit <= 0) {
+      addToast && addToast('Masukkan nominal anggaran yang valid.', 'error');
+      return;
+    }
+    const updatedBudgets = budgetList.map((b) =>
+      b.id === itemId ? { ...b, limit: newLimit } : b
+    );
+    if (onUpdateBudget) {
+      onUpdateBudget(updatedBudgets);
+    }
+    addToast && addToast('Anggaran berhasil diperbarui!');
+    setEditingId(null);
+    setEditValue('');
+  };
 
   const totalBudget = budgetList.reduce((sum, b) => sum + (Number(b.limit) || 0), 0);
   const usedBudget = budgetList.reduce((sum, b) => sum + (Number(b.spent) || 0), 0);
@@ -185,22 +219,66 @@ export default function BudgetPage({
                         <span className={`status-pill ${isLimit ? 'pill-amber' : 'pill-green'}`}>
                           {isLimit ? 'Batas tercapai' : 'Dalam anggaran'}
                         </span>
-                        <button 
-                          className="btn-icon-ghost"
-                          onClick={onOpenManageBudget}
-                          aria-label="Edit"
-                        >
-                          <Edit3 size={14} stroke="#8c9e94" />
-                        </button>
+                        {editingId === item.id ? (
+                          <div className="inline-edit-actions">
+                            <button
+                              className="btn-icon-confirm"
+                              onClick={() => handleSaveEdit(item.id)}
+                              aria-label="Simpan"
+                            >
+                              <Check size={14} stroke="#059669" />
+                            </button>
+                            <button
+                              className="btn-icon-cancel"
+                              onClick={handleCancelEdit}
+                              aria-label="Batal"
+                            >
+                              <X size={14} stroke="#dc2626" />
+                            </button>
+                          </div>
+                        ) : (
+                          <button 
+                            className="btn-icon-ghost"
+                            onClick={() => handleStartEdit(item)}
+                            aria-label="Edit"
+                          >
+                            <Edit3 size={14} stroke="#8c9e94" />
+                          </button>
+                        )}
                       </div>
                     </div>
 
-                    <div className="detail-budget-amounts">
-                      <span className="detail-spent">
-                        {formatSimpleIDR(spent)} / {formatSimpleIDR(limit)}
-                      </span>
-                      <span className="detail-percent">{percent}%</span>
-                    </div>
+                    {editingId === item.id ? (
+                      <div className="inline-edit-row">
+                        <span className="detail-spent">{formatSimpleIDR(spent)} / </span>
+                        <div className="inline-edit-input-wrap">
+                          <span className="inline-edit-prefix">Rp</span>
+                          <input
+                            className="inline-edit-input"
+                            type="text"
+                            inputMode="numeric"
+                            value={Number(editValue).toLocaleString('id-ID')}
+                            onChange={(e) => {
+                              const raw = e.target.value.replace(/\D/g, ');
+                              setEditValue(raw);
+                            }}
+                            onKeyDown={(e) => {
+                              if (e.key === 'Enter') handleSaveEdit(item.id);
+                              if (e.key === 'Escape') handleCancelEdit();
+                            }}
+                            autoFocus
+                            placeholder="Masukkan batas"
+                          />
+                        </div>
+                      </div>
+                    ) : (
+                      <div className="detail-budget-amounts">
+                        <span className="detail-spent">
+                          {formatSimpleIDR(spent)} / {formatSimpleIDR(limit)}
+                        </span>
+                        <span className="detail-percent">{percent}%</span>
+                      </div>
+                    )}
 
                     <div className="progress-track" style={{ height: '7px' }}>
                       <div 
