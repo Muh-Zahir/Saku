@@ -259,7 +259,7 @@ export default function BudgetPage({
                             inputMode="numeric"
                             value={Number(editValue).toLocaleString('id-ID')}
                             onChange={(e) => {
-                              const raw = e.target.value.replace(/\D/g, ');
+                              const raw = e.target.value.replace(/\D/g, '');
                               setEditValue(raw);
                             }}
                             onKeyDown={(e) => {
