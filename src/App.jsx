@@ -9,6 +9,7 @@ import ManageBudgetModal from './components/ManageBudgetModal';
 import AddGoalModal from './components/AddGoalModal';
 import TransferModal from './components/TransferModal';
 import AddWalletModal from './components/AddWalletModal';
+import MoreMenuModal from './components/MoreMenuModal';
 import Toast from './components/Toast';
 
 // Pages
@@ -77,7 +78,7 @@ export default function App() {
   const [data, setData] = useState(INITIAL_DATA);
 
   const [activeNav, setActiveNav] = useState('ringkasan');
-  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
   const [currentPeriod, setCurrentPeriod] = useState(data.profile.period);
 
   // Modals state
@@ -439,8 +440,6 @@ export default function App() {
 
       {/* Sidebar Navigation (desktop) */}
       <Sidebar
-        isOpen={isMobileMenuOpen}
-        onClose={() => setIsMobileMenuOpen(false)}
         activeNav={activeNav}
         setActiveNav={setActiveNav}
       />
@@ -559,6 +558,19 @@ export default function App() {
         onAddWallet={handleAddWallet}
       />
 
+      {/* Menu Lainnya Modal (Mobile Bottom Sheet) */}
+      <MoreMenuModal
+        isOpen={isMoreMenuOpen}
+        onClose={() => setIsMoreMenuOpen(false)}
+        activeNav={activeNav}
+        onSelectNav={(navId) => {
+          setActiveNav(navId);
+          setIsMoreMenuOpen(false);
+        }}
+        onOpenManageBudget={() => setIsManageBudgetOpen(true)}
+        onOpenTransferModal={() => setIsTransferOpen(true)}
+      />
+
       {/* Toast notifications */}
       <Toast toasts={toasts} />
 
@@ -627,13 +639,13 @@ export default function App() {
               item.id === 'transaksi' ? activeNav === 'transaksi' :
               item.id === 'dompet' ? activeNav === 'dompet' :
               item.id === 'rencana' ? (activeNav === 'anggaran' || activeNav === 'target-tabungan') :
-              item.id === 'lainnya' ? (isMobileMenuOpen || activeNav === 'laporan') : false;
+              item.id === 'lainnya' ? (isMoreMenuOpen || activeNav === 'laporan') : false;
 
             const handleClick = () => {
               if (item.id === 'rencana') {
                 setActiveNav('anggaran');
               } else if (item.id === 'lainnya') {
-                setIsMobileMenuOpen(true);
+                setIsMoreMenuOpen(true);
               } else {
                 setActiveNav(item.id);
               }
@@ -657,3 +669,4 @@ export default function App() {
     </div>
   );
 }
+
