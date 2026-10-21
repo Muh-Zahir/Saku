@@ -23,26 +23,7 @@ import {
 import { formatSimpleIDR } from '../utils/formatters';
 import PeriodSelector from '../components/PeriodSelector';
 
-const DEFAULT_FULL_TRANSACTIONS = [
-  { id: 'tx-1', title: 'Belanja mingguan', date: '30 Sep 2026', category: 'Makan & minum', wallet: 'BCA', amount: -350000, type: 'expense', icon: 'shopping-bag' },
-  { id: 'tx-2', title: 'Isi bensin', date: '29 Sep 2026', category: 'Transportasi', wallet: 'BCA', amount: -150000, type: 'expense', icon: 'fuel' },
-  { id: 'tx-3', title: 'Kopi sore', date: '28 Sep 2026', category: 'Makan & minum', wallet: 'GoPay', amount: -45000, type: 'expense', icon: 'coffee' },
-  { id: 'tx-4', title: 'Sepatu olahraga', date: '27 Sep 2026', category: 'Belanja', wallet: 'BCA', amount: -450000, type: 'expense', icon: 'shopping-bag' },
-  { id: 'tx-5', title: 'Gaji September', date: '25 Sep 2026', category: 'Gaji', wallet: 'BCA', amount: 12000000, type: 'income', icon: 'briefcase' },
-  { id: 'tx-6', title: 'Makan bersama keluarga', date: '24 Sep 2026', category: 'Makan & minum', wallet: 'BCA', amount: -355000, type: 'expense', icon: 'utensils' },
-  { id: 'tx-7', title: 'Transportasi harian', date: '22 Sep 2026', category: 'Transportasi', wallet: 'GoPay', amount: -150000, type: 'expense', icon: 'car' },
-  { id: 'tx-8', title: 'Perlengkapan rumah', date: '20 Sep 2026', category: 'Belanja', wallet: 'BCA', amount: -450000, type: 'expense', icon: 'shopping-bag' },
-  { id: 'tx-9', title: 'Belanja bahan makanan', date: '18 Sep 2026', category: 'Makan & minum', wallet: 'BCA', amount: -600000, type: 'expense', icon: 'shopping-bag' },
-  { id: 'tx-10', title: 'Langganan aplikasi', date: '16 Sep 2026', category: 'Lainnya', wallet: 'BCA', amount: -150000, type: 'expense', icon: 'refresh' },
-  { id: 'tx-11', title: 'Bonus freelance proyek', date: '15 Sep 2026', category: 'Gaji', wallet: 'BCA', amount: 500000, type: 'income', icon: 'briefcase' },
-  { id: 'tx-12', title: 'Sewa apartemen', date: '10 Sep 2026', category: 'Tempat tinggal', wallet: 'BCA', amount: -3000000, type: 'expense', icon: 'home' },
-  { id: 'tx-13', title: 'Listrik & air', date: '08 Sep 2026', category: 'Tempat tinggal', wallet: 'BCA', amount: -450000, type: 'expense', icon: 'home' },
-  { id: 'tx-14', title: 'Makan malam teman', date: '06 Sep 2026', category: 'Makan & minum', wallet: 'GoPay', amount: -250000, type: 'expense', icon: 'utensils' },
-  { id: 'tx-15', title: 'Bensin luar kota', date: '05 Sep 2026', category: 'Transportasi', wallet: 'BCA', amount: -300000, type: 'expense', icon: 'fuel' },
-  { id: 'tx-16', title: 'Buku pengembangan diri', date: '04 Sep 2026', category: 'Belanja', wallet: 'GoPay', amount: -180000, type: 'expense', icon: 'shopping-bag' },
-  { id: 'tx-17', title: 'Snack & camilan', date: '02 Sep 2026', category: 'Makan & minum', wallet: 'Tunai', amount: -50000, type: 'expense', icon: 'coffee' },
-  { id: 'tx-18', title: 'Donasi bulanan', date: '01 Sep 2026', category: 'Lainnya', wallet: 'BCA', amount: -350000, type: 'expense', icon: 'refresh' }
-];
+const DEFAULT_FULL_TRANSACTIONS = [];
 
 export default function TransactionsPage({
   transactions = [],
@@ -59,7 +40,7 @@ export default function TransactionsPage({
   const [currentPage, setCurrentPage] = useState(1);
   const [checkedIds, setCheckedIds] = useState([]);
 
-  const txList = transactions && transactions.length > 0 ? transactions : DEFAULT_FULL_TRANSACTIONS;
+  const txList = transactions || [];
   const pageSize = 10;
 
   // Perhitungan dinamis

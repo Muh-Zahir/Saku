@@ -27,8 +27,10 @@ export default function BudgetCard({ budgets, onOpenManageBudget }) {
       {/* Desktop Budget View (persis sesuai screenshot laptop) */}
       <div className="budget-items-list desktop-only">
         {budgets.map((item) => {
-          const percentage = Math.min(100, (item.spent / item.limit) * 100);
-          const isOverOrMax = percentage >= 100;
+          const limit = Number(item.limit) || 0;
+          const spent = Number(item.spent) || 0;
+          const percentage = limit > 0 ? Math.min(100, (spent / limit) * 100) : 0;
+          const isOverOrMax = limit > 0 && spent >= limit;
           const barColorClass = isOverOrMax ? 'bar-amber' : 'bar-green';
 
           return (
@@ -36,7 +38,7 @@ export default function BudgetCard({ budgets, onOpenManageBudget }) {
               <div className="budget-item-top">
                 <span className="budget-name">{item.name}</span>
                 <span className="budget-amount">
-                  {formatSimpleIDR(item.spent)} / {item.limit.toLocaleString('id-ID')}
+                  {formatSimpleIDR(spent)} / {formatSimpleIDR(limit)}
                 </span>
               </div>
               <div className="progress-track">
@@ -53,13 +55,11 @@ export default function BudgetCard({ budgets, onOpenManageBudget }) {
       {/* Mobile Budget View (persis sesuai screenshot mobile) */}
       <div className="budget-items-list mobile-only">
         {budgets.map((item) => {
-          const ratio = (item.spent / item.limit) * 100;
-          const isOverOrMax = ratio >= 100;
-          const formattedPercent = ratio >= 100 
-            ? '100%' 
-            : ratio % 1 === 0 
-              ? `${ratio.toFixed(0)}%` 
-              : `${ratio.toFixed(1).replace('.', ',')}%`;
+          const limit = Number(item.limit) || 0;
+          const spent = Number(item.spent) || 0;
+          const ratio = limit > 0 ? (spent / limit) * 100 : 0;
+          const isOverOrMax = limit > 0 && spent >= limit;
+          const formattedPercent = limit > 0 ? (ratio >= 100 ? '100%' : ratio % 1 === 0 ? ratio.toFixed(0) + '%' : ratio.toFixed(1).replace('.', ',') + '%') : '0%';
           const barColorClass = isOverOrMax ? 'bar-amber' : 'bar-green';
           const percentColorClass = isOverOrMax ? 'text-amber-percent' : 'text-green-percent';
 

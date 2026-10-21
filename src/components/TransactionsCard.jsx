@@ -3,7 +3,7 @@
 import React from 'react';
 import { ArrowRight, ShoppingBag, Fuel, Coffee, Briefcase, Tag } from 'lucide-react';
 
-export default function TransactionsCard({ transactions }) {
+export default function TransactionsCard({ transactions = [] }) {
   const getIcon = (iconName) => {
     switch (iconName) {
       case 'shopping-bag':
@@ -21,17 +21,21 @@ export default function TransactionsCard({ transactions }) {
     }
   };
 
+  const safeList = transactions || [];
+
   return (
     <div className="dashboard-card card-transactions">
       <div className="card-header">
         <h2 className="card-title">Transaksi terbaru</h2>
-        <button 
-          className="card-action-link"
-          onClick={() => alert('Membuka riwayat transaksi lengkap...')}
-        >
-          <span>Lihat semua</span>
-          <ArrowRight size={14} strokeWidth={2.5} />
-        </button>
+        {safeList.length > 0 && (
+          <button 
+            className="card-action-link"
+            onClick={() => alert('Membuka riwayat transaksi lengkap...')}
+          >
+            <span>Lihat semua</span>
+            <ArrowRight size={14} strokeWidth={2.5} />
+          </button>
+        )}
       </div>
 
       {/* Desktop Table View */}
@@ -46,57 +50,71 @@ export default function TransactionsCard({ transactions }) {
             </tr>
           </thead>
           <tbody>
-            {transactions.slice(0, 5).map((tx) => {
-              const isIncome = tx.amount > 0;
-              const formattedAmount = `${isIncome ? '+' : '-'}Rp${Math.abs(tx.amount).toLocaleString('id-ID')}`;
-              const amountClass = isIncome ? 'tx-income' : 'tx-expense';
+            {safeList.length === 0 ? (
+              <tr>
+                <td colSpan={4} style={{ textAlign: 'center', padding: '36px 0', color: '#64748b', fontSize: '13px' }}>
+                  Belum ada transaksi tercatat. Mulai catat transaksi pertamamu!
+                </td>
+              </tr>
+            ) : (
+              safeList.slice(0, 5).map((tx) => {
+                const isIncome = tx.amount > 0;
+                const formattedAmount = (isIncome ? '+' : '-') + 'Rp' + Math.abs(tx.amount).toLocaleString('id-ID');
+                const amountClass = isIncome ? 'tx-income' : 'tx-expense';
 
-              return (
-                <tr key={tx.id}>
-                  <td>
-                    <div className="tx-cell">
-                      <div className="tx-icon-wrap">
-                        {getIcon(tx.icon)}
+                return (
+                  <tr key={tx.id}>
+                    <td>
+                      <div className="tx-cell">
+                        <div className="tx-icon-wrap">
+                          {getIcon(tx.icon)}
+                        </div>
+                        <div className="tx-meta">
+                          <span className="tx-title">{tx.title}</span>
+                          <span className="tx-date">{tx.date}</span>
+                        </div>
                       </div>
-                      <div className="tx-meta">
-                        <span className="tx-title">{tx.title}</span>
-                        <span className="tx-date">{tx.date}</span>
-                      </div>
-                    </div>
-                  </td>
-                  <td><span className="tx-cat-text">{tx.category}</span></td>
-                  <td><span className="tx-wallet-text">{tx.wallet}</span></td>
-                  <td className={`tx-amount-col ${amountClass}`}>{formattedAmount}</td>
-                </tr>
-              );
-            })}
+                    </td>
+                    <td><span className="tx-cat-text">{tx.category}</span></td>
+                    <td><span className="tx-wallet-text">{tx.wallet}</span></td>
+                    <td className={'tx-amount-col ' + amountClass}>{formattedAmount}</td>
+                  </tr>
+                );
+              })
+            )}
           </tbody>
         </table>
       </div>
 
-      {/* Mobile List View (sesuai Screenshot 3) */}
+      {/* Mobile List View */}
       <div className="transactions-mobile-list mobile-only">
-        {transactions.slice(0, 5).map((tx) => {
-          const isIncome = tx.amount > 0;
-          const formattedAmount = `${isIncome ? '+' : '-'}Rp${Math.abs(tx.amount).toLocaleString('id-ID')}`;
-          const amountClass = isIncome ? 'tx-income' : 'tx-expense';
+        {safeList.length === 0 ? (
+          <p style={{ textAlign: 'center', padding: '24px 0', color: '#64748b', fontSize: '13px' }}>
+            Belum ada transaksi tercatat.
+          </p>
+        ) : (
+          safeList.slice(0, 5).map((tx) => {
+            const isIncome = tx.amount > 0;
+            const formattedAmount = (isIncome ? '+' : '-') + 'Rp' + Math.abs(tx.amount).toLocaleString('id-ID');
+            const amountClass = isIncome ? 'tx-income' : 'tx-expense';
 
-          return (
-            <div key={tx.id} className="tx-mobile-item">
-              <div className="tx-mobile-icon-box">
-                {getIcon(tx.icon)}
+            return (
+              <div key={tx.id} className="tx-mobile-item">
+                <div className="tx-mobile-icon-box">
+                  {getIcon(tx.icon)}
+                </div>
+                <div className="tx-mobile-info">
+                  <span className="tx-mobile-title">{tx.title}</span>
+                  <span className="tx-mobile-sub">{tx.date} ? {tx.wallet}</span>
+                  <span className="tx-mobile-cat">{tx.category}</span>
+                </div>
+                <div className={'tx-mobile-amount ' + amountClass}>
+                  {formattedAmount}
+                </div>
               </div>
-              <div className="tx-mobile-info">
-                <span className="tx-mobile-title">{tx.title}</span>
-                <span className="tx-mobile-sub">{tx.date} · {tx.wallet}</span>
-                <span className="tx-mobile-cat">{tx.category}</span>
-              </div>
-              <div className={`tx-mobile-amount ${amountClass}`}>
-                {formattedAmount}
-              </div>
-            </div>
-          );
-        })}
+            );
+          })
+        )}
       </div>
     </div>
   );

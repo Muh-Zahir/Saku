@@ -22,9 +22,9 @@ import { formatSimpleIDR } from '../utils/formatters';
 import PeriodSelector from '../components/PeriodSelector';
 
 const DEFAULT_WALLETS = [
-  { id: 'w-1', name: 'BCA', type: 'Rekening bank · •••• 4821', balance: 22000000, share: '88,5%', icon: 'bank' },
-  { id: 'w-2', name: 'GoPay', type: 'Dompet digital · •••• 7812', balance: 850000, share: '3,4%', icon: 'phone' },
-  { id: 'w-3', name: 'Tunai', type: 'Uang tunai · Dompet sehari-hari', balance: 2000000, share: '8,1%', icon: 'cash' },
+  { id: 'w-1', name: 'BCA', type: 'Rekening bank ? ???? 4821', balance: 0, share: '0%', icon: 'bank' },
+  { id: 'w-2', name: 'GoPay', type: 'Dompet digital ? ???? 7812', balance: 0, share: '0%', icon: 'phone' },
+  { id: 'w-3', name: 'Tunai', type: 'Uang tunai ? Dompet sehari-hari', balance: 0, share: '0%', icon: 'cash' },
 ];
 
 export default function WalletsPage({
@@ -44,10 +44,10 @@ export default function WalletsPage({
   // Perhitungan pemasukan dan pengeluaran dari transaksi
   const incomeTotal = transactions
     ? transactions.filter((t) => t.type === 'income').reduce((s, t) => s + Math.abs(t.amount), 0)
-    : 12500000;
+    : 0;
   const expenseTotal = transactions
     ? transactions.filter((t) => t.type === 'expense').reduce((s, t) => s + Math.abs(t.amount), 0)
-    : 7350000;
+    : 0;
   const netChange = incomeTotal - expenseTotal;
 
   // Recent movements dari transaksi aktual

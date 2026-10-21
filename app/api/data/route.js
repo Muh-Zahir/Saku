@@ -89,18 +89,19 @@ export async function GET(request) {
       year: 'numeric',
     })}, ${now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }).replace(':', '.')}`;
 
+    const monthShort = period.split(' ')[0] ? period.split(' ')[0].slice(0, 3) : 'Bln';
     const cashflow = {
       weekly: [
-        { label: '1–7 Sep', income: 600000, expense: 3600000 },
-        { label: '8–14 Sep', income: 100000, expense: 1100000 },
-        { label: '15–21 Sep', income: 100000, expense: 1200000 },
-        { label: '22–30 Sep', income: 11700000, expense: 1450000 },
+        { label: '1–7 ' + monthShort, income: 0, expense: 0 },
+        { label: '8–14 ' + monthShort, income: 0, expense: 0 },
+        { label: '15–21 ' + monthShort, income: 0, expense: 0 },
+        { label: '22–31 ' + monthShort, income: pemasukan, expense: pengeluaran },
       ],
       monthly: [
-        { label: 'Jun 2026', income: 11200000, expense: 6800000 },
-        { label: 'Jul 2026', income: 11500000, expense: 7100000 },
-        { label: 'Agu 2026', income: 12000000, expense: 6900000 },
-        { label: 'Sep 2026', income: pemasukan || 12500000, expense: pengeluaran || 7350000 },
+        { label: 'Jul 2026', income: 0, expense: 0 },
+        { label: 'Agu 2026', income: 0, expense: 0 },
+        { label: 'Sep 2026', income: 0, expense: 0 },
+        { label: period, income: pemasukan, expense: pengeluaran },
       ],
     };
 
@@ -113,7 +114,7 @@ export async function GET(request) {
         totalSaldo,
         pertambahanSaldo,
         pemasukan,
-        pemasukanDesc: 'Gaji & pekerjaan lepas',
+        pemasukanDesc: pemasukan > 0 ? 'Pemasukan bulan ini' : 'Belum ada pemasukan',
         pengeluaran,
       },
       cashflow,

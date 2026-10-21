@@ -56,8 +56,8 @@ export default function CashflowChart({ cashflowData, netCashflow }) {
 
         <div className="chart-canvas-area">
           {series.map((item, index) => {
-            const incomeHeight = Math.min(100, Math.max(3, (item.income / maxVal) * 100));
-            const expenseHeight = Math.min(100, Math.max(3, (item.expense / maxVal) * 100));
+            const incomeHeight = item.income > 0 ? Math.min(100, Math.max(3, (item.income / maxVal) * 100)) : 0;
+            const expenseHeight = item.expense > 0 ? Math.min(100, Math.max(3, (item.expense / maxVal) * 100)) : 0;
             const tooltipIncome = `Masuk: ${formatSimpleIDR(item.income)}`;
             const tooltipExpense = `Keluar: ${formatSimpleIDR(item.expense)}`;
 

@@ -20,11 +20,7 @@ import {
 import { formatSimpleIDR } from '../utils/formatters';
 import PeriodSelector from '../components/PeriodSelector';
 
-const DEFAULT_SAVINGS = [
-  { id: 's1', name: 'Dana darurat', targetDate: 'Target Des 2026', current: 15000000, target: 20000000, type: 'shield' },
-  { id: 's2', name: 'Liburan ke Jepang', targetDate: 'Target Jun 2027', current: 5500000, target: 10000000, type: 'plane' },
-  { id: 's3', name: 'Laptop baru', targetDate: 'Target Mar 2027', current: 4350000, target: 12000000, type: 'laptop' },
-];
+const DEFAULT_SAVINGS = [];
 
 export default function SavingsPage({
   currentPeriod,
@@ -36,7 +32,7 @@ export default function SavingsPage({
   onSwitchTab,
   addToast
 }) {
-  const savingsList = savings && savings.length > 0 ? savings : DEFAULT_SAVINGS;
+  const savingsList = savings || [];
 
   const totalCurrent = savingsList.reduce((sum, g) => sum + (Number(g.current) || 0), 0);
   const totalTarget = savingsList.reduce((sum, g) => sum + (Number(g.target) || 0), 0);
@@ -45,11 +41,7 @@ export default function SavingsPage({
   const activeCount = savingsList.filter((g) => g.current < g.target).length;
   const completedCount = savingsList.filter((g) => g.current >= g.target).length;
 
-  const contributions = [
-    { id: 'c-1', target: 'Dana darurat', date: '25 Sep 2026', source: 'BCA', amount: 3000000 },
-    { id: 'c-2', target: 'Liburan ke Jepang', date: '25 Sep 2026', source: 'BCA', amount: 1250000 },
-    { id: 'c-3', target: 'Laptop baru', date: '25 Sep 2026', source: 'BCA', amount: 900000 },
-  ];
+  const contributions = [];
 
   const getGoalIcon = (type) => {
     switch (type) {
@@ -168,7 +160,18 @@ export default function SavingsPage({
       </section>
 
       {/* Large Goal Cards Grid */}
-      <div className="savings-cards-grid-3">
+      {savingsList.length === 0 ? (
+        <div style={{ textAlign: 'center', padding: '48px 20px', background: '#ffffff', borderRadius: '16px', border: '1px solid var(--border-subtle)', margin: '16px 0' }}>
+          <p style={{ color: 'var(--text-muted)', fontSize: '14px', marginBottom: '14px' }}>
+            Belum ada target tabungan yang dibuat.
+          </p>
+          <button className="btn-primary-action" onClick={onOpenAddGoal} style={{ margin: '0 auto', display: 'inline-flex' }}>
+            <Plus size={16} strokeWidth={2.2} />
+            <span>Buat target pertama</span>
+          </button>
+        </div>
+      ) : (
+        <div className="savings-cards-grid-3">
         {savingsList.map((goal) => {
           const cur = Number(goal.current) || 0;
           const tgt = Number(goal.target) || 0;
@@ -238,6 +241,8 @@ export default function SavingsPage({
         })}
       </div>
 
+      )}
+
       {/* Bottom Split Grid: Contributions & Policy Note */}
       <section className="dashboard-split-grid bottom-grid">
         {/* Left: Riwayat Kontribusi */}
@@ -260,14 +265,21 @@ export default function SavingsPage({
                 </tr>
               </thead>
               <tbody>
-                {contributions.map((c) => (
+                {contributions.length === 0 ? (
+                  <tr>
+                    <td colSpan={4} style={{ textAlign: 'center', padding: '28px', color: '#8c9e94' }}>
+                      Belum ada riwayat kontribusi tabungan.
+                    </td>
+                  </tr>
+                ) : (
+                contributions.map((c) => (
                   <tr key={c.id}>
                     <td><span className="tx-title" style={{ fontSize: '13px' }}>{c.target}</span></td>
                     <td><span className="tx-date" style={{ fontSize: '12px' }}>{c.date}</span></td>
                     <td><span className="tx-wallet-text">{c.source}</span></td>
                     <td className="tx-amount-col tx-income">+{formatSimpleIDR(c.amount)}</td>
                   </tr>
-                ))}
+                )))}
               </tbody>
             </table>
           </div>

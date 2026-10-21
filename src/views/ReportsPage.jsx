@@ -2,7 +2,6 @@
 
 import React from 'react';
 import {
-  Calendar,
   Download,
   ArrowDownLeft,
   ArrowUpRight,
@@ -14,28 +13,115 @@ import {
 import { formatSimpleIDR } from '../utils/formatters';
 import PeriodSelector from '../components/PeriodSelector';
 
-export default function ReportsPage({ currentPeriod, onSelectPeriod, addToast }) {
-  const categoryDist = [
-    { name: 'Makan & minum', amount: 2100000, percent: '28,6%', dotColor: '#059669' },
-    { name: 'Tempat tinggal', amount: 3000000, percent: '40,8%', dotColor: '#134e3f' },
-    { name: 'Transportasi', amount: 850000, percent: '11,6%', dotColor: '#2dd4bf' },
-    { name: 'Belanja', amount: 900000, percent: '12,2%', dotColor: '#34d399' },
-    { name: 'Lainnya', amount: 500000, percent: '6,8%', dotColor: '#a7f3d0' }
+export default function ReportsPage({
+  currentPeriod,
+  onSelectPeriod,
+  addToast,
+  metrics = {},
+  transactions = [],
+  budgets = []
+}) {
+  const txIncome = transactions
+    .filter(t => t.type === 'income' || Number(t.amount) > 0)
+    .reduce((sum, t) => sum + Math.abs(Number(t.amount) || 0), 0);
+
+  const txExpense = transactions
+    .filter(t => t.type === 'expense' || Number(t.amount) < 0)
+    .reduce((sum, t) => sum + Math.abs(Number(t.amount) || 0), 0);
+
+  const totalIncome = metrics && metrics.pemasukan !== undefined ? Number(metrics.pemasukan) : txIncome;
+  const totalExpense = metrics && metrics.pengeluaran !== undefined ? Number(metrics.pengeluaran) : txExpense;
+  const netCashflow = totalIncome - totalExpense;
+
+  // Kategori pengeluaran
+  const catMap = {};
+  transactions.forEach(t => {
+    if (t.type === 'expense' || Number(t.amount) < 0) {
+      const cat = t.category || 'Lainnya';
+      const amt = Math.abs(Number(t.amount) || 0);
+      catMap[cat] = (catMap[cat] || 0) + amt;
+    }
+  });
+
+  if (Object.keys(catMap).length === 0 && budgets.some(b => (b.spent || 0) > 0)) {
+    budgets.forEach(b => {
+      if ((b.spent || 0) > 0) {
+        catMap[b.category] = (catMap[b.category] || 0) + b.spent;
+      }
+    });
+  }
+
+  const palette = ['#059669', '#134e3f', '#2dd4bf', '#34d399', '#a7f3d0', '#6ee7b7', '#047857'];
+  const totalCatExpense = Object.values(catMap).reduce((a, b) => a + b, 0) || totalExpense || 0;
+
+  const categoryDist = Object.entries(catMap)
+    .map(([name, amount], idx) => {
+      const pctNum = totalCatExpense > 0 ? (amount / totalCatExpense) * 100 : 0;
+      return {
+        name,
+        amount,
+        pctNum,
+        percent: pctNum.toFixed(1).replace('.', ',') + '%',
+        dotColor: palette[idx % palette.length]
+      };
+    })
+    .sort((a, b) => b.amount - a.amount);
+
+  const topCategory = categoryDist.length > 0 ? categoryDist[0] : null;
+
+  // Donut SVG dash calculations
+  let accumulatedOffset = 25;
+  const donutSegments = categoryDist.map(cat => {
+    const dashArray = cat.pctNum + ' ' + (100 - cat.pctNum);
+    const dashOffset = accumulatedOffset;
+    accumulatedOffset -= cat.pctNum;
+    return {
+      ...cat,
+      dashArray,
+      dashOffset
+    };
+  });
+
+  // Rincian mingguan
+  const defaultWeeks = [
+    { label: '1?7', period: '1?7 ' + (currentPeriod || 'Bulan ini'), income: 0, expense: 0 },
+    { label: '8?14', period: '8?14 ' + (currentPeriod || 'Bulan ini'), income: 0, expense: 0 },
+    { label: '15?21', period: '15?21 ' + (currentPeriod || 'Bulan ini'), income: 0, expense: 0 },
+    { label: '22?31', period: '22?31 ' + (currentPeriod || 'Bulan ini'), income: 0, expense: 0 }
   ];
 
-  const weeklyBreakdown = [
-    { period: '1–7 Sep 2026', income: 500000, expense: 3500000, net: -3000000 },
-    { period: '8–14 Sep 2026', income: 0, expense: 1100000, net: -1100000 },
-    { period: '15–21 Sep 2026', income: 0, expense: 1250000, net: -1250000 },
-    { period: '22–30 Sep 2026', income: 12000000, expense: 1500000, net: 10500000 }
-  ];
+  transactions.forEach(tx => {
+    const amt = Math.abs(Number(tx.amount) || 0);
+    const isInc = tx.type === 'income' || Number(tx.amount) > 0;
+    let day = 1;
+    if (tx.date) {
+      const m = String(tx.date).match(/\b(\d{1,2})\b/);
+      if (m) day = parseInt(m[1], 10);
+    }
+    let weekIdx = 0;
+    if (day <= 7) weekIdx = 0;
+    else if (day <= 14) weekIdx = 1;
+    else if (day <= 21) weekIdx = 2;
+    else weekIdx = 3;
 
-  const chartWeeks = [
-    { label: '1–7 Sep', income: 500000, expense: 3500000 },
-    { label: '8–14 Sep', income: 0, expense: 1100000 },
-    { label: '15–21 Sep', income: 0, expense: 1250000 },
-    { label: '22–30 Sep', income: 12000000, expense: 1500000 }
-  ];
+    if (isInc) defaultWeeks[weekIdx].income += amt;
+    else defaultWeeks[weekIdx].expense += amt;
+  });
+
+  const weeklyBreakdown = defaultWeeks.map(w => ({
+    ...w,
+    net: w.income - w.expense
+  }));
+
+  const maxChartVal = Math.max(1, ...weeklyBreakdown.map(w => Math.max(w.income, w.expense)));
+
+  const expenseRatioText = totalIncome > 0
+    ? ((totalExpense / totalIncome) * 100).toFixed(1).replace('.', ',') + '% dari pemasukan ' + (currentPeriod || 'bulan ini')
+    : '0% dari pemasukan';
+
+  const savingsRatioText = totalIncome > 0 && netCashflow > 0
+    ? 'Rasio tabungan: ' + ((netCashflow / totalIncome) * 100).toFixed(1).replace('.', ',') + '%'
+    : (netCashflow >= 0 ? 'Arus kas seimbang' : 'Defisit kas');
 
   return (
     <div className="page-wrapper">
@@ -51,8 +137,8 @@ export default function ReportsPage({ currentPeriod, onSelectPeriod, addToast })
             currentPeriod={currentPeriod}
             onSelectPeriod={onSelectPeriod}
           />
-          <button 
-            className="btn-primary-action btn-add-tx-desktop" 
+          <button
+            className="btn-primary-action btn-add-tx-desktop"
             onClick={() => addToast('Mengunduh paket laporan bulanan (PDF & CSV)...')}
           >
             <Download size={16} strokeWidth={2.2} />
@@ -76,9 +162,9 @@ export default function ReportsPage({ currentPeriod, onSelectPeriod, addToast })
               <ArrowDownLeft size={17} stroke="#059669" strokeWidth={2.4} />
             </div>
           </div>
-          <div className="metric-value-huge text-dark">Rp12.500.000</div>
+          <div className="metric-value-huge text-dark">{formatSimpleIDR(totalIncome)}</div>
           <div className="metric-trend text-muted-sub">
-            <span>Gaji Rp12.000.000 · Freelance Rp500.000</span>
+            <span>{totalIncome > 0 ? 'Pemasukan tercatat periode ini' : 'Belum ada pemasukan'}</span>
           </div>
         </div>
 
@@ -89,9 +175,9 @@ export default function ReportsPage({ currentPeriod, onSelectPeriod, addToast })
               <ArrowUpRight size={17} stroke="#059669" strokeWidth={2.4} />
             </div>
           </div>
-          <div className="metric-value-huge text-dark">Rp7.350.000</div>
+          <div className="metric-value-huge text-dark">{formatSimpleIDR(totalExpense)}</div>
           <div className="metric-trend text-muted-sub">
-            <span>58,8% dari pemasukan September</span>
+            <span>{expenseRatioText}</span>
           </div>
         </div>
 
@@ -102,21 +188,23 @@ export default function ReportsPage({ currentPeriod, onSelectPeriod, addToast })
               <TrendingUp size={18} strokeWidth={2} />
             </div>
           </div>
-          <div className="metric-value-huge">+Rp5.150.000</div>
+          <div className="metric-value-huge">
+            {netCashflow >= 0 ? '+' : '-'}{formatSimpleIDR(Math.abs(netCashflow))}
+          </div>
           <div className="metric-trend trend-positive-tint">
-            <span>Rasio tabungan bulan ini: 41,2%</span>
+            <span>{savingsRatioText}</span>
           </div>
         </div>
       </section>
 
       {/* Middle Split Grid: Arus Kas & Pengeluaran Per Kategori */}
       <section className="dashboard-split-grid">
-        {/* Left: Arus Kas September Bar Chart */}
+        {/* Left: Arus Kas Bar Chart */}
         <div className="dashboard-card card-cashflow">
           <div className="card-header">
             <div>
-              <h2 className="card-title">Arus kas September</h2>
-              <p className="card-subtitle">Pemasukan dan pengeluaran sepanjang bulan</p>
+              <h2 className="card-title">Arus kas mingguan</h2>
+              <p className="card-subtitle">Pemasukan vs pengeluaran {currentPeriod || 'bulan ini'}</p>
             </div>
             <div className="segmented-control">
               <span className="seg-btn active">Mingguan</span>
@@ -136,20 +224,24 @@ export default function ReportsPage({ currentPeriod, onSelectPeriod, addToast })
 
           <div className="chart-container">
             <div className="chart-y-axis">
-              <span>12 jt</span>
-              <span>8 jt</span>
-              <span>4 jt</span>
+              <span>{maxChartVal > 1 ? formatSimpleIDR(maxChartVal) : 'Rp 0'}</span>
+              <span>{maxChartVal > 1 ? formatSimpleIDR(Math.round(maxChartVal * 0.66)) : 'Rp 0'}</span>
+              <span>{maxChartVal > 1 ? formatSimpleIDR(Math.round(maxChartVal * 0.33)) : 'Rp 0'}</span>
               <span>0</span>
             </div>
             <div className="chart-canvas-area">
-              {chartWeeks.map((item, index) => {
-                const incomeH = Math.min(100, Math.max(3, (item.income / 12000000) * 100));
-                const expenseH = Math.min(100, Math.max(3, (item.expense / 12000000) * 100));
+              {weeklyBreakdown.map((item, index) => {
+                const incomeH = maxChartVal > 1 && item.income > 0
+                  ? Math.min(100, Math.max(4, (item.income / maxChartVal) * 100))
+                  : 0;
+                const expenseH = maxChartVal > 1 && item.expense > 0
+                  ? Math.min(100, Math.max(4, (item.expense / maxChartVal) * 100))
+                  : 0;
                 return (
                   <div key={index} className="chart-bar-group">
                     <div className="bars-pair">
-                      <div className="bar-col income" style={{ height: `${incomeH}%` }} />
-                      <div className="bar-col expense" style={{ height: `${expenseH}%` }} />
+                      <div className="bar-col income" style={{ height: incomeH + '%' }} />
+                      <div className="bar-col expense" style={{ height: expenseH + '%' }} />
                     </div>
                     <span className="bar-x-label">{item.label}</span>
                   </div>
@@ -159,8 +251,12 @@ export default function ReportsPage({ currentPeriod, onSelectPeriod, addToast })
           </div>
 
           <div className="card-footer-cashflow">
-            <span className="footer-label">Surplus September 2026</span>
-            <span className="footer-val-positive">+Rp5.150.000</span>
+            <span className="footer-label">
+              {netCashflow >= 0 ? ('Surplus ' + (currentPeriod || 'Bulan ini')) : ('Defisit ' + (currentPeriod || 'Bulan ini'))}
+            </span>
+            <span className={netCashflow >= 0 ? 'footer-val-positive' : 'footer-val-negative'}>
+              {netCashflow >= 0 ? '+' : '-'}{formatSimpleIDR(Math.abs(netCashflow))}
+            </span>
           </div>
         </div>
 
@@ -169,7 +265,7 @@ export default function ReportsPage({ currentPeriod, onSelectPeriod, addToast })
           <div className="card-header">
             <div>
               <h2 className="card-title">Pengeluaran per kategori</h2>
-              <p className="card-subtitle">Distribusi Rp7.350.000 bulan ini</p>
+              <p className="card-subtitle">Distribusi {formatSimpleIDR(totalExpense)} periode ini</p>
             </div>
           </div>
 
@@ -178,43 +274,53 @@ export default function ReportsPage({ currentPeriod, onSelectPeriod, addToast })
             <div className="donut-chart-container">
               <svg width="120" height="120" viewBox="0 0 42 42" className="donut-svg">
                 <circle className="donut-ring" cx="21" cy="21" r="15.91549430918954" fill="transparent" stroke="#f1f5f2" strokeWidth="6" />
-                {/* Tempat tinggal 40.8% */}
-                <circle className="donut-segment" cx="21" cy="21" r="15.91549430918954" fill="transparent" stroke="#134e3f" strokeWidth="6" strokeDasharray="40.8 59.2" strokeDashoffset="25" />
-                {/* Makan & minum 28.6% */}
-                <circle className="donut-segment" cx="21" cy="21" r="15.91549430918954" fill="transparent" stroke="#059669" strokeWidth="6" strokeDasharray="28.6 71.4" strokeDashoffset="-15.8" />
-                {/* Belanja 12.2% */}
-                <circle className="donut-segment" cx="21" cy="21" r="15.91549430918954" fill="transparent" stroke="#34d399" strokeWidth="6" strokeDasharray="12.2 87.8" strokeDashoffset="-44.4" />
-                {/* Transportasi 11.6% */}
-                <circle className="donut-segment" cx="21" cy="21" r="15.91549430918954" fill="transparent" stroke="#2dd4bf" strokeWidth="6" strokeDasharray="11.6 88.4" strokeDashoffset="-56.6" />
-                {/* Lainnya 6.8% */}
-                <circle className="donut-segment" cx="21" cy="21" r="15.91549430918954" fill="transparent" stroke="#a7f3d0" strokeWidth="6" strokeDasharray="6.8 93.2" strokeDashoffset="-68.2" />
+                {donutSegments.map((seg, idx) => (
+                  <circle
+                    key={idx}
+                    className="donut-segment"
+                    cx="21"
+                    cy="21"
+                    r="15.91549430918954"
+                    fill="transparent"
+                    stroke={seg.dotColor}
+                    strokeWidth="6"
+                    strokeDasharray={seg.dashArray}
+                    strokeDashoffset={seg.dashOffset}
+                  />
+                ))}
               </svg>
               <div className="donut-center-label">
-                <span className="donut-count">5</span>
+                <span className="donut-count">{categoryDist.length}</span>
                 <span className="donut-sub">kategori</span>
               </div>
             </div>
 
             <div className="donut-leader-card">
               <span className="leader-hint">Pengeluaran terbesar</span>
-              <h4 className="leader-name">Tempat tinggal</h4>
-              <span className="leader-val">40,8%</span>
+              <h4 className="leader-name">{topCategory ? topCategory.name : '-'}</h4>
+              <span className="leader-val">{topCategory ? topCategory.percent : '0%'}</span>
             </div>
           </div>
 
           <div className="category-breakdown-list">
-            {categoryDist.map((c, i) => (
-              <div key={i} className="cat-breakdown-row">
-                <div className="cat-breakdown-name">
-                  <span className="legend-dot" style={{ backgroundColor: c.dotColor }} />
-                  <span>{c.name}</span>
+            {categoryDist.length === 0 ? (
+              <p style={{ textAlign: 'center', padding: '24px 0', color: '#64748b', fontSize: '13px' }}>
+                Belum ada transaksi pengeluaran tercatat untuk periode ini.
+              </p>
+            ) : (
+              categoryDist.map((c, i) => (
+                <div key={i} className="cat-breakdown-row">
+                  <div className="cat-breakdown-name">
+                    <span className="legend-dot" style={{ backgroundColor: c.dotColor }} />
+                    <span>{c.name}</span>
+                  </div>
+                  <div className="cat-breakdown-nums">
+                    <span className="cat-amount">{formatSimpleIDR(c.amount)}</span>
+                    <span className="cat-pct">{c.percent}</span>
+                  </div>
                 </div>
-                <div className="cat-breakdown-nums">
-                  <span className="cat-amount">{formatSimpleIDR(c.amount)}</span>
-                  <span className="cat-pct">{c.percent}</span>
-                </div>
-              </div>
-            ))}
+              ))
+            )}
           </div>
         </div>
       </section>
@@ -225,9 +331,17 @@ export default function ReportsPage({ currentPeriod, onSelectPeriod, addToast })
           <div className="insight-icon-box">
             <TrendingUp size={18} stroke="#059669" strokeWidth={2.2} />
           </div>
-          <h4 className="insight-title">Arus kas tetap positif</h4>
+          <h4 className="insight-title">
+            {totalIncome === 0 && totalExpense === 0
+              ? 'Belum ada transaksi'
+              : netCashflow >= 0 ? 'Arus kas surplus' : 'Arus kas defisit'}
+          </h4>
           <p className="insight-desc">
-            41,2% pemasukan tersimpan. Seluruh surplus Rp5.150.000 telah dialokasikan ke target tabungan.
+            {totalIncome === 0 && totalExpense === 0
+              ? 'Mulai catat pemasukan dan pengeluaran harianmu untuk melihat analisis arus kas otomatis.'
+              : netCashflow >= 0
+                ? ('Surplus ' + formatSimpleIDR(Math.abs(netCashflow)) + ' tercatat pada periode ini.')
+                : ('Pengeluaran melebihi pemasukan sebesar ' + formatSimpleIDR(Math.abs(netCashflow)) + '.')}
           </p>
         </div>
 
@@ -235,9 +349,13 @@ export default function ReportsPage({ currentPeriod, onSelectPeriod, addToast })
           <div className="insight-icon-box">
             <Home size={18} stroke="#059669" strokeWidth={2.2} />
           </div>
-          <h4 className="insight-title">Biaya tempat tinggal dominan</h4>
+          <h4 className="insight-title">
+            {topCategory ? ('Biaya ' + topCategory.name.toLowerCase() + ' dominan') : 'Kategori pengeluaran'}
+          </h4>
           <p className="insight-desc">
-            Rp3.000.000 atau 40,8% pengeluaran. Anggaran kategori ini sudah mencapai batas 100%.
+            {topCategory
+              ? (formatSimpleIDR(topCategory.amount) + ' atau ' + topCategory.percent + ' dari total pengeluaran tercatat.')
+              : 'Belum ada data pengeluaran kategori untuk dianalisis.'}
           </p>
         </div>
 
@@ -245,9 +363,11 @@ export default function ReportsPage({ currentPeriod, onSelectPeriod, addToast })
           <div className="insight-icon-box">
             <Clock size={18} stroke="#059669" strokeWidth={2.2} />
           </div>
-          <h4 className="insight-title">Pengeluaran di bawah anggaran</h4>
+          <h4 className="insight-title">Status anggaran</h4>
           <p className="insight-desc">
-            Kamu menggunakan 81,7% anggaran. Sisa Rp1.650.000 memberi ruang untuk bulan berikutnya.
+            {budgets.length > 0 && budgets.some(b => b.limit > 0)
+              ? ('Kamu memiliki ' + budgets.filter(b => b.limit > 0).length + ' pos anggaran aktif untuk memantau batas belanja.')
+              : 'Atur batas anggaran per kategori di menu Anggaran untuk membatasi pengeluaran bulanan.'}
           </p>
         </div>
       </div>
@@ -286,8 +406,8 @@ export default function ReportsPage({ currentPeriod, onSelectPeriod, addToast })
                   <td><span className="tx-title" style={{ fontSize: '13px' }}>{row.period}</span></td>
                   <td><span className="tx-wallet-text">{formatSimpleIDR(row.income)}</span></td>
                   <td><span className="tx-wallet-text">{formatSimpleIDR(row.expense)}</span></td>
-                  <td className={`tx-amount-col ${row.net >= 0 ? 'tx-income' : 'tx-expense'}`}>
-                    {row.net >= 0 ? '+' : '-'}{formatSimpleIDR(row.net)}
+                  <td className={'tx-amount-col ' + (row.net >= 0 ? 'tx-income' : 'tx-expense')}>
+                    {row.net >= 0 ? '+' : '-'}{formatSimpleIDR(Math.abs(row.net))}
                   </td>
                 </tr>
               ))}
@@ -298,4 +418,3 @@ export default function ReportsPage({ currentPeriod, onSelectPeriod, addToast })
     </div>
   );
 }
-

@@ -24,54 +24,44 @@ import { Menu, Bell } from 'lucide-react';
 
 const INITIAL_DATA = {
   profile: {
-    period: 'September 2026',
-    lastSync: 'Diperbarui 30 Sep 2026, 20.45'
+    period: 'Oktober 2026',
+    lastSync: 'Belum ada transaksi'
   },
   metrics: {
-    totalSaldo: 24850000,
-    pertambahanSaldo: 5150000,
-    pemasukan: 12500000,
-    pemasukanDesc: 'Gaji & pekerjaan lepas',
-    pengeluaran: 7350000
+    totalSaldo: 0,
+    pertambahanSaldo: 0,
+    pemasukan: 0,
+    pemasukanDesc: 'Belum ada pemasukan',
+    pengeluaran: 0
   },
   cashflow: {
     weekly: [
-      { label: '1–7 Sep', income: 600000, expense: 3600000 },
-      { label: '8–14 Sep', income: 100000, expense: 1100000 },
-      { label: '15–21 Sep', income: 100000, expense: 1200000 },
-      { label: '22–30 Sep', income: 11700000, expense: 1450000 }
+      { label: '1–7 Okt', income: 0, expense: 0 },
+      { label: '8–14 Okt', income: 0, expense: 0 },
+      { label: '15–21 Okt', income: 0, expense: 0 },
+      { label: '22–31 Okt', income: 0, expense: 0 }
     ],
     monthly: [
-      { label: 'Jun 2026', income: 11200000, expense: 6800000 },
-      { label: 'Jul 2026', income: 11500000, expense: 7100000 },
-      { label: 'Agu 2026', income: 12000000, expense: 6900000 },
-      { label: 'Sep 2026', income: 12500000, expense: 7350000 }
+      { label: 'Jul 2026', income: 0, expense: 0 },
+      { label: 'Agu 2026', income: 0, expense: 0 },
+      { label: 'Sep 2026', income: 0, expense: 0 },
+      { label: 'Okt 2026', income: 0, expense: 0 }
     ]
   },
   wallets: [
-    { id: 'w-1', name: 'BCA', type: 'Rekening bank · •••• 4821', balance: 22000000, share: '88,5%', icon: 'bank' },
-    { id: 'w-2', name: 'GoPay', type: 'Dompet digital · •••• 7812', balance: 850000, share: '3,4%', icon: 'phone' },
-    { id: 'w-3', name: 'Tunai', type: 'Uang tunai · Dompet sehari-hari', balance: 2000000, share: '8,1%', icon: 'cash' }
+    { id: 'w-1', name: 'BCA', type: 'Rekening bank · •••• 4821', balance: 0, share: '0%', icon: 'bank' },
+    { id: 'w-2', name: 'GoPay', type: 'Dompet digital · •••• 7812', balance: 0, share: '0%', icon: 'phone' },
+    { id: 'w-3', name: 'Tunai', type: 'Uang tunai · Dompet sehari-hari', balance: 0, share: '0%', icon: 'cash' }
   ],
   budgets: [
-    { id: 'b1', name: 'Makan & minum', spent: 2100000, limit: 2500000, color: 'green' },
-    { id: 'b2', name: 'Tempat tinggal', spent: 3000000, limit: 3000000, color: 'amber' },
-    { id: 'b3', name: 'Transportasi', spent: 850000, limit: 1200000, color: 'green' },
-    { id: 'b4', name: 'Belanja', spent: 900000, limit: 1500000, color: 'green' },
-    { id: 'b5', name: 'Lainnya', spent: 500000, limit: 800000, color: 'green' }
+    { id: 'b1', name: 'Makan & minum', spent: 0, limit: 0, color: 'green' },
+    { id: 'b2', name: 'Tempat tinggal', spent: 0, limit: 0, color: 'green' },
+    { id: 'b3', name: 'Transportasi', spent: 0, limit: 0, color: 'green' },
+    { id: 'b4', name: 'Belanja', spent: 0, limit: 0, color: 'green' },
+    { id: 'b5', name: 'Lainnya', spent: 0, limit: 0, color: 'green' }
   ],
-  transactions: [
-    { id: 'tx-1', title: 'Belanja mingguan', date: '30 Sep 2026', category: 'Makan & minum', wallet: 'BCA', amount: -350000, type: 'expense', icon: 'shopping-bag' },
-    { id: 'tx-2', title: 'Isi bensin', date: '29 Sep 2026', category: 'Transportasi', wallet: 'BCA', amount: -150000, type: 'expense', icon: 'fuel' },
-    { id: 'tx-3', title: 'Kopi sore', date: '28 Sep 2026', category: 'Makan & minum', wallet: 'GoPay', amount: -45000, type: 'expense', icon: 'coffee' },
-    { id: 'tx-4', title: 'Sepatu olahraga', date: '27 Sep 2026', category: 'Belanja', wallet: 'BCA', amount: -450000, type: 'expense', icon: 'shopping' },
-    { id: 'tx-5', title: 'Gaji September', date: '25 Sep 2026', category: 'Gaji', wallet: 'BCA', amount: 12000000, type: 'income', icon: 'briefcase' }
-  ],
-  savings: [
-    { id: 's1', name: 'Dana darurat', targetDate: 'Target Des 2026', current: 15000000, target: 20000000, type: 'shield' },
-    { id: 's2', name: 'Liburan ke Jepang', targetDate: 'Target Jun 2027', current: 5500000, target: 10000000, type: 'plane' },
-    { id: 's3', name: 'Laptop baru', targetDate: 'Target Mar 2027', current: 4350000, target: 12000000, type: 'laptop' }
-  ]
+  transactions: [],
+  savings: []
 };
 
 export default function App() {
@@ -126,8 +116,15 @@ export default function App() {
   useEffect(() => {
     setIsMounted(true);
     try {
-      const saved = localStorage.getItem('saku_react_state');
-      if (saved) setData(JSON.parse(saved));
+      const isClean = localStorage.getItem('saku_data_clean_v2');
+      if (isClean === 'true') {
+        const saved = localStorage.getItem('saku_react_state');
+        if (saved) setData(JSON.parse(saved));
+      } else {
+        localStorage.setItem('saku_data_clean_v2', 'true');
+        localStorage.setItem('saku_react_state', JSON.stringify(INITIAL_DATA));
+        setData(INITIAL_DATA);
+      }
     } catch (e) {
       console.warn('Failed reading localStorage', e);
     }
@@ -518,6 +515,9 @@ export default function App() {
           <ReportsPage
             currentPeriod={currentPeriod}
             onSelectPeriod={handleSelectPeriod}
+            metrics={data.metrics}
+            transactions={data.transactions}
+            budgets={data.budgets}
             addToast={addToast}
           />
         )}

@@ -4,8 +4,8 @@ import React from 'react';
 import { Wallet, ArrowDownLeft, ArrowUpRight, TrendingUp } from 'lucide-react';
 import { formatSimpleIDR } from '../utils/formatters';
 
-export default function MetricCards({ metrics }) {
-  const { totalSaldo, pertambahanSaldo, pemasukan, pengeluaran, pemasukanDesc } = metrics;
+export default function MetricCards({ metrics = {} }) {
+  const { totalSaldo = 0, pertambahanSaldo = 0, pemasukan = 0, pengeluaran = 0, pemasukanDesc } = metrics;
 
   const ratio = pemasukan > 0 
     ? ((pengeluaran / pemasukan) * 100).toFixed(1).replace('.', ',') 
@@ -39,7 +39,7 @@ export default function MetricCards({ metrics }) {
         <div className="metric-value-huge text-dark">{formatSimpleIDR(pemasukan)}</div>
         <div className="metric-trend text-muted-sub">
           <ArrowDownLeft className="trend-icon-desktop" size={14} stroke="#059669" strokeWidth={2.4} />
-          <span>{pemasukanDesc || 'Gaji & pekerjaan lepas'}</span>
+          <span>{pemasukanDesc || (pemasukan > 0 ? 'Gaji & pekerjaan lepas' : 'Belum ada pemasukan')}</span>
         </div>
       </div>
 

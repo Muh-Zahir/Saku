@@ -26,11 +26,11 @@ import { formatSimpleIDR } from '../utils/formatters';
 import PeriodSelector from '../components/PeriodSelector';
 
 const DEFAULT_BUDGETS = [
-  { id: 'b1', name: 'Makan & minum', spent: 2100000, limit: 2500000, color: 'green' },
-  { id: 'b2', name: 'Tempat tinggal', spent: 3000000, limit: 3000000, color: 'amber' },
-  { id: 'b3', name: 'Transportasi', spent: 850000, limit: 1200000, color: 'green' },
-  { id: 'b4', name: 'Belanja', spent: 900000, limit: 1500000, color: 'green' },
-  { id: 'b5', name: 'Lainnya', spent: 500000, limit: 800000, color: 'green' },
+  { id: 'b1', name: 'Makan & minum', spent: 0, limit: 0, color: 'green' },
+  { id: 'b2', name: 'Tempat tinggal', spent: 0, limit: 0, color: 'green' },
+  { id: 'b3', name: 'Transportasi', spent: 0, limit: 0, color: 'green' },
+  { id: 'b4', name: 'Belanja', spent: 0, limit: 0, color: 'green' },
+  { id: 'b5', name: 'Lainnya', spent: 0, limit: 0, color: 'green' },
 ];
 
 export default function BudgetPage({
@@ -82,7 +82,7 @@ export default function BudgetPage({
   const usedPercent = totalBudget > 0 ? ((usedBudget / totalBudget) * 100).toFixed(1).replace('.', ',') : '0';
   const remainingPercent = totalBudget > 0 ? ((remainingBudget / totalBudget) * 100).toFixed(1).replace('.', ',') : '0';
 
-  const overLimitBudgets = budgetList.filter((b) => Number(b.spent || 0) >= Number(b.limit || 0));
+  const overLimitBudgets = budgetList.filter((b) => Number(b.limit || 0) > 0 && Number(b.spent || 0) >= Number(b.limit || 0));
 
   const getCategoryIcon = (name) => {
     const n = (name || '').toLowerCase();
@@ -203,7 +203,7 @@ export default function BudgetPage({
                 const spent = Number(item.spent) || 0;
                 const ratio = limit > 0 ? (spent / limit) * 100 : 0;
                 const percent = Math.min(100, Math.round(ratio));
-                const isLimit = spent >= limit;
+                const isLimit = limit > 0 && spent >= limit;
                 const remaining = Math.max(0, limit - spent);
 
                 return (
@@ -217,7 +217,7 @@ export default function BudgetPage({
                       </div>
                       <div className="detail-budget-right">
                         <span className={`status-pill ${isLimit ? 'pill-amber' : 'pill-green'}`}>
-                          {isLimit ? 'Batas tercapai' : 'Dalam anggaran'}
+                          {limit === 0 ? 'Belum diatur' : isLimit ? 'Batas tercapai' : 'Dalam anggaran'}
                         </span>
                         {editingId === item.id ? (
                           <div className="inline-edit-actions">
@@ -289,10 +289,10 @@ export default function BudgetPage({
 
                     <div className="detail-budget-footer">
                       <span className="detail-remaining">
-                        {isLimit ? 'Batas habis' : `Sisa ${formatSimpleIDR(remaining)}`}
+                        {limit === 0 ? 'Batas belum diatur' : isLimit ? 'Batas habis' : `Sisa ${formatSimpleIDR(remaining)}`}
                       </span>
                       <span className="detail-note">
-                        {isLimit ? 'Seluruh anggaran terpakai' : 'Belum melewati batas'}
+                        {limit === 0 ? 'Klik edit untuk atur batas limit' : isLimit ? 'Seluruh anggaran terpakai' : 'Belum melewati batas'}
                       </span>
                     </div>
                   </div>
