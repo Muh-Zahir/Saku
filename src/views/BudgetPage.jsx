@@ -200,7 +200,7 @@ export default function BudgetPage({
             <Plus size={16} strokeWidth={2.5} />
             <span>Tambah kategori</span>
           </button>
-          <button className="btn-outline-action" onClick={onOpenManageBudget}>
+          <button className="btn-outline-action desktop-only" onClick={onOpenManageBudget}>
             <Edit3 size={15} strokeWidth={2} />
             <span>Kelola anggaran</span>
           </button>

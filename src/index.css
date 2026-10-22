@@ -3161,9 +3161,9 @@ select {
     display: none;
   }
 
-  /* Main content — padding-top untuk fixed header (56px) + breathing room */
+  /* Main content — padding-top untuk fixed header (56px) + breathing room; padding-bottom untuk fixed bottom nav (56px) + safe area */
   .main-content {
-    padding: calc(56px + 24px) 16px calc(56px + env(safe-area-inset-bottom, 0px) + 16px);
+    padding: calc(56px + 24px) 16px calc(64px + env(safe-area-inset-bottom, 0px) + 24px);
   }
 
   /* Mobile Avatar & Header Actions */
@@ -3333,7 +3333,8 @@ select {
 
   /* Sembunyikan tombol desktop di mobile */
   .btn-add-tx-desktop,
-  .btn-add-tx-mobile {
+  .btn-add-tx-mobile,
+  .page-actions .btn-outline-action {
     display: none !important;
   }
 
@@ -3482,6 +3483,8 @@ select {
 
   .card-header {
     margin-bottom: 12px;
+    flex-wrap: wrap;
+    gap: 8px;
   }
 
   .card-title {
@@ -3743,6 +3746,179 @@ select {
     padding: 10px 0;
   }
 
+  /* Transactions page on mobile */
+  .tx-filter-tabs {
+    overflow-x: auto;
+    white-space: nowrap;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    gap: 14px;
+    margin-bottom: 12px;
+    padding-bottom: 4px;
+  }
+
+  .tx-filter-tabs::-webkit-scrollbar {
+    display: none;
+  }
+
+  .tx-tab-btn {
+    flex-shrink: 0;
+    font-size: 13px;
+  }
+
+  .tx-toolbar-row {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 8px;
+    margin-bottom: 14px;
+  }
+
+  .tx-search-box {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .tx-filter-group {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    width: 100%;
+    gap: 8px;
+  }
+
+  .tx-select-pill {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .tx-mobile-container {
+    display: flex;
+    flex-direction: column;
+    width: 100%;
+  }
+
+  .tx-mobile-select-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 8px 10px;
+    background-color: #f8faf9;
+    border: 1px solid #eef2ef;
+    border-radius: 8px;
+    margin-bottom: 10px;
+  }
+
+  .tx-select-all-label {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12.5px;
+    font-weight: 500;
+    color: #4b5563;
+    cursor: pointer;
+  }
+
+  .btn-delete-checked-mobile {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 4px 10px;
+    border-radius: 6px;
+    background-color: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #dc2626;
+    font-size: 11.5px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .tx-mobile-card {
+    border-radius: 12px;
+    padding: 10px 8px;
+    border-bottom: 1px solid #f3f4f6;
+    transition: background-color var(--transition-fast);
+  }
+
+  .tx-mobile-card:last-child {
+    border-bottom: none;
+  }
+
+  .tx-mobile-card.is-checked {
+    background-color: #f0fdf4;
+  }
+
+  .tx-mobile-card-top {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+
+  .tx-mobile-check-wrap {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px;
+    flex-shrink: 0;
+  }
+
+  .tx-mobile-tags {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 2px;
+    flex-wrap: wrap;
+  }
+
+  .tx-tag-date {
+    font-size: 11px;
+    color: #6b7280;
+  }
+
+  .tx-tag-badge {
+    font-size: 10.5px;
+    font-weight: 500;
+    padding: 1px 6px;
+    border-radius: 4px;
+    background-color: #f3f4f6;
+    color: #4b5563;
+  }
+
+  .tx-tag-badge.wallet-badge {
+    background-color: #ecfdf5;
+    color: #065f46;
+  }
+
+  .tx-mobile-amount-box {
+    display: flex;
+    flex-direction: column;
+    align-items: flex-end;
+    gap: 4px;
+    margin-left: auto;
+    flex-shrink: 0;
+  }
+
+  .tx-mobile-del-btn {
+    padding: 4px;
+    border: none;
+    background: transparent;
+    cursor: pointer;
+    border-radius: 4px;
+    opacity: 0.7;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+
+  .tx-mobile-del-btn:active {
+    opacity: 1;
+    background-color: #fee2e2;
+  }
+
+  .tx-pagination-footer {
+    flex-direction: column;
+    align-items: center;
+    gap: 12px;
+  }
+
   /* Toast — center bottom on mobile, above bottom nav */
   .toast-container {
     bottom: calc(52px + env(safe-area-inset-bottom, 0px) + 8px);
@@ -3908,7 +4084,7 @@ select {
    ========================================================================== */
 @media (max-width: 390px) {
   .main-content {
-    padding: calc(56px + 20px) 12px calc(56px + env(safe-area-inset-bottom, 0px) + 12px);
+    padding: calc(56px + 20px) 12px calc(64px + env(safe-area-inset-bottom, 0px) + 20px);
   }
 
   .page-title {

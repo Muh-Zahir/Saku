@@ -318,8 +318,8 @@ export default function TransactionsPage({
           </div>
         </div>
 
-        {/* Table Transaksi */}
-        <div className="table-responsive">
+        {/* Desktop Table View */}
+        <div className="table-responsive desktop-only">
           <table className="transactions-table">
             <thead>
               <tr>
@@ -395,6 +395,93 @@ export default function TransactionsPage({
               )}
             </tbody>
           </table>
+        </div>
+
+        {/* Mobile Interactive List View */}
+        <div className="tx-mobile-container mobile-only">
+          {paginatedRows.length > 0 && (
+            <div className="tx-mobile-select-bar">
+              <label className="tx-select-all-label">
+                <input
+                  type="checkbox"
+                  checked={paginatedRows.length > 0 && checkedIds.length === paginatedRows.length}
+                  onChange={handleToggleSelectAll}
+                />
+                <span>Pilih Semua ({paginatedRows.length})</span>
+              </label>
+              {checkedIds.length > 0 && onDeleteTransaction && (
+                <button
+                  className="btn-delete-checked-mobile"
+                  onClick={handleDeleteSelected}
+                >
+                  <Trash2 size={13} stroke="#dc2626" />
+                  <span>Hapus ({checkedIds.length})</span>
+                </button>
+              )}
+            </div>
+          )}
+
+          <div className="transactions-mobile-list">
+            {paginatedRows.length === 0 ? (
+              <div style={{ textAlign: 'center', padding: '36px 14px', color: '#8c9e94' }}>
+                Tidak ada transaksi yang cocok dengan filter.
+              </div>
+            ) : (
+              paginatedRows.map((tx) => {
+                const isIncome = tx.type === 'income';
+                const formattedAmount = `${isIncome ? '+' : '-'}${formatSimpleIDR(Math.abs(tx.amount))}`;
+                const amountClass = isIncome ? 'tx-income' : 'tx-expense';
+                const isChecked = checkedIds.includes(tx.id);
+
+                return (
+                  <div
+                    key={tx.id}
+                    className={`tx-mobile-card ${isChecked ? 'is-checked' : ''}`}
+                  >
+                    <div className="tx-mobile-card-top">
+                      <div className="tx-mobile-check-wrap">
+                        <input
+                          type="checkbox"
+                          checked={isChecked}
+                          onChange={() => handleToggleRow(tx.id)}
+                          aria-label={`Pilih ${tx.title}`}
+                        />
+                      </div>
+                      <div className="tx-mobile-icon-box">
+                        {getIcon(tx.icon)}
+                      </div>
+                      <div className="tx-mobile-info">
+                        <span className="tx-mobile-title">{tx.title}</span>
+                        <div className="tx-mobile-tags">
+                          <span className="tx-tag-date">{tx.date}</span>
+                          {tx.category && <span className="tx-tag-badge">{tx.category}</span>}
+                          {tx.wallet && <span className="tx-tag-badge wallet-badge">{tx.wallet}</span>}
+                        </div>
+                      </div>
+                      <div className="tx-mobile-amount-box">
+                        <span className={`tx-mobile-amount ${amountClass}`}>
+                          {formattedAmount}
+                        </span>
+                        {onDeleteTransaction && (
+                          <button
+                            className="tx-mobile-del-btn"
+                            title="Hapus transaksi"
+                            onClick={() => {
+                              if (confirm(`Hapus transaksi "${tx.title}"?`)) {
+                                onDeleteTransaction(tx.id);
+                              }
+                            }}
+                          >
+                            <Trash2 size={14} stroke="#ef4444" />
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
         </div>
 
         {/* Pagination Footer */}
