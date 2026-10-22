@@ -8,6 +8,7 @@ import {
   Repeat,
   Lightbulb,
   ChevronRight,
+  Bell,
   X
 } from 'lucide-react';
 
@@ -17,11 +18,25 @@ export default function MoreMenuModal({
   activeNav,
   onSelectNav,
   onOpenManageBudget,
-  onOpenTransferModal
+  onOpenTransferModal,
+  onOpenNotifications,
+  unreadNotifsCount = 0
 }) {
   if (!isOpen) return null;
 
   const menuItems = [
+    {
+      id: 'notifikasi',
+      label: 'Notifikasi & Pengingat',
+      desc: unreadNotifsCount > 0 ? `${unreadNotifsCount} notifikasi baru butuh perhatian` : 'Peringatan saldo, budget, tagihan & gajian',
+      icon: Bell,
+      color: '#059669',
+      bgColor: '#ecfdf5',
+      action: () => {
+        onClose();
+        if (onOpenNotifications) onOpenNotifications();
+      }
+    },
     {
       id: 'laporan',
       label: 'Laporan Keuangan',

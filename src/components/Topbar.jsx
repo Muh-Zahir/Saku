@@ -3,7 +3,12 @@
 import React from 'react';
 import { ChevronRight, Bell } from 'lucide-react';
 
-export default function Topbar({ activeNavLabel = 'Ringkasan', lastSync = 'Diperbarui 30 Sep 2026, 20.45' }) {
+export default function Topbar({
+  activeNavLabel = 'Ringkasan',
+  lastSync = 'Diperbarui 30 Sep 2026, 20.45',
+  unreadCount = 0,
+  onOpenNotifications
+}) {
   return (
     <header className="topbar">
       <div className="breadcrumb">
@@ -16,9 +21,14 @@ export default function Topbar({ activeNavLabel = 'Ringkasan', lastSync = 'Diper
         <button 
           className="notif-btn" 
           aria-label="Notifikasi"
-          onClick={() => alert('Tidak ada notifikasi baru.')}
+          onClick={onOpenNotifications}
         >
           <Bell size={18} strokeWidth={2} />
+          {unreadCount > 0 && (
+            <span className="topbar-notif-dot">
+              {unreadCount > 9 ? '9+' : unreadCount}
+            </span>
+          )}
         </button>
       </div>
     </header>

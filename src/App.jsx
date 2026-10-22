@@ -10,6 +10,8 @@ import AddGoalModal from './components/AddGoalModal';
 import TransferModal from './components/TransferModal';
 import AddWalletModal from './components/AddWalletModal';
 import MoreMenuModal from './components/MoreMenuModal';
+import NotificationModal from './components/NotificationModal';
+import NotificationSettingsModal from './components/NotificationSettingsModal';
 import Toast from './components/Toast';
 
 // Pages
@@ -21,6 +23,15 @@ import SavingsPage from './views/SavingsPage';
 import ReportsPage from './views/ReportsPage';
 
 import { Menu, Bell } from 'lucide-react';
+import {
+  loadNotifSettings,
+  saveNotifSettings,
+  loadNotifications,
+  saveNotifications,
+  evaluateNotifications,
+  sendPushNotification,
+  playChime
+} from './utils/notificationService';
 
 const INITIAL_DATA = {
   profile: {
@@ -90,13 +101,140 @@ export default function App() {
   // Track client mount (untuk SSR-safe portal)
   const [isMounted, setIsMounted] = useState(false);
 
-  const addToast = (message, type = 'success') => {
+  // Notifications state
+  const [notifications, setNotifications] = useState([]);
+  const [notifSettings, setNotifSettings] = useState(null);
+  const [isNotifModalOpen, setIsNotifModalOpen] = useState(false);
+  const [isNotifSettingsOpen, setIsNotifSettingsOpen] = useState(false);
+
+  // Initialize notifications & settings on mount
+  useEffect(() => {
+    setIsMounted(true);
+    setNotifications(loadNotifications());
+    setNotifSettings(loadNotifSettings());
+  }, []);
+
+  const handleNotifAction = useCallback((target) => {
+    if (target === 'add_tx') {
+      setIsAddTxOpen(true);
+    } else if (target === 'anggaran') {
+      setActiveNav('anggaran');
+    } else if (target === 'dompet') {
+      setActiveNav('dompet');
+    } else if (target === 'target-tabungan') {
+      setActiveNav('target-tabungan');
+    } else if (target === 'laporan') {
+      setActiveNav('laporan');
+    }
+  }, []);
+
+  const addToast = useCallback((message, type = 'success') => {
     const id = Date.now();
     setToasts((prev) => [...prev, { id, message, type }]);
     setTimeout(() => {
       setToasts((prev) => prev.filter((t) => t.id !== id));
     }, 3200);
+  }, []);
+
+  // Auto-evaluation of notifications whenever data or settings change
+  useEffect(() => {
+    if (!isMounted || !notifSettings || !data) return;
+
+    const newItems = evaluateNotifications(data, notifSettings);
+    if (newItems && newItems.length > 0) {
+      setNotifications((prev) => {
+        const updated = [...newItems, ...prev];
+        saveNotifications(updated);
+        return updated;
+      });
+
+      if (notifSettings.soundEnabled) {
+        playChime();
+      }
+
+      newItems.forEach((notif) => {
+        sendPushNotification(notif.title, {
+          body: notif.message,
+          actionTarget: notif.action?.target,
+          onAction: handleNotifAction,
+        });
+
+        addToast(notif.title, notif.category === 'alert' ? 'error' : 'info');
+      });
+    }
+  }, [data, notifSettings, isMounted, handleNotifAction, addToast]);
+
+  const handleMarkAsRead = (id) => {
+    setNotifications((prev) => {
+      const updated = prev.map((n) => (n.id === id ? { ...n, read: true } : n));
+      saveNotifications(updated);
+      return updated;
+    });
   };
+
+  const handleMarkAllAsRead = () => {
+    setNotifications((prev) => {
+      const updated = prev.map((n) => ({ ...n, read: true }));
+      saveNotifications(updated);
+      return updated;
+    });
+    addToast('Semua notifikasi ditandai dibaca.');
+  };
+
+  const handleDeleteNotification = (id) => {
+    setNotifications((prev) => {
+      const updated = prev.filter((n) => n.id !== id);
+      saveNotifications(updated);
+      return updated;
+    });
+  };
+
+  const handleClearAllNotifications = () => {
+    setNotifications([]);
+    saveNotifications([]);
+    addToast('Semua notifikasi telah dibersihkan.');
+  };
+
+  const handleSaveNotifSettings = (newSettings) => {
+    setNotifSettings(newSettings);
+    saveNotifSettings(newSettings);
+  };
+
+  const handleTestNotification = () => {
+    const testNotif = {
+      id: `test_${Date.now()}`,
+      timestamp: Date.now(),
+      read: false,
+      type: 'low_balance',
+      category: 'alert',
+      title: 'Uji Coba: Saldo Dompet Menipis!',
+      message: 'Perhatian! Total saldo tersisa Rp85.000 (di bawah batas Rp100.000). Batasi pengeluaran non-primer agar tetap aman.',
+      action: {
+        label: 'Cek Dompet',
+        target: 'dompet',
+      },
+    };
+
+    setNotifications((prev) => {
+      const updated = [testNotif, ...prev];
+      saveNotifications(updated);
+      return updated;
+    });
+
+    if (notifSettings?.soundEnabled !== false) {
+      playChime();
+    }
+
+    sendPushNotification(testNotif.title, {
+      body: testNotif.message,
+      actionTarget: testNotif.action?.target,
+      onAction: handleNotifAction,
+    });
+
+    addToast('Notifikasi uji coba berhasil dikirim!');
+  };
+
+  const unreadNotifsCount = notifications.filter((n) => !n.read).length;
 
   // Sinkronisasi data dari backend API
   const fetchServerData = useCallback(async (period = currentPeriod) => {
@@ -508,8 +646,17 @@ export default function App() {
         </div>
 
         <div className="mobile-header-right">
-          <button className="icon-btn-ghost" onClick={() => addToast('Tidak ada notifikasi baru.')} aria-label="Notifikasi">
+          <button
+            className="icon-btn-ghost notif-bell-mobile-btn"
+            onClick={() => setIsNotifModalOpen(true)}
+            aria-label="Notifikasi"
+          >
             <Bell size={20} />
+            {unreadNotifsCount > 0 && (
+              <span className="mobile-notif-dot">
+                {unreadNotifsCount > 9 ? '9+' : unreadNotifsCount}
+              </span>
+            )}
           </button>
         </div>
       </header>
@@ -525,6 +672,8 @@ export default function App() {
         <Topbar
           activeNavLabel={getPageTitle()}
           lastSync={data.profile.lastSync}
+          unreadCount={unreadNotifsCount}
+          onOpenNotifications={() => setIsNotifModalOpen(true)}
         />
 
         {/* Dynamic Page Router */}
@@ -654,6 +803,32 @@ export default function App() {
         }}
         onOpenManageBudget={() => handleOpenManageBudget('list')}
         onOpenTransferModal={() => setIsTransferOpen(true)}
+        onOpenNotifications={() => setIsNotifModalOpen(true)}
+        unreadNotifsCount={unreadNotifsCount}
+      />
+
+      {/* Pusat Notifikasi Modal */}
+      <NotificationModal
+        isOpen={isNotifModalOpen}
+        onClose={() => setIsNotifModalOpen(false)}
+        notifications={notifications}
+        onMarkAsRead={handleMarkAsRead}
+        onMarkAllAsRead={handleMarkAllAsRead}
+        onClearAll={handleClearAllNotifications}
+        onDeleteNotification={handleDeleteNotification}
+        onActionClick={handleNotifAction}
+        onOpenSettings={() => setIsNotifSettingsOpen(true)}
+        onTestNotification={handleTestNotification}
+      />
+
+      {/* Pengaturan Notifikasi Modal */}
+      <NotificationSettingsModal
+        isOpen={isNotifSettingsOpen}
+        onClose={() => setIsNotifSettingsOpen(false)}
+        settings={notifSettings}
+        onSaveSettings={handleSaveNotifSettings}
+        onTestNotification={handleTestNotification}
+        addToast={addToast}
       />
 
       {/* Toast notifications */}
