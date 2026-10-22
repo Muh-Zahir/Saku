@@ -46,7 +46,7 @@ export default function ReportsPage({
   if (Object.keys(catMap).length === 0 && budgets.some(b => (b.spent || 0) > 0)) {
     budgets.forEach(b => {
       if ((b.spent || 0) > 0) {
-        catMap[b.category] = (catMap[b.category] || 0) + b.spent;
+        catMap[b.name || b.category] = (catMap[b.name || b.category] || 0) + b.spent;
       }
     });
   }

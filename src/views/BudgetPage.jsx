@@ -11,6 +11,7 @@ import {
   ArrowRight,
   Wallet,
   Edit3,
+  Trash2,
   AlertCircle,
   Copy,
   Info,
@@ -20,6 +21,14 @@ import {
   Home,
   Car,
   ShoppingBag,
+  HeartPulse,
+  GraduationCap,
+  Gamepad2,
+  Zap,
+  TrendingUp,
+  Shirt,
+  Gift,
+  Sparkles,
   MoreHorizontal
 } from 'lucide-react';
 import { formatSimpleIDR } from '../utils/formatters';
@@ -40,40 +49,69 @@ export default function BudgetPage({
   onOpenManageBudget,
   onOpenAddBudget,
   onUpdateBudget,
+  onDeleteBudget,
+  onAddBudget,
   onSwitchTab,
   addToast
 }) {
-  const budgetList = budgets && budgets.length > 0 ? budgets : DEFAULT_BUDGETS;
+  const budgetList = budgets !== undefined ? budgets : DEFAULT_BUDGETS;
 
-  // State untuk inline edit per item
+  // State untuk inline edit per item (nama + limit)
   const [editingId, setEditingId] = useState(null);
+  const [editName, setEditName] = useState('');
   const [editValue, setEditValue] = useState('');
+
+  // State untuk inline confirm delete
+  const [deletingId, setDeletingId] = useState(null);
 
   const handleStartEdit = (item) => {
     setEditingId(item.id);
+    setEditName(item.name);
     setEditValue(String(Number(item.limit) || 0));
+    setDeletingId(null);
   };
 
   const handleCancelEdit = () => {
     setEditingId(null);
+    setEditName('');
     setEditValue('');
   };
 
   const handleSaveEdit = (itemId) => {
+    const trimmedName = editName.trim();
+    if (!trimmedName) {
+      addToast && addToast('Nama kategori tidak boleh kosong.', 'error');
+      return;
+    }
+
     const newLimit = parseInt(editValue.replace(/\D/g, ''), 10);
-    if (isNaN(newLimit) || newLimit <= 0) {
+    if (isNaN(newLimit) || newLimit < 0) {
       addToast && addToast('Masukkan nominal anggaran yang valid.', 'error');
       return;
     }
+
     const updatedBudgets = budgetList.map((b) =>
-      b.id === itemId ? { ...b, limit: newLimit } : b
+      b.id === itemId ? { ...b, name: trimmedName, limit: newLimit } : b
     );
+
     if (onUpdateBudget) {
       onUpdateBudget(updatedBudgets);
     }
-    addToast && addToast('Anggaran berhasil diperbarui!');
+    addToast && addToast(`Anggaran "${trimmedName}" berhasil diperbarui!`);
     setEditingId(null);
+    setEditName('');
     setEditValue('');
+  };
+
+  const handleDeleteItem = (item) => {
+    if (onDeleteBudget) {
+      onDeleteBudget(item.id);
+    } else if (onUpdateBudget) {
+      const remaining = budgetList.filter((b) => b.id !== item.id);
+      onUpdateBudget(remaining);
+      addToast && addToast(`Anggaran "${item.name}" berhasil dihapus.`);
+    }
+    setDeletingId(null);
   };
 
   const totalBudget = budgetList.reduce((sum, b) => sum + (Number(b.limit) || 0), 0);
@@ -86,10 +124,42 @@ export default function BudgetPage({
 
   const getCategoryIcon = (name) => {
     const n = (name || '').toLowerCase();
-    if (n.includes('makan') || n.includes('minum')) return <Utensils size={16} stroke="#4a5c52" strokeWidth={2} />;
-    if (n.includes('tinggal') || n.includes('rumah')) return <Home size={16} stroke="#4a5c52" strokeWidth={2} />;
-    if (n.includes('trans') || n.includes('bensin')) return <Car size={16} stroke="#4a5c52" strokeWidth={2} />;
-    if (n.includes('belanja')) return <ShoppingBag size={16} stroke="#4a5c52" strokeWidth={2} />;
+    if (n.includes('makan') || n.includes('minum') || n.includes('kuliner') || n.includes('jajan') || n.includes('food')) {
+      return <Utensils size={16} stroke="#4a5c52" strokeWidth={2} />;
+    }
+    if (n.includes('tinggal') || n.includes('rumah') || n.includes('kos') || n.includes('sewa')) {
+      return <Home size={16} stroke="#4a5c52" strokeWidth={2} />;
+    }
+    if (n.includes('trans') || n.includes('bensin') || n.includes('ojek') || n.includes('motor') || n.includes('mobil') || n.includes('grab') || n.includes('gojek')) {
+      return <Car size={16} stroke="#4a5c52" strokeWidth={2} />;
+    }
+    if (n.includes('belanja') || n.includes('shop') || n.includes('pasar') || n.includes('mall')) {
+      return <ShoppingBag size={16} stroke="#4a5c52" strokeWidth={2} />;
+    }
+    if (n.includes('sehat') || n.includes('obat') || n.includes('medis') || n.includes('dokter') || n.includes('apotek')) {
+      return <HeartPulse size={16} stroke="#059669" strokeWidth={2} />;
+    }
+    if (n.includes('didik') || n.includes('sekolah') || n.includes('kuliah') || n.includes('buku') || n.includes('kursus')) {
+      return <GraduationCap size={16} stroke="#2563eb" strokeWidth={2} />;
+    }
+    if (n.includes('hiburan') || n.includes('game') || n.includes('nonton') || n.includes('liburan') || n.includes('hobi')) {
+      return <Gamepad2 size={16} stroke="#d97706" strokeWidth={2} />;
+    }
+    if (n.includes('tagihan') || n.includes('listrik') || n.includes('air') || n.includes('wifi') || n.includes('pulsa') || n.includes('internet')) {
+      return <Zap size={16} stroke="#ea580c" strokeWidth={2} />;
+    }
+    if (n.includes('invest') || n.includes('saham') || n.includes('crypto') || n.includes('emas')) {
+      return <TrendingUp size={16} stroke="#059669" strokeWidth={2} />;
+    }
+    if (n.includes('pakaian') || n.includes('baju') || n.includes('fashion')) {
+      return <Shirt size={16} stroke="#7c3aed" strokeWidth={2} />;
+    }
+    if (n.includes('sedekah') || n.includes('zakat') || n.includes('donasi') || n.includes('infaq')) {
+      return <Gift size={16} stroke="#059669" strokeWidth={2} />;
+    }
+    if (n.includes('rawat') || n.includes('skincare') || n.includes('salon')) {
+      return <Sparkles size={16} stroke="#db2777" strokeWidth={2} />;
+    }
     return <MoreHorizontal size={16} stroke="#4a5c52" strokeWidth={2} />;
   };
 
@@ -126,17 +196,27 @@ export default function BudgetPage({
             currentPeriod={currentPeriod}
             onSelectPeriod={onSelectPeriod}
           />
-          <button className="btn-primary-action btn-add-tx-desktop" onClick={onOpenManageBudget}>
+          <button className="btn-primary-action btn-add-tx-desktop" onClick={onOpenAddBudget || onOpenManageBudget}>
             <Plus size={16} strokeWidth={2.5} />
+            <span>Tambah kategori</span>
+          </button>
+          <button className="btn-outline-action" onClick={onOpenManageBudget}>
+            <Edit3 size={15} strokeWidth={2} />
             <span>Kelola anggaran</span>
           </button>
         </div>
 
         {/* Mobile full-width CTA */}
-        <button className="btn-catat-mobile mobile-only" onClick={onOpenManageBudget}>
-          <Plus size={18} strokeWidth={2.5} />
-          <span>Kelola anggaran</span>
-        </button>
+        <div className="mobile-only" style={{ display: 'flex', gap: '8px', width: '100%' }}>
+          <button className="btn-catat-mobile" style={{ flex: 1 }} onClick={onOpenAddBudget || onOpenManageBudget}>
+            <Plus size={18} strokeWidth={2.5} />
+            <span>Tambah pos</span>
+          </button>
+          <button className="btn-outline-sm" style={{ flex: 1, justifyContent: 'center' }} onClick={onOpenManageBudget}>
+            <Edit3 size={16} strokeWidth={2} />
+            <span>Kelola</span>
+          </button>
+        </div>
       </div>
 
       {/* Top 3 Cards Dinamis */}
@@ -191,114 +271,205 @@ export default function BudgetPage({
                 <h2 className="card-title">Anggaran per kategori</h2>
                 <p className="card-subtitle">Pengeluaran untuk {currentPeriod}</p>
               </div>
-              <button className="btn-outline-sm" onClick={onOpenManageBudget}>
-                <Edit3 size={13} strokeWidth={2} />
-                <span>Edit anggaran</span>
-              </button>
+              <div className="card-header-actions" style={{ display: 'flex', gap: '8px' }}>
+                <button
+                  className="btn-outline-sm btn-header-add"
+                  onClick={onOpenAddBudget || onOpenManageBudget}
+                  title="Tambah kategori baru"
+                >
+                  <Plus size={13} strokeWidth={2.5} />
+                  <span>Tambah pos</span>
+                </button>
+                <button className="btn-outline-sm" onClick={onOpenManageBudget}>
+                  <Edit3 size={13} strokeWidth={2} />
+                  <span>Edit anggaran</span>
+                </button>
+              </div>
             </div>
 
-            <div className="detailed-budget-list">
-              {budgetList.map((item) => {
-                const limit = Number(item.limit) || 0;
-                const spent = Number(item.spent) || 0;
-                const ratio = limit > 0 ? (spent / limit) * 100 : 0;
-                const percent = Math.min(100, Math.round(ratio));
-                const isLimit = limit > 0 && spent >= limit;
-                const remaining = Math.max(0, limit - spent);
+            {budgetList.length === 0 ? (
+              <div className="budget-page-empty-state">
+                <div className="empty-state-icon-circle">
+                  <PieChart size={32} stroke="#8c9e94" />
+                </div>
+                <h3 className="empty-state-title">Belum ada pos anggaran</h3>
+                <p className="empty-state-desc">
+                  Atur batas anggaran untuk kategori makanan, transportasi, belanja, atau pos keuangan lainnya.
+                </p>
+                <button
+                  className="btn-primary-action"
+                  onClick={onOpenAddBudget || onOpenManageBudget}
+                  style={{ marginTop: '12px' }}
+                >
+                  <Plus size={16} strokeWidth={2.5} />
+                  <span>Tambah Pos Anggaran</span>
+                </button>
+              </div>
+            ) : (
+              <div className="detailed-budget-list">
+                {budgetList.map((item) => {
+                  const limit = Number(item.limit) || 0;
+                  const spent = Number(item.spent) || 0;
+                  const ratio = limit > 0 ? (spent / limit) * 100 : 0;
+                  const percent = Math.min(100, Math.round(ratio));
+                  const isLimit = limit > 0 && spent >= limit;
+                  const remaining = Math.max(0, limit - spent);
+                  const isEditing = editingId === item.id;
+                  const isDeleting = deletingId === item.id;
 
-                return (
-                  <div key={item.id} className="detailed-budget-card">
-                    <div className="detail-budget-header">
-                      <div className="detail-budget-left">
-                        <div className="cat-icon-wrap">
-                          {getCategoryIcon(item.name)}
-                        </div>
-                        <span className="cat-title">{item.name}</span>
-                      </div>
-                      <div className="detail-budget-right">
-                        <span className={`status-pill ${isLimit ? 'pill-amber' : 'pill-green'}`}>
-                          {limit === 0 ? 'Belum diatur' : isLimit ? 'Batas tercapai' : 'Dalam anggaran'}
-                        </span>
-                        {editingId === item.id ? (
-                          <div className="inline-edit-actions">
-                            <button
-                              className="btn-icon-confirm"
-                              onClick={() => handleSaveEdit(item.id)}
-                              aria-label="Simpan"
-                            >
-                              <Check size={14} stroke="#059669" />
-                            </button>
-                            <button
-                              className="btn-icon-cancel"
-                              onClick={handleCancelEdit}
-                              aria-label="Batal"
-                            >
-                              <X size={14} stroke="#dc2626" />
-                            </button>
+                  return (
+                    <div key={item.id} className="detailed-budget-card">
+                      <div className="detail-budget-header">
+                        <div className="detail-budget-left">
+                          <div className="cat-icon-wrap">
+                            {getCategoryIcon(item.name)}
                           </div>
-                        ) : (
-                          <button 
-                            className="btn-icon-ghost"
-                            onClick={() => handleStartEdit(item)}
-                            aria-label="Edit"
-                          >
-                            <Edit3 size={14} stroke="#8c9e94" />
-                          </button>
-                        )}
-                      </div>
-                    </div>
+                          {isEditing ? (
+                            <input
+                              type="text"
+                              className="inline-edit-name-field"
+                              value={editName}
+                              onChange={(e) => setEditName(e.target.value)}
+                              placeholder="Nama kategori"
+                              autoFocus
+                            />
+                          ) : (
+                            <span className="cat-title">{item.name}</span>
+                          )}
+                        </div>
 
-                    {editingId === item.id ? (
-                      <div className="inline-edit-row">
-                        <span className="detail-spent">{formatSimpleIDR(spent)} / </span>
-                        <div className="inline-edit-input-wrap">
-                          <span className="inline-edit-prefix">Rp</span>
-                          <input
-                            className="inline-edit-input"
-                            type="text"
-                            inputMode="numeric"
-                            value={Number(editValue).toLocaleString('id-ID')}
-                            onChange={(e) => {
-                              const raw = e.target.value.replace(/\D/g, '');
-                              setEditValue(raw);
-                            }}
-                            onKeyDown={(e) => {
-                              if (e.key === 'Enter') handleSaveEdit(item.id);
-                              if (e.key === 'Escape') handleCancelEdit();
-                            }}
-                            autoFocus
-                            placeholder="Masukkan batas"
-                          />
+                        <div className="detail-budget-right">
+                          {!isEditing && (
+                            <span className={`status-pill ${isLimit ? 'pill-amber' : 'pill-green'}`}>
+                              {limit === 0 ? 'Belum diatur' : isLimit ? 'Batas tercapai' : 'Dalam anggaran'}
+                            </span>
+                          )}
+
+                          {isEditing ? (
+                            <div className="inline-edit-actions">
+                              <button
+                                className="btn-icon-confirm"
+                                onClick={() => handleSaveEdit(item.id)}
+                                aria-label="Simpan perubahan"
+                                title="Simpan"
+                              >
+                                <Check size={14} stroke="#059669" />
+                              </button>
+                              <button
+                                className="btn-icon-cancel"
+                                onClick={handleCancelEdit}
+                                aria-label="Batal edit"
+                                title="Batal"
+                              >
+                                <X size={14} stroke="#dc2626" />
+                              </button>
+                            </div>
+                          ) : isDeleting ? (
+                            <div className="inline-delete-confirm-box">
+                              <span className="delete-confirm-label">Hapus pos ini?</span>
+                              <button
+                                className="btn-confirm-yes"
+                                onClick={() => handleDeleteItem(item)}
+                                title="Ya, hapus pos ini"
+                              >
+                                Ya
+                              </button>
+                              <button
+                                className="btn-confirm-no"
+                                onClick={() => setDeletingId(null)}
+                                title="Batal"
+                              >
+                                Batal
+                              </button>
+                            </div>
+                          ) : (
+                            <div className="budget-item-button-group">
+                              <button 
+                                className="btn-icon-ghost"
+                                onClick={() => handleStartEdit(item)}
+                                aria-label={`Edit ${item.name}`}
+                                title="Ubah batas & nama anggaran"
+                              >
+                                <Edit3 size={14} stroke="#8c9e94" />
+                              </button>
+                              <button
+                                className="btn-icon-ghost btn-delete-ghost"
+                                onClick={() => setDeletingId(item.id)}
+                                aria-label={`Hapus ${item.name}`}
+                                title="Hapus kategori anggaran"
+                              >
+                                <Trash2 size={14} stroke="#ef4444" />
+                              </button>
+                            </div>
+                          )}
                         </div>
                       </div>
-                    ) : (
-                      <div className="detail-budget-amounts">
-                        <span className="detail-spent">
-                          {formatSimpleIDR(spent)} / {formatSimpleIDR(limit)}
-                        </span>
-                        <span className="detail-percent">{percent}%</span>
+
+                      {isEditing ? (
+                        <div className="inline-edit-row">
+                          <span className="detail-spent">{formatSimpleIDR(spent)} / </span>
+                          <div className="inline-edit-input-wrap">
+                            <span className="inline-edit-prefix">Rp</span>
+                            <input
+                              className="inline-edit-input"
+                              type="text"
+                              inputMode="numeric"
+                              value={
+                                editValue
+                                  ? Number(editValue.replace(/\D/g, '')).toLocaleString('id-ID')
+                                  : ''
+                              }
+                              onChange={(e) => {
+                                const raw = e.target.value.replace(/\D/g, '');
+                                setEditValue(raw);
+                              }}
+                              onKeyDown={(e) => {
+                                if (e.key === 'Enter') handleSaveEdit(item.id);
+                                if (e.key === 'Escape') handleCancelEdit();
+                              }}
+                              placeholder="0"
+                            />
+                          </div>
+                        </div>
+                      ) : (
+                        <div className="detail-budget-amounts">
+                          <span className="detail-spent">
+                            {formatSimpleIDR(spent)} / {formatSimpleIDR(limit)}
+                          </span>
+                          <span className="detail-percent">{percent}%</span>
+                        </div>
+                      )}
+
+                      <div className="progress-track" style={{ height: '7px' }}>
+                        <div 
+                          className={`progress-bar ${isLimit ? 'bar-amber' : 'bar-green'}`}
+                          style={{ width: `${percent}%` }}
+                        />
                       </div>
-                    )}
 
-                    <div className="progress-track" style={{ height: '7px' }}>
-                      <div 
-                        className={`progress-bar ${isLimit ? 'bar-amber' : 'bar-green'}`}
-                        style={{ width: `${percent}%` }}
-                      />
+                      <div className="detail-budget-footer">
+                        <span className="detail-remaining">
+                          {limit === 0 ? 'Batas belum diatur' : isLimit ? 'Batas habis' : `Sisa ${formatSimpleIDR(remaining)}`}
+                        </span>
+                        <span className="detail-note">
+                          {limit === 0 ? 'Klik edit untuk atur batas limit' : isLimit ? 'Seluruh anggaran terpakai' : 'Belum melewati batas'}
+                        </span>
+                      </div>
                     </div>
+                  );
+                })}
 
-                    <div className="detail-budget-footer">
-                      <span className="detail-remaining">
-                        {limit === 0 ? 'Batas belum diatur' : isLimit ? 'Batas habis' : `Sisa ${formatSimpleIDR(remaining)}`}
-                      </span>
-                      <span className="detail-note">
-                        {limit === 0 ? 'Klik edit untuk atur batas limit' : isLimit ? 'Seluruh anggaran terpakai' : 'Belum melewati batas'}
-                      </span>
-                    </div>
-                  </div>
-                );
-              })}
-            </div>
+                {/* Dashed Add Category Button at bottom of list */}
+                <button
+                  type="button"
+                  className="btn-add-budget-dashed"
+                  onClick={onOpenAddBudget || onOpenManageBudget}
+                >
+                  <Plus size={16} strokeWidth={2.5} />
+                  <span>Tambah pos kategori anggaran baru</span>
+                </button>
+              </div>
+            )}
           </div>
 
           <div className="budget-footnote">
@@ -368,7 +539,7 @@ export default function BudgetPage({
               className="btn-outline-action"
               onClick={() => {
                 onOpenManageBudget();
-                addToast('Membuka penyesuaian anggaran');
+                addToast && addToast('Membuka penyesuaian anggaran');
               }}
             >
               <Copy size={15} strokeWidth={2} />

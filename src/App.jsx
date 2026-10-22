@@ -74,9 +74,15 @@ export default function App() {
   // Modals state
   const [isAddTxOpen, setIsAddTxOpen] = useState(false);
   const [isManageBudgetOpen, setIsManageBudgetOpen] = useState(false);
+  const [manageBudgetMode, setManageBudgetMode] = useState('list');
   const [isAddGoalOpen, setIsAddGoalOpen] = useState(false);
   const [isTransferOpen, setIsTransferOpen] = useState(false);
   const [isAddWalletOpen, setIsAddWalletOpen] = useState(false);
+
+  const handleOpenManageBudget = (mode = 'list') => {
+    setManageBudgetMode(mode);
+    setIsManageBudgetOpen(true);
+  };
 
   // Toasts
   const [toasts, setToasts] = useState([]);
@@ -249,7 +255,7 @@ export default function App() {
     }
   };
 
-  // 3. SIMPAN ANGGARAN
+  // 3. SIMPAN ANGGARAN (BATCH UPDATE / SYNC)
   const handleSaveBudgets = async (newBudgets) => {
     setData((prev) => ({
       ...prev,
@@ -266,6 +272,79 @@ export default function App() {
       fetchServerData();
     } catch (err) {
       console.error('Error saving budgets to server:', err);
+    }
+  };
+
+  // 3b. HAPUS KATEGORI ANGGARAN
+  const handleDeleteBudget = async (budgetId) => {
+    const targetBudget = (data.budgets || []).find((b) => b.id === budgetId);
+    const targetName = targetBudget?.name || 'Kategori anggaran';
+
+    const nextBudgets = (data.budgets || []).filter((b) => b.id !== budgetId);
+
+    setData((prev) => ({
+      ...prev,
+      budgets: nextBudgets,
+    }));
+
+    addToast(`Anggaran "${targetName}" berhasil dihapus.`);
+
+    try {
+      await fetch(`/api/budgets?id=${encodeURIComponent(budgetId)}`, { method: 'DELETE' });
+      // Juga panggil sync PUT untuk memastikan konsistensi batch
+      await fetch('/api/budgets', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ budgets: nextBudgets, period: currentPeriod }),
+      });
+      fetchServerData();
+    } catch (err) {
+      console.error('Error deleting budget on server:', err);
+    }
+  };
+
+  // 3c. TAMBAH KATEGORI ANGGARAN BARU
+  const handleAddBudget = async (newBudget) => {
+    const budgetObj = {
+      id: newBudget.id || `b-${Date.now()}`,
+      name: newBudget.name.trim(),
+      spent: Number(newBudget.spent || 0),
+      limit: Number(newBudget.limit || newBudget.limit_amount || 0),
+      color: newBudget.color || 'green',
+      period: currentPeriod,
+    };
+
+    let nextBudgets;
+    setData((prev) => {
+      const existingIdx = (prev.budgets || []).findIndex(
+        (b) => b.name.toLowerCase() === budgetObj.name.toLowerCase()
+      );
+      if (existingIdx >= 0) {
+        nextBudgets = [...prev.budgets];
+        nextBudgets[existingIdx] = {
+          ...nextBudgets[existingIdx],
+          limit: budgetObj.limit,
+        };
+      } else {
+        nextBudgets = [...(prev.budgets || []), budgetObj];
+      }
+      return {
+        ...prev,
+        budgets: nextBudgets,
+      };
+    });
+
+    addToast(`Anggaran "${budgetObj.name}" berhasil ditambahkan!`);
+
+    try {
+      await fetch('/api/budgets', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(budgetObj),
+      });
+      fetchServerData();
+    } catch (err) {
+      console.error('Error adding budget on server:', err);
     }
   };
 
@@ -455,7 +534,7 @@ export default function App() {
             currentPeriod={currentPeriod}
             setCurrentPeriod={handleSelectPeriod}
             onOpenAddTx={() => setIsAddTxOpen(true)}
-            onOpenManageBudget={() => setIsManageBudgetOpen(true)}
+            onOpenManageBudget={() => handleOpenManageBudget('list')}
             onOpenAddGoal={() => setIsAddGoalOpen(true)}
             addToast={addToast}
           />
@@ -490,9 +569,11 @@ export default function App() {
             currentPeriod={currentPeriod}
             onSelectPeriod={handleSelectPeriod}
             budgets={data.budgets}
-            onOpenManageBudget={() => setIsManageBudgetOpen(true)}
-            onOpenAddBudget={() => setIsManageBudgetOpen(true)}
+            onOpenManageBudget={() => handleOpenManageBudget('list')}
+            onOpenAddBudget={() => handleOpenManageBudget('add')}
             onUpdateBudget={handleSaveBudgets}
+            onDeleteBudget={handleDeleteBudget}
+            onAddBudget={handleAddBudget}
             onSwitchTab={setActiveNav}
             addToast={addToast}
           />
@@ -537,6 +618,10 @@ export default function App() {
         onClose={() => setIsManageBudgetOpen(false)}
         budgets={data.budgets}
         onSaveBudgets={handleSaveBudgets}
+        onDeleteBudget={handleDeleteBudget}
+        onAddBudget={handleAddBudget}
+        initialMode={manageBudgetMode}
+        addToast={addToast}
       />
 
       <AddGoalModal
@@ -567,7 +652,7 @@ export default function App() {
           setActiveNav(navId);
           setIsMoreMenuOpen(false);
         }}
-        onOpenManageBudget={() => setIsManageBudgetOpen(true)}
+        onOpenManageBudget={() => handleOpenManageBudget('list')}
         onOpenTransferModal={() => setIsTransferOpen(true)}
       />
 

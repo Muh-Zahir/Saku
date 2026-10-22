@@ -7,7 +7,7 @@ export async function GET(request) {
     await ensureDbReady();
 
     const { searchParams } = new URL(request.url);
-    const period = searchParams.get('period') || 'September 2026';
+    const period = searchParams.get('period') || 'Oktober 2026';
 
     const [walletsRes, txRes, budgetsRes, savingsRes] = await Promise.all([
       db.execute('SELECT * FROM wallets ORDER BY created_at ASC'),
