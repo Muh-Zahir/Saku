@@ -13,7 +13,7 @@ export default function AddTransactionModal({
   const [type, setType] = useState('expense');
   const [amountStr, setAmountStr] = useState('');
   const [title, setTitle] = useState('');
-  const [category, setCategory] = useState('Makan & minum');
+  const [category, setCategory] = useState('');
   const [wallet, setWallet] = useState('BCA');
   const [date, setDate] = useState('');
 
@@ -23,24 +23,24 @@ export default function AddTransactionModal({
       if (wallets && wallets.length > 0) {
         setWallet(wallets[0].name);
       }
+      // Set default category from budget list
+      const budgetCats = budgets ? budgets.map((b) => b.name).filter(Boolean) : [];
+      const fallbacks = ['Gaji', 'Investasi', 'Lainnya'];
+      const allCats = Array.from(new Set([...budgetCats, ...fallbacks]));
+      if (allCats.length > 0) {
+        setCategory(allCats[0]);
+      }
     }
-  }, [isOpen, wallets]);
+  }, [isOpen, wallets, budgets]);
 
   if (!isOpen) return null;
 
-  const defaultCategories = [
-    'Makan & minum',
-    'Transportasi',
-    'Belanja',
-    'Tempat tinggal',
-    'Gaji',
-    'Investasi',
-    'Lainnya',
-  ];
-
-  // Gabungkan kategori dari anggaran jika ada
-  const budgetCategories = budgets ? budgets.map((b) => b.name) : [];
-  const allCategories = Array.from(new Set([...budgetCategories, ...defaultCategories]));
+  // Hanya tampilkan kategori dari anggaran + fallback umum
+  const budgetCategories = budgets ? budgets.map((b) => b.name).filter(Boolean) : [];
+  const fallbackCategories = ['Gaji', 'Investasi', 'Lainnya'];
+  const allCategories = budgetCategories.length > 0
+    ? Array.from(new Set([...budgetCategories, ...fallbackCategories]))
+    : fallbackCategories;
 
   const walletOptions =
     wallets && wallets.length > 0
