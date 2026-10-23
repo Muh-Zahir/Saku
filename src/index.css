@@ -412,24 +412,25 @@ select {
 }
 
 .notif-btn {
-  display: flex;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
   position: relative;
+  width: 36px;
+  height: 36px;
+  padding: 0;
   color: #4b5563;
   border: none;
   background-color: transparent;
-  /* Extra padding top+right to give room for the badge */
-  padding: 10px 14px 4px 4px;
-  border-radius: 6px;
+  border-radius: 8px;
   cursor: pointer;
   overflow: visible;
-  transition: color var(--transition-fast);
+  transition: all var(--transition-fast);
 }
 
 .notif-btn:hover {
   color: #111827;
-  background-color: transparent;
+  background-color: rgba(0, 0, 0, 0.05);
 }
 
 .page-header {

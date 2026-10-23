@@ -23,7 +23,7 @@ export default function Topbar({
           aria-label="Notifikasi"
           onClick={onOpenNotifications}
         >
-          <Bell size={18} strokeWidth={2} />
+          <Bell size={20} strokeWidth={2} />
           {unreadCount > 0 && (
             <span className="topbar-notif-dot">
               {unreadCount > 9 ? '9+' : unreadCount}
