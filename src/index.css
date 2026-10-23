@@ -415,12 +415,15 @@ select {
   display: flex;
   align-items: center;
   justify-content: center;
+  position: relative;
   color: #4b5563;
   border: none;
   background-color: transparent;
-  padding: 4px;
+  /* Extra padding top+right to give room for the badge */
+  padding: 10px 14px 4px 4px;
   border-radius: 6px;
   cursor: pointer;
+  overflow: visible;
   transition: color var(--transition-fast);
 }
 
@@ -4688,8 +4691,8 @@ select {
 .topbar-notif-dot,
 .mobile-notif-dot {
   position: absolute;
-  top: 4px;
-  right: 4px;
+  top: 0;
+  right: 0;
   min-width: 17px;
   height: 17px;
   border-radius: 9px;
@@ -4710,6 +4713,7 @@ select {
 .notif-btn,
 .notif-bell-mobile-btn {
   position: relative;
+  overflow: visible;
 }
 
 .notif-modal-dialog {
