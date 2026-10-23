@@ -9,6 +9,7 @@ import {
   Lightbulb,
   ChevronRight,
   Bell,
+  Smartphone,
   X
 } from 'lucide-react';
 
@@ -83,6 +84,20 @@ export default function MoreMenuModal({
       action: () => {
         onClose();
         if (onOpenTransferModal) onOpenTransferModal();
+      }
+    },
+    {
+      id: 'pasang-aplikasi',
+      label: 'Pasang Aplikasi di HP',
+      desc: 'Pasang Saku di layar utama untuk akses cepat & notifikasi',
+      icon: Smartphone,
+      color: '#134e3f',
+      bgColor: '#e6f4ea',
+      action: () => {
+        onClose();
+        if (typeof window !== 'undefined' && window.__triggerPwaInstall) {
+          window.__triggerPwaInstall();
+        }
       }
     }
   ];

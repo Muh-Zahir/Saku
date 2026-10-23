@@ -13,6 +13,7 @@ import MoreMenuModal from './components/MoreMenuModal';
 import NotificationModal from './components/NotificationModal';
 import NotificationSettingsModal from './components/NotificationSettingsModal';
 import Toast from './components/Toast';
+import PwaInstallPrompt from './components/PwaInstallPrompt';
 
 // Pages
 import DashboardPage from './views/DashboardPage';
@@ -830,6 +831,9 @@ export default function App() {
         onTestNotification={handleTestNotification}
         addToast={addToast}
       />
+
+      {/* PWA Install Banner */}
+      <PwaInstallPrompt addToast={addToast} />
 
       {/* Toast notifications */}
       <Toast toasts={toasts} />
