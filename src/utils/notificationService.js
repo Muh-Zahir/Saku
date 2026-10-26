@@ -107,6 +107,64 @@ export function playChime() {
   }
 }
 
+// Helper untuk konversi VAPID public key
+export function urlBase64ToUint8Array(base64String) {
+  const padding = '='.repeat((4 - (base64String.length % 4)) % 4);
+  const base64 = (base64String + padding).replace(/-/g, '+').replace(/_/g, '/');
+  const rawData = window.atob(base64);
+  const outputArray = new Uint8Array(rawData.length);
+  for (let i = 0; i < rawData.length; ++i) {
+    outputArray[i] = rawData.charCodeAt(i);
+  }
+  return outputArray;
+}
+
+// Daftarkan browser/HP ke Push Notification server agar notifikasi bisa muncul saat aplikasi ditutup
+export async function subscribeToPushNotifications() {
+  if (typeof window === 'undefined') return null;
+  if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+    console.warn('[Push] ServiceWorker or PushManager not supported');
+    return null;
+  }
+  if (typeof Notification === 'undefined' || Notification.permission !== 'granted') {
+    return null;
+  }
+
+  try {
+    const reg = await navigator.serviceWorker.ready;
+    let subscription = await reg.pushManager.getSubscription();
+
+    if (!subscription) {
+      // Ambil VAPID public key dari server
+      const res = await fetch('/api/push/subscribe');
+      const { publicKey } = await res.json();
+      if (!publicKey) return null;
+
+      const convertedVapidKey = urlBase64ToUint8Array(publicKey);
+      subscription = await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: convertedVapidKey,
+      });
+    }
+
+    // Simpan ke database backend
+    await fetch('/api/push/subscribe', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        subscription: subscription.toJSON(),
+        userAgent: navigator.userAgent,
+      }),
+    });
+
+    console.log('[Push] Device registered for background notifications successfully!');
+    return subscription;
+  } catch (err) {
+    console.warn('[Push] Failed to subscribe for background push:', err);
+    return null;
+  }
+}
+
 // Request browser Web Push notification permission
 export async function requestPushPermission() {
   if (typeof window === 'undefined' || !('Notification' in window)) {
@@ -114,25 +172,56 @@ export async function requestPushPermission() {
   }
   try {
     const permission = await Notification.requestPermission();
+    if (permission === 'granted') {
+      // Otomatis daftarkan langganan background push
+      subscribeToPushNotifications().catch(() => {});
+    }
     return permission;
   } catch (err) {
     return 'denied';
   }
 }
 
-// Trigger Web Push Notification
-export function sendPushNotification(title, options = {}) {
-  if (typeof window === 'undefined' || !('Notification' in window)) return false;
+// Trigger Web Push Notification langsung di perangkat (menampilkan bubble sistem Android/iOS/Desktop)
+export async function sendPushNotification(title, options = {}) {
+  if (typeof window === 'undefined') return false;
+  if (!('Notification' in window)) return false;
   if (Notification.permission !== 'granted') return false;
 
-  try {
-    const notif = new Notification(title, {
-      icon: '/favicon.svg',
-      badge: '/favicon.svg',
-      vibrate: [100, 50, 100],
-      ...options,
-    });
+  const notifOptions = {
+    body: options.body || options.message || 'Buka Saku untuk melihat detailnya.',
+    icon: '/icons/icon-192.png',
+    badge: '/icons/icon-72.png',
+    vibrate: [200, 100, 200, 100, 200],
+    tag: options.tag || `saku-notif-${Date.now()}`,
+    renotify: true,
+    data: {
+      url: options.url || '/',
+      actionTarget: options.actionTarget || null,
+      ...options.data,
+    },
+    actions: [
+      { action: 'open', title: 'Buka Saku' }
+    ],
+    ...options,
+  };
 
+  // Di Android Chrome & PWA, HARUS menggunakan ServiceWorkerRegistration.showNotification()
+  if ('serviceWorker' in navigator) {
+    try {
+      const reg = await navigator.serviceWorker.ready;
+      if (reg && reg.showNotification) {
+        await reg.showNotification(title, notifOptions);
+        return true;
+      }
+    } catch (swErr) {
+      console.warn('[Push] ServiceWorker showNotification error:', swErr);
+    }
+  }
+
+  // Fallback desktop browser Notification constructor
+  try {
+    const notif = new Notification(title, notifOptions);
     if (options.actionTarget && options.onAction) {
       notif.onclick = () => {
         window.focus();
@@ -144,6 +233,33 @@ export function sendPushNotification(title, options = {}) {
   } catch (err) {
     console.warn('Browser notification error:', err);
     return false;
+  }
+}
+
+// Mengirim Push Notification dari server (berfungsi saat HP dikunci atau PWA ditutup)
+export async function triggerServerPushNotification({
+  title,
+  message,
+  url = '/',
+  target = null,
+  delaySeconds = 0,
+}) {
+  try {
+    const res = await fetch('/api/push/send', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({
+        title,
+        message,
+        url,
+        target,
+        delaySeconds,
+      }),
+    });
+    return await res.json();
+  } catch (err) {
+    console.error('triggerServerPushNotification error:', err);
+    return { success: false, error: err.message };
   }
 }
 

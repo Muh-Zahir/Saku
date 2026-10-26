@@ -31,6 +31,8 @@ import {
   saveNotifications,
   evaluateNotifications,
   sendPushNotification,
+  subscribeToPushNotifications,
+  triggerServerPushNotification,
   playChime
 } from './utils/notificationService';
 
@@ -232,7 +234,27 @@ export default function App() {
       onAction: handleNotifAction,
     });
 
-    addToast('Notifikasi uji coba berhasil dikirim!');
+    addToast('Notifikasi pop-up uji coba dikirim!');
+  };
+
+  const handleTestBackgroundPush = async (delaySeconds = 5) => {
+    addToast(`Notifikasi akan dikirim dalam ${delaySeconds} detik. Kunci layar HP Anda sekarang!`);
+
+    try {
+      await subscribeToPushNotifications();
+    } catch (e) {}
+
+    const res = await triggerServerPushNotification({
+      title: 'Uji Coba Latar Belakang: Saldo Menipis!',
+      message: 'Perhatian! Total saldo tersisa Rp85.000. Notifikasi sistem ini muncul saat aplikasi ditutup!',
+      url: '/#dompet',
+      target: 'dompet',
+      delaySeconds,
+    });
+
+    if (res && res.sentCount > 0) {
+      console.log('[Push] Background push scheduled successfully for', res.sentCount, 'devices');
+    }
   };
 
   const unreadNotifsCount = notifications.filter((n) => !n.read).length;
@@ -836,6 +858,7 @@ export default function App() {
         settings={notifSettings}
         onSaveSettings={handleSaveNotifSettings}
         onTestNotification={handleTestNotification}
+        onTestBackgroundPush={handleTestBackgroundPush}
         addToast={addToast}
       />
 

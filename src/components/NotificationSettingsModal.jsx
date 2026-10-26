@@ -25,6 +25,7 @@ export default function NotificationSettingsModal({
   settings,
   onSaveSettings,
   onTestNotification,
+  onTestBackgroundPush,
   addToast
 }) {
   const [formSettings, setFormSettings] = useState(settings || {});
@@ -405,19 +406,31 @@ export default function NotificationSettingsModal({
           {/* Test Notification Action */}
           <div className="test-notif-box">
             <div className="test-notif-left">
-              <Send size={16} stroke="#059669" strokeWidth={2.2} />
+              <Send size={18} stroke="#059669" strokeWidth={2.2} />
               <div>
-                <span className="test-notif-title">Ingin mencoba tampilan notifikasi?</span>
-                <span className="test-notif-desc">Kirim contoh notifikasi push & suara langsung ke perangkatmu.</span>
+                <span className="test-notif-title">Uji Coba Notifikasi Sistem</span>
+                <span className="test-notif-desc">
+                  Pastikan izin notifikasi aktif agar bubble notifikasi muncul di layar HP / lockscreen.
+                </span>
               </div>
             </div>
-            <button
-              type="button"
-              className="btn-run-test-notif"
-              onClick={() => onTestNotification && onTestNotification()}
-            >
-              Uji Coba Sekarang
-            </button>
+            <div className="test-notif-actions">
+              <button
+                type="button"
+                className="btn-run-test-notif"
+                onClick={() => onTestNotification && onTestNotification()}
+              >
+                Tes Pop-up Langsung
+              </button>
+              <button
+                type="button"
+                className="btn-run-test-notif btn-test-background"
+                onClick={() => onTestBackgroundPush && onTestBackgroundPush(5)}
+                title="Kirim notifikasi dalam 5 detik agar Anda sempat mengunci HP"
+              >
+                Tes Saat HP Ditutup (5 dtk)
+              </button>
+            </div>
           </div>
 
           {/* Modal Footer */}

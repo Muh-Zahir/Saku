@@ -81,23 +81,31 @@ self.addEventListener('fetch', (event) => {
   );
 });
 
-// Push notification event
+// Push notification event (diterima saat aplikasi sedang tertutup / di latar belakang)
 self.addEventListener('push', (event) => {
   let data = {};
   try {
     data = event.data ? event.data.json() : {};
   } catch (e) {
-    data = { title: 'Saku', message: event.data ? event.data.text() : 'Notifikasi baru' };
+    data = { title: 'Saku — Keuangan Pribadi', message: event.data ? event.data.text() : 'Notifikasi baru' };
   }
 
-  const title = data.title || 'Saku';
+  const title = data.title || 'Saku — Keuangan Pribadi';
   const options = {
-    body: data.message || 'Buka Saku untuk melihat detailnya.',
+    body: data.message || data.body || 'Buka Saku untuk melihat detail keuanganmu.',
     icon: '/icons/icon-192.png',
     badge: '/icons/icon-72.png',
-    vibrate: [100, 50, 100],
+    vibrate: [200, 100, 200, 100, 200],
+    tag: data.tag || `saku-push-${Date.now()}`,
+    renotify: true,
+    requireInteraction: false,
+    actions: [
+      { action: 'open', title: 'Buka Saku' }
+    ],
     data: {
-      url: data.url || '/'
+      url: data.url || '/',
+      target: data.target || null,
+      timestamp: data.timestamp || Date.now()
     }
   };
 
@@ -107,12 +115,20 @@ self.addEventListener('push', (event) => {
 // Notification click event
 self.addEventListener('notificationclick', (event) => {
   event.notification.close();
+
+  if (event.action === 'close') {
+    return;
+  }
+
   const targetUrl = (event.notification.data && event.notification.data.url) || '/';
 
   event.waitUntil(
     clients.matchAll({ type: 'window', includeUncontrolled: true }).then((clientList) => {
       for (const client of clientList) {
         if (client.url && 'focus' in client) {
+          if ('navigate' in client && targetUrl !== '/') {
+            client.navigate(targetUrl);
+          }
           return client.focus();
         }
       }
