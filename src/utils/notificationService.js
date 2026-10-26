@@ -438,7 +438,7 @@ export function evaluateNotifications(data, settings = DEFAULT_NOTIF_SETTINGS) {
   if (settings.paydayAlert) {
     const paydayDay = Number(settings.paydayDate) || 25;
     // Trigger pada tanggal gajian (tgl 25) atau H+1 (tgl 26) jika belum sempat dibuka pada tgl 25
-    if (currentDate === paydayDay || (currentDate === paydayDay + 1 && !suppressedKeys[`payday_${currentYear}_${currentMonth}`])) {
+    if (currentDate === paydayDay || (currentDate === paydayDay + 1 && !suppressed[`payday_${currentYear}_${currentMonth}`])) {
       const key = `payday_${currentYear}_${currentMonth}`;
       addIfNew(key, {
         type: 'payday',
