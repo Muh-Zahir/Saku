@@ -49,6 +49,7 @@ export default function DashboardPage({
         />
         <BudgetCard
           budgets={data.budgets}
+          paydayCycle={data.paydayCycle}
           onOpenManageBudget={onOpenManageBudget}
         />
       </section>

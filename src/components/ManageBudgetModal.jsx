@@ -238,6 +238,14 @@ export default function ManageBudgetModal({
           </button>
         </div>
 
+        {/* Payday Cycle Notice */}
+        <div className="payday-modal-notice">
+          <Sparkles size={15} stroke="#059669" strokeWidth={2.2} />
+          <span>
+            <strong>Siklus Gajian Aktif:</strong> Anggaran otomatis di-reset ke Rp 0 setiap tanggal 25 saat kamu gajian.
+          </span>
+        </div>
+
         {/* Modal Controls Bar */}
         <div className="budget-modal-controls">
           <div className="budget-search-wrap">

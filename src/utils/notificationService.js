@@ -433,20 +433,21 @@ export function evaluateNotifications(data, settings = DEFAULT_NOTIF_SETTINGS) {
   }
 
   // =========================================================================
-  // 5. PAYDAY ALLOCATION (Pengingat Hari Gajian)
+  // 5. PAYDAY ALLOCATION & BUDGET RESET (Pengingat Hari Gajian & Reset Anggaran)
   // =========================================================================
   if (settings.paydayAlert) {
     const paydayDay = Number(settings.paydayDate) || 25;
-    if (currentDate === paydayDay) {
+    // Trigger pada tanggal gajian (tgl 25) atau H+1 (tgl 26) jika belum sempat dibuka pada tgl 25
+    if (currentDate === paydayDay || (currentDate === paydayDay + 1 && !suppressedKeys[`payday_${currentYear}_${currentMonth}`])) {
       const key = `payday_${currentYear}_${currentMonth}`;
       addIfNew(key, {
         type: 'payday',
         category: 'reminder',
-        title: 'Hari Gajian Tiba! 🎉',
-        message: 'Hari ini gajian! Yuk, langsung alokasikan gajimu ke pos tabungan dan kebutuhan sebelum terpakai untuk hal lain.',
+        title: 'Hari Gajian! Anggaran Berhasil Di-reset 🚀',
+        message: 'Hari ini gajian! Anggaran bulananmu otomatis di-reset ke Rp 0 untuk siklus baru. Yuk alokasikan gajimu ke pos tabungan dan kebutuhan.',
         action: {
-          label: 'Alokasikan Tabungan',
-          target: 'target-tabungan',
+          label: 'Lihat Anggaran',
+          target: 'anggaran',
         },
       });
     }

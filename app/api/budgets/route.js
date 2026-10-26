@@ -1,4 +1,4 @@
-import { db, ensureDbReady } from '@/lib/db';
+import { db, ensureDbReady, parseDateComponents, getPaydayCycleInfo } from '@/lib/db';
 import { NextResponse } from 'next/server';
 
 // GET /api/budgets?period=...
@@ -7,28 +7,46 @@ export async function GET(request) {
     await ensureDbReady();
     const { searchParams } = new URL(request.url);
     const period = searchParams.get('period') || 'Oktober 2026';
+    const cycleMode = searchParams.get('cycle') || 'payday';
+    const paydayDay = parseInt(searchParams.get('paydayDay') || '25', 10);
 
-    const result = await db.execute({
-      sql: 'SELECT * FROM budgets WHERE period = ? ORDER BY limit_amount DESC',
-      args: [period],
+    const paydayCycle = getPaydayCycleInfo(period, paydayDay);
+
+    const [budgetResult, txResult] = await Promise.all([
+      db.execute({
+        sql: 'SELECT * FROM budgets WHERE period = ? ORDER BY limit_amount DESC',
+        args: [period],
+      }),
+      db.execute("SELECT period, type, category, amount, date FROM transactions WHERE type = 'expense'"),
+    ]);
+
+    const allExpenses = txResult.rows;
+
+    let budgets = budgetResult.rows.map((b) => {
+      const paydaySpent = allExpenses
+        .filter((t) => {
+          if (t.category !== b.name) return false;
+          const { timestamp } = parseDateComponents(t.date, t.period);
+          return timestamp >= paydayCycle.startTimestamp && timestamp <= paydayCycle.endTimestamp;
+        })
+        .reduce((sum, t) => sum + Math.abs(Number(t.amount || 0)), 0);
+
+      const calendarSpent = allExpenses
+        .filter((t) => t.category === b.name && t.period === period)
+        .reduce((sum, t) => sum + Math.abs(Number(t.amount || 0)), 0);
+
+      const spent = cycleMode === 'calendar' ? calendarSpent : paydaySpent;
+
+      return {
+        ...b,
+        spent,
+        limit: Number(b.limit_amount || b.limit || 0),
+        paydaySpent,
+        calendarSpent,
+      };
     });
 
-    let budgets = result.rows.map((b) => ({
-      ...b,
-      spent: Number(b.spent || 0),
-      limit: Number(b.limit_amount || b.limit || 0),
-    }));
-
-    if (budgets.length === 0) {
-      const allBudgets = await db.execute('SELECT * FROM budgets LIMIT 10');
-      budgets = allBudgets.rows.map((b) => ({
-        ...b,
-        spent: Number(b.spent || 0),
-        limit: Number(b.limit_amount || b.limit || 0),
-      }));
-    }
-
-    return NextResponse.json({ budgets });
+    return NextResponse.json({ budgets, paydayCycle });
   } catch (error) {
     console.error('GET /api/budgets error:', error);
     return NextResponse.json({ error: error.message }, { status: 500 });

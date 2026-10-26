@@ -300,9 +300,9 @@ export default function NotificationSettingsModal({
                   <Sparkles size={18} strokeWidth={2.2} />
                 </div>
                 <div className="setting-item-text">
-                  <span className="setting-title">Pengingat Hari Gajian</span>
+                  <span className="setting-title">Pengingat & Reset Anggaran Gajian</span>
                   <span className="setting-desc">
-                    Mengingatkan untuk langsung mengalokasikan gaji ke pos tabungan dan kebutuhan.
+                    Mengingatkan alokasi gaji dan otomatis me-reset seluruh pos anggaran ke Rp 0 setiap tanggal gajian.
                   </span>
                 </div>
                 <label className="switch-control">

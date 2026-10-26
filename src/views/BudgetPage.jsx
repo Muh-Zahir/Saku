@@ -46,6 +46,7 @@ export default function BudgetPage({
   currentPeriod,
   onSelectPeriod,
   budgets = [],
+  paydayCycle,
   onOpenManageBudget,
   onOpenAddBudget,
   onUpdateBudget,
@@ -55,6 +56,15 @@ export default function BudgetPage({
   addToast
 }) {
   const budgetList = budgets !== undefined ? budgets : DEFAULT_BUDGETS;
+  const [cycleMode, setCycleMode] = useState('payday'); // 'payday' | 'calendar'
+
+  // Helper untuk mendapatkan spent sesuai mode siklus yang dipilih (Siklus Gajian reset tgl 25 vs Bulan Penuh)
+  const getSpent = (item) => {
+    if (cycleMode === 'calendar') {
+      return item.calendarSpent !== undefined ? Number(item.calendarSpent) : Number(item.spent) || 0;
+    }
+    return item.paydaySpent !== undefined ? Number(item.paydaySpent) : Number(item.spent) || 0;
+  };
 
   // State untuk inline edit per item (nama + limit)
   const [editingId, setEditingId] = useState(null);
@@ -115,12 +125,12 @@ export default function BudgetPage({
   };
 
   const totalBudget = budgetList.reduce((sum, b) => sum + (Number(b.limit) || 0), 0);
-  const usedBudget = budgetList.reduce((sum, b) => sum + (Number(b.spent) || 0), 0);
+  const usedBudget = budgetList.reduce((sum, b) => sum + getSpent(b), 0);
   const remainingBudget = Math.max(0, totalBudget - usedBudget);
   const usedPercent = totalBudget > 0 ? ((usedBudget / totalBudget) * 100).toFixed(1).replace('.', ',') : '0';
   const remainingPercent = totalBudget > 0 ? ((remainingBudget / totalBudget) * 100).toFixed(1).replace('.', ',') : '0';
 
-  const overLimitBudgets = budgetList.filter((b) => Number(b.limit || 0) > 0 && Number(b.spent || 0) >= Number(b.limit || 0));
+  const overLimitBudgets = budgetList.filter((b) => Number(b.limit || 0) > 0 && getSpent(b) >= Number(b.limit || 0));
 
   const getCategoryIcon = (name) => {
     const n = (name || '').toLowerCase();
@@ -219,6 +229,47 @@ export default function BudgetPage({
         </div>
       </div>
 
+      {/* Banner Siklus Gajian (Reset tiap tgl 25) */}
+      <div className="payday-banner-card">
+        <div className="payday-banner-main">
+          <div className="payday-icon-circle">
+            <Sparkles size={20} stroke="#059669" strokeWidth={2.2} />
+          </div>
+          <div className="payday-banner-texts">
+            <div className="payday-banner-badge-row">
+              <span className="payday-banner-title">
+                Siklus Gajian: {paydayCycle?.cycleLabel || '25 Okt – 24 Nov 2026'}
+              </span>
+              <span className="payday-pill-badge">
+                ✨ Reset tiap tgl {paydayCycle?.resetDay || 25}
+              </span>
+            </div>
+            <p className="payday-banner-desc">
+              {cycleMode === 'payday'
+                ? `Anggaran otomatis di-reset ke Rp 0 setiap tanggal ${paydayCycle?.resetDay || 25} saat gajian masuk. Menampilkan pengeluaran dari gaji baru.`
+                : `Menampilkan seluruh pengeluaran dari awal hingga akhir bulan kalender (${paydayCycle?.calendarLabel || currentPeriod}).`}
+            </p>
+          </div>
+        </div>
+
+        <div className="payday-toggle-group">
+          <button
+            type="button"
+            className={`payday-toggle-btn ${cycleMode === 'payday' ? 'active' : ''}`}
+            onClick={() => setCycleMode('payday')}
+          >
+            Siklus Gajian (Tgl {paydayCycle?.resetDay || 25})
+          </button>
+          <button
+            type="button"
+            className={`payday-toggle-btn ${cycleMode === 'calendar' ? 'active' : ''}`}
+            onClick={() => setCycleMode('calendar')}
+          >
+            Bulan Penuh (1–31)
+          </button>
+        </div>
+      </div>
+
       {/* Top 3 Cards Dinamis */}
       <section className="metrics-grid">
         <div className="metric-card metric-card-primary">
@@ -309,7 +360,7 @@ export default function BudgetPage({
               <div className="detailed-budget-list">
                 {budgetList.map((item) => {
                   const limit = Number(item.limit) || 0;
-                  const spent = Number(item.spent) || 0;
+                  const spent = getSpent(item);
                   const ratio = limit > 0 ? (spent / limit) * 100 : 0;
                   const percent = Math.min(100, Math.round(ratio));
                   const isLimit = limit > 0 && spent >= limit;

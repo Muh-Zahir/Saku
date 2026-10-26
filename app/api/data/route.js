@@ -1,4 +1,4 @@
-import { db, ensureDbReady, MONTH_NAMES_ID } from '@/lib/db';
+import { db, ensureDbReady, MONTH_NAMES_ID, parseDateComponents, getPaydayCycleInfo } from '@/lib/db';
 import { NextResponse } from 'next/server';
 
 // GET /api/data?period=... - Mengambil seluruh data aplikasi tersinkronisasi berdasarkan periode bulan yang dipilih
@@ -8,6 +8,10 @@ export async function GET(request) {
 
     const { searchParams } = new URL(request.url);
     const period = searchParams.get('period') || 'Oktober 2026';
+    const cycleMode = searchParams.get('cycle') || 'payday'; // 'payday' atau 'calendar'
+    const paydayDay = parseInt(searchParams.get('paydayDay') || '25', 10);
+
+    const paydayCycle = getPaydayCycleInfo(period, paydayDay);
 
     const [walletsRes, txRes, budgetsRes, savingsRes, allTxRes] = await Promise.all([
       db.execute('SELECT * FROM wallets ORDER BY created_at ASC'),
@@ -20,8 +24,8 @@ export async function GET(request) {
         args: [period],
       }),
       db.execute('SELECT * FROM savings_goals ORDER BY created_at DESC'),
-      // Ambil ringkasan untuk grafik bulanan
-      db.execute('SELECT period, type, amount, date FROM transactions'),
+      // Ambil ringkasan seluruh transaksi untuk siklus gajian & grafik bulanan
+      db.execute('SELECT period, type, category, amount, date FROM transactions'),
     ]);
 
     // 1. Wallets
@@ -54,20 +58,47 @@ export async function GET(request) {
 
     const pertambahanSaldo = pemasukan - pengeluaran;
 
+    // Filter seluruh pengeluaran untuk perhitungan siklus gajian (reset tiap tanggal 25)
+    const allExpenses = allTxRes.rows.filter((t) => t.type === 'expense');
+
     // 4. Budgets untuk periode ini
     let budgets = budgetsRes.rows.map((b) => {
-      // Hitung spent riil dari transaksi yang ada di bulan ini
-      const actualSpent = transactions
+      // 1. Pengeluaran dalam siklus gajian (mulai tanggal 25 saat gajian masuk)
+      const paydaySpent = allExpenses
+        .filter((t) => {
+          if (t.category !== b.name) return false;
+          const { timestamp } = parseDateComponents(t.date, t.period);
+          return timestamp >= paydayCycle.startTimestamp && timestamp <= paydayCycle.endTimestamp;
+        })
+        .reduce((sum, t) => sum + Math.abs(Number(t.amount || 0)), 0);
+
+      // 2. Pengeluaran dalam 1 bulan kalender penuh (1 - 31)
+      const calendarSpent = transactions
         .filter((t) => t.type === 'expense' && t.category === b.name)
-        .reduce((sum, t) => sum + Math.abs(t.amount), 0);
+        .reduce((sum, t) => sum + Math.abs(Number(t.amount || 0)), 0);
+
+      // 3. Pengeluaran pada siklus gajian sebelumnya (25 bulan lalu - 24 bulan ini)
+      const previousCycleSpent = allExpenses
+        .filter((t) => {
+          if (t.category !== b.name) return false;
+          const { timestamp } = parseDateComponents(t.date, t.period);
+          return timestamp >= paydayCycle.prevStartTimestamp && timestamp <= paydayCycle.prevEndTimestamp;
+        })
+        .reduce((sum, t) => sum + Math.abs(Number(t.amount || 0)), 0);
+
+      // Nilai spent aktif: gunakan paydaySpent secara default agar anggaran reset otomatis tiap tanggal 25
+      const spent = cycleMode === 'calendar' ? calendarSpent : paydaySpent;
 
       return {
         id: b.id,
         name: b.name,
-        spent: actualSpent,
+        spent,
         limit: Number(b.limit_amount || b.limit || 0),
         color: b.color || 'green',
         period: b.period,
+        paydaySpent,
+        calendarSpent,
+        previousCycleSpent,
       };
     });
 
@@ -82,17 +113,29 @@ export async function GET(request) {
       ];
 
       budgets = defaultCategories.map((c, i) => {
-        const actualSpent = transactions
+        const paydaySpent = allExpenses
+          .filter((t) => {
+            if (t.category !== c.name) return false;
+            const { timestamp } = parseDateComponents(t.date, t.period);
+            return timestamp >= paydayCycle.startTimestamp && timestamp <= paydayCycle.endTimestamp;
+          })
+          .reduce((sum, t) => sum + Math.abs(Number(t.amount || 0)), 0);
+
+        const calendarSpent = transactions
           .filter((t) => t.type === 'expense' && t.category === c.name)
-          .reduce((sum, t) => sum + Math.abs(t.amount), 0);
+          .reduce((sum, t) => sum + Math.abs(Number(t.amount || 0)), 0);
+
+        const spent = cycleMode === 'calendar' ? calendarSpent : paydaySpent;
 
         return {
           id: `b-${period.toLowerCase().replace(/\s+/g, '-')}-${i + 1}`,
           name: c.name,
-          spent: actualSpent,
+          spent,
           limit: c.limit,
           color: c.color,
           period,
+          paydaySpent,
+          calendarSpent,
         };
       });
 
@@ -203,6 +246,7 @@ export async function GET(request) {
       transactions,
       budgets,
       savings,
+      paydayCycle,
     });
   } catch (error) {
     console.error('GET /api/data error:', error);

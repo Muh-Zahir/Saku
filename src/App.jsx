@@ -747,6 +747,7 @@ export default function App() {
             currentPeriod={currentPeriod}
             onSelectPeriod={handleSelectPeriod}
             budgets={data.budgets}
+            paydayCycle={data.paydayCycle}
             onOpenManageBudget={() => handleOpenManageBudget('list')}
             onOpenAddBudget={() => handleOpenManageBudget('add')}
             onUpdateBudget={handleSaveBudgets}

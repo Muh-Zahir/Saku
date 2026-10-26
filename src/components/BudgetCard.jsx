@@ -4,18 +4,24 @@ import React from 'react';
 import { ArrowRight } from 'lucide-react';
 import { formatSimpleIDR } from '../utils/formatters';
 
-export default function BudgetCard({ budgets, onOpenManageBudget }) {
-  const totalSpent = budgets.reduce((acc, b) => acc + b.spent, 0);
-  const totalLimit = budgets.reduce((acc, b) => acc + b.limit, 0);
+export default function BudgetCard({ budgets, onOpenManageBudget, paydayCycle }) {
+  const totalSpent = budgets.reduce((acc, b) => acc + (Number(b.spent) || 0), 0);
+  const totalLimit = budgets.reduce((acc, b) => acc + (Number(b.limit) || 0), 0);
   const totalRatio = totalLimit > 0 ? ((totalSpent / totalLimit) * 100).toFixed(1).replace('.', ',') : 0;
+  const resetDay = paydayCycle?.resetDay || 25;
 
   return (
     <div className="dashboard-card card-budget">
       <div className="card-header">
         <div>
-          <h2 className="card-title">Anggaran</h2>
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px', flexWrap: 'wrap' }}>
+            <h2 className="card-title">Anggaran</h2>
+            <span className="payday-pill-badge" title={`Anggaran otomatis di-reset tiap tanggal ${resetDay} saat gajian tiba`}>
+              ✨ Reset tiap tgl {resetDay}
+            </span>
+          </div>
           <p className="card-subtitle">
-            {formatSimpleIDR(totalSpent)} dari {formatSimpleIDR(totalLimit)} · {totalRatio}%
+            {formatSimpleIDR(totalSpent)} dari {formatSimpleIDR(totalLimit)} · {totalRatio}% (Siklus Gajian)
           </p>
         </div>
         <button className="card-action-link" onClick={onOpenManageBudget}>
