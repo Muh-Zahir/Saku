@@ -244,7 +244,7 @@ export default function TransactionsPage({
         <div className="card-header" style={{ marginBottom: '14px' }}>
           <div>
             <h2 className="card-title">Riwayat transaksi</h2>
-            <p className="card-subtitle">{txList.length} transaksi tercatat pada {currentPeriod}</p>
+            <p className="card-subtitle">{periodTxList.length} transaksi tercatat pada {currentPeriod}</p>
           </div>
           <div style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
             {checkedIds.length > 0 && onDeleteTransaction && (
@@ -273,7 +273,7 @@ export default function TransactionsPage({
             className={`tx-tab-btn ${activeTab === 'all' ? 'active' : ''}`}
             onClick={() => { setActiveTab('all'); setCurrentPage(1); }}
           >
-            Semua transaksi ({txList.length})
+            Semua transaksi ({periodTxList.length})
           </button>
           <button
             className={`tx-tab-btn ${activeTab === 'income' ? 'active' : ''}`}
