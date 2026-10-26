@@ -1,7 +1,7 @@
-import { db, ensureDbReady } from '@/lib/db';
+import { db, ensureDbReady, getPeriodFromDate } from '@/lib/db';
 import { NextResponse } from 'next/server';
 
-// GET /api/transactions
+// GET /api/transactions?period=...&type=...&wallet=...&limit=...
 export async function GET(request) {
   try {
     await ensureDbReady();
@@ -10,11 +10,16 @@ export async function GET(request) {
     const limit = searchParams.get('limit') || 100;
     const type = searchParams.get('type');
     const wallet = searchParams.get('wallet');
+    const period = searchParams.get('period');
 
     let query = 'SELECT * FROM transactions';
     const conditions = [];
     const args = [];
 
+    if (period) {
+      conditions.push('period = ?');
+      args.push(period);
+    }
     if (type && type !== 'all') {
       conditions.push('type = ?');
       args.push(type);
@@ -28,7 +33,7 @@ export async function GET(request) {
       query += ' WHERE ' + conditions.join(' AND ');
     }
 
-    query += ' ORDER BY created_at DESC LIMIT ?';
+    query += ' ORDER BY date DESC, created_at DESC LIMIT ?';
     args.push(Number(limit));
 
     const result = await db.execute({ sql: query, args });
@@ -51,15 +56,16 @@ export async function POST(request) {
     await ensureDbReady();
 
     const body = await request.json();
-    const { id, title, date, category, wallet_id, wallet, wallet_name, amount, type, icon, notes } = body;
+    const { id, title, date, category, wallet_id, wallet, wallet_name, amount, type, icon, notes, period } = body;
 
     const actualWalletName = wallet_name || wallet || 'BCA';
     const txId = id || `tx-${Date.now()}`;
     const numAmount = Number(amount);
+    const resolvedPeriod = period || getPeriodFromDate(date);
 
     await db.execute({
-      sql: `INSERT INTO transactions (id, title, date, category, wallet_id, wallet_name, amount, type, icon, notes)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+      sql: `INSERT INTO transactions (id, title, date, category, wallet_id, wallet_name, amount, type, icon, notes, period)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       args: [
         txId,
         title,
@@ -71,6 +77,7 @@ export async function POST(request) {
         type,
         icon || (type === 'income' ? 'briefcase' : 'shopping-bag'),
         notes || null,
+        resolvedPeriod,
       ],
     });
 
@@ -88,11 +95,11 @@ export async function POST(request) {
       });
     }
 
-    // Update pengeluaran anggaran jika expense
+    // Update pengeluaran anggaran untuk periode spesifik ini
     if (type === 'expense' && category) {
       await db.execute({
-        sql: 'UPDATE budgets SET spent = spent + ? WHERE name = ?',
-        args: [Math.abs(numAmount), category],
+        sql: 'UPDATE budgets SET spent = spent + ? WHERE name = ? AND period = ?',
+        args: [Math.abs(numAmount), category, resolvedPeriod],
       });
     }
 
@@ -108,6 +115,7 @@ export async function POST(request) {
         amount: numAmount,
         type,
         icon,
+        period: resolvedPeriod,
       },
     }, { status: 201 });
   } catch (error) {
@@ -151,11 +159,11 @@ export async function DELETE(request) {
         });
       }
 
-      // Rollback spent anggaran jika expense
+      // Rollback spent anggaran pada periode transaksi tersebut
       if (tx.type === 'expense' && tx.category) {
         await db.execute({
-          sql: 'UPDATE budgets SET spent = MAX(0, spent - ?) WHERE name = ?',
-          args: [Math.abs(tx.amount), tx.category],
+          sql: 'UPDATE budgets SET spent = MAX(0, spent - ?) WHERE name = ? AND period = ?',
+          args: [Math.abs(tx.amount), tx.category, tx.period || 'Oktober 2026'],
         });
       }
     }

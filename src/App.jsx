@@ -287,30 +287,34 @@ export default function App() {
 
   // 1. TAMBAH TRANSAKSI
   const handleAddTransaction = async (newTx) => {
-    const isExpense = newTx.amount < 0;
-    const absAmount = Math.abs(newTx.amount);
+    const txWithPeriod = { ...newTx, period: newTx.period || currentPeriod };
+    const isExpense = txWithPeriod.amount < 0;
+    const absAmount = Math.abs(txWithPeriod.amount);
+    const matchesPeriod = txWithPeriod.period === currentPeriod;
 
     setData((prev) => {
       const nextMetrics = { ...prev.metrics };
-      if (isExpense) {
-        nextMetrics.totalSaldo -= absAmount;
-        nextMetrics.pengeluaran += absAmount;
-        nextMetrics.pertambahanSaldo -= absAmount;
-      } else {
-        nextMetrics.totalSaldo += absAmount;
-        nextMetrics.pemasukan += absAmount;
-        nextMetrics.pertambahanSaldo += absAmount;
+      if (matchesPeriod) {
+        if (isExpense) {
+          nextMetrics.totalSaldo -= absAmount;
+          nextMetrics.pengeluaran += absAmount;
+          nextMetrics.pertambahanSaldo -= absAmount;
+        } else {
+          nextMetrics.totalSaldo += absAmount;
+          nextMetrics.pemasukan += absAmount;
+          nextMetrics.pertambahanSaldo += absAmount;
+        }
       }
 
       const nextBudgets = (prev.budgets || []).map((b) => {
-        if (isExpense && b.name === newTx.category) {
+        if (matchesPeriod && isExpense && b.name === txWithPeriod.category) {
           return { ...b, spent: Number(b.spent || 0) + absAmount };
         }
         return b;
       });
 
       const nextWallets = (prev.wallets || []).map((w) => {
-        if (w.name === newTx.wallet || w.id === newTx.wallet_id) {
+        if (w.name === txWithPeriod.wallet || w.id === txWithPeriod.wallet_id) {
           const delta = isExpense ? -absAmount : absAmount;
           return { ...w, balance: Math.max(0, Number(w.balance || 0) + delta) };
         }
@@ -322,7 +326,9 @@ export default function App() {
         metrics: nextMetrics,
         budgets: nextBudgets,
         wallets: nextWallets,
-        transactions: [newTx, ...(prev.transactions || [])],
+        transactions: matchesPeriod
+          ? [txWithPeriod, ...(prev.transactions || [])]
+          : prev.transactions,
       };
     });
 
@@ -332,9 +338,9 @@ export default function App() {
       await fetch('/api/transactions', {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify(newTx),
+        body: JSON.stringify(txWithPeriod),
       });
-      fetchServerData();
+      fetchServerData(currentPeriod);
     } catch (err) {
       console.error('Error saving transaction to server:', err);
     }
@@ -388,7 +394,7 @@ export default function App() {
 
     try {
       await fetch(`/api/transactions?id=${txId}`, { method: 'DELETE' });
-      fetchServerData();
+      fetchServerData(currentPeriod);
     } catch (err) {
       console.error('Error deleting transaction on server:', err);
     }
@@ -761,6 +767,7 @@ export default function App() {
         onAddTransaction={handleAddTransaction}
         wallets={data.wallets}
         budgets={data.budgets}
+        currentPeriod={currentPeriod}
       />
 
       <ManageBudgetModal

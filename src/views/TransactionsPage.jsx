@@ -40,12 +40,23 @@ export default function TransactionsPage({
   const [currentPage, setCurrentPage] = useState(1);
   const [checkedIds, setCheckedIds] = useState([]);
 
-  const txList = transactions || [];
+  const rawTxList = transactions || [];
   const pageSize = 10;
 
-  // Perhitungan dinamis
-  const incomeList = txList.filter((tx) => tx.type === 'income');
-  const expenseList = txList.filter((tx) => tx.type === 'expense');
+  // Filter transaksi khusus untuk periode bulan yang sedang aktif
+  const periodTxList = useMemo(() => {
+    if (!currentPeriod) return rawTxList;
+    return rawTxList.filter((tx) => !tx.period || tx.period === currentPeriod);
+  }, [rawTxList, currentPeriod]);
+
+  // Reset pagination saat periode berubah
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [currentPeriod]);
+
+  // Perhitungan dinamis khusus bulan aktif
+  const incomeList = periodTxList.filter((tx) => tx.type === 'income');
+  const expenseList = periodTxList.filter((tx) => tx.type === 'expense');
   const totalIncome = incomeList.reduce((sum, tx) => sum + Math.abs(tx.amount), 0);
   const totalExpense = expenseList.reduce((sum, tx) => sum + Math.abs(tx.amount), 0);
   const netCashflow = totalIncome - totalExpense;
@@ -53,19 +64,19 @@ export default function TransactionsPage({
     ? `${((netCashflow / totalIncome) * 100).toFixed(1).replace('.', ',')}%`
     : '0%';
 
-  // Ambil opsi kategori & dompet dari data real
+  // Ambil opsi kategori & dompet dari data bulan aktif
   const categoryOptions = useMemo(() => {
-    const set = new Set(txList.map((t) => t.category).filter(Boolean));
+    const set = new Set(periodTxList.map((t) => t.category).filter(Boolean));
     return ['Semua', ...Array.from(set)];
-  }, [txList]);
+  }, [periodTxList]);
 
   const walletOptions = useMemo(() => {
-    const set = new Set(txList.map((t) => t.wallet).filter(Boolean));
+    const set = new Set(periodTxList.map((t) => t.wallet).filter(Boolean));
     return ['Semua', ...Array.from(set)];
-  }, [txList]);
+  }, [periodTxList]);
 
   const filtered = useMemo(() => {
-    return txList.filter((tx) => {
+    return periodTxList.filter((tx) => {
       // Tab filter
       if (activeTab === 'income' && tx.type !== 'income') return false;
       if (activeTab === 'expense' && tx.type !== 'expense') return false;
@@ -88,7 +99,7 @@ export default function TransactionsPage({
 
       return true;
     });
-  }, [txList, activeTab, searchQuery, selectedCategory, selectedWallet]);
+  }, [periodTxList, activeTab, searchQuery, selectedCategory, selectedWallet]);
 
   const totalPages = Math.ceil(filtered.length / pageSize) || 1;
   const paginatedRows = filtered.slice((currentPage - 1) * pageSize, currentPage * pageSize);

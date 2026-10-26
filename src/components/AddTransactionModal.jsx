@@ -3,12 +3,18 @@
 import React, { useState, useEffect } from 'react';
 import { Plus, X } from 'lucide-react';
 
+const MONTH_NAMES = [
+  'Januari', 'Februari', 'Maret', 'April', 'Mei', 'Juni',
+  'Juli', 'Agustus', 'September', 'Oktober', 'November', 'Desember'
+];
+
 export default function AddTransactionModal({
   isOpen,
   onClose,
   onAddTransaction,
   wallets = [],
   budgets = [],
+  currentPeriod = 'Oktober 2026',
 }) {
   const [type, setType] = useState('expense');
   const [amountStr, setAmountStr] = useState('');
@@ -19,7 +25,24 @@ export default function AddTransactionModal({
 
   useEffect(() => {
     if (isOpen) {
-      setDate(new Date().toISOString().split('T')[0]);
+      // Default tanggal disesuaikan dengan periode yang aktif
+      const today = new Date();
+      const parts = String(currentPeriod || '').trim().split(/\s+/);
+      const periodMonthName = parts[0] || 'Oktober';
+      const periodYear = parseInt(parts[1] || '2026', 10);
+      const periodMonthIdx = MONTH_NAMES.indexOf(periodMonthName);
+
+      if (
+        periodMonthIdx !== -1 &&
+        (today.getFullYear() !== periodYear || today.getMonth() !== periodMonthIdx)
+      ) {
+        // Jika periode yang dipilih bukan bulan ini, gunakan tanggal 1 di bulan tersebut
+        const mm = String(periodMonthIdx + 1).padStart(2, '0');
+        setDate(`${periodYear}-${mm}-01`);
+      } else {
+        setDate(today.toISOString().split('T')[0]);
+      }
+
       if (wallets && wallets.length > 0) {
         setWallet(wallets[0].name);
       }
@@ -31,7 +54,7 @@ export default function AddTransactionModal({
         setCategory(allCats[0]);
       }
     }
-  }, [isOpen, wallets, budgets]);
+  }, [isOpen, wallets, budgets, currentPeriod]);
 
   if (!isOpen) return null;
 
@@ -72,6 +95,17 @@ export default function AddTransactionModal({
         })
       : 'Hari ini';
 
+    // Ekstrak nama periode (misal "Oktober 2026") dari input date
+    let derivedPeriod = currentPeriod;
+    if (date && date.includes('-')) {
+      const parts = date.split('-');
+      const y = parts[0];
+      const mIdx = parseInt(parts[1], 10) - 1;
+      if (mIdx >= 0 && mIdx < 12) {
+        derivedPeriod = `${MONTH_NAMES[mIdx]} ${y}`;
+      }
+    }
+
     const selectedWalletObj = wallets.find((w) => w.name === wallet);
 
     const newTx = {
@@ -83,6 +117,7 @@ export default function AddTransactionModal({
       wallet,
       wallet_name: wallet,
       date: formattedDate,
+      period: derivedPeriod,
       type,
       icon:
         type === 'income'

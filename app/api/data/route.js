@@ -1,7 +1,7 @@
-import { db, ensureDbReady } from '@/lib/db';
+import { db, ensureDbReady, MONTH_NAMES_ID } from '@/lib/db';
 import { NextResponse } from 'next/server';
 
-// GET /api/data - Mengambil seluruh data aplikasi tersinkronisasi dalam 1 panggilan
+// GET /api/data?period=... - Mengambil seluruh data aplikasi tersinkronisasi berdasarkan periode bulan yang dipilih
 export async function GET(request) {
   try {
     await ensureDbReady();
@@ -9,17 +9,22 @@ export async function GET(request) {
     const { searchParams } = new URL(request.url);
     const period = searchParams.get('period') || 'Oktober 2026';
 
-    const [walletsRes, txRes, budgetsRes, savingsRes] = await Promise.all([
+    const [walletsRes, txRes, budgetsRes, savingsRes, allTxRes] = await Promise.all([
       db.execute('SELECT * FROM wallets ORDER BY created_at ASC'),
-      db.execute('SELECT * FROM transactions ORDER BY created_at DESC'),
+      db.execute({
+        sql: 'SELECT * FROM transactions WHERE period = ? ORDER BY date DESC, created_at DESC',
+        args: [period],
+      }),
       db.execute({
         sql: 'SELECT * FROM budgets WHERE period = ? ORDER BY limit_amount DESC',
         args: [period],
       }),
       db.execute('SELECT * FROM savings_goals ORDER BY created_at DESC'),
+      // Ambil ringkasan untuk grafik bulanan
+      db.execute('SELECT period, type, amount, date FROM transactions'),
     ]);
 
-    // Format wallets
+    // 1. Wallets
     const totalSaldo = walletsRes.rows.reduce((sum, w) => sum + Number(w.balance || 0), 0);
     const wallets = walletsRes.rows.map((w) => ({
       ...w,
@@ -29,14 +34,14 @@ export async function GET(request) {
         : '0%',
     }));
 
-    // Format transactions
+    // 2. Transaksi untuk periode yang dipilih
     const transactions = txRes.rows.map((tx) => ({
       ...tx,
       amount: Number(tx.amount || 0),
       wallet: tx.wallet_name || tx.wallet || 'BCA',
     }));
 
-    // Calculate metrics dari transaksi
+    // 3. Hitung metrics bulanan hanya dari transaksi pada periode ini
     let pemasukan = 0;
     let pengeluaran = 0;
     transactions.forEach((tx) => {
@@ -49,30 +54,58 @@ export async function GET(request) {
 
     const pertambahanSaldo = pemasukan - pengeluaran;
 
-    // Format budgets
-    let budgets = budgetsRes.rows.map((b) => ({
-      id: b.id,
-      name: b.name,
-      spent: Number(b.spent || 0),
-      limit: Number(b.limit_amount || b.limit || 0),
-      color: b.color || 'green',
-      period: b.period,
-    }));
+    // 4. Budgets untuk periode ini
+    let budgets = budgetsRes.rows.map((b) => {
+      // Hitung spent riil dari transaksi yang ada di bulan ini
+      const actualSpent = transactions
+        .filter((t) => t.type === 'expense' && t.category === b.name)
+        .reduce((sum, t) => sum + Math.abs(t.amount), 0);
 
-    // Jika budget untuk periode ini kosong, ambil budget default
-    if (budgets.length === 0) {
-      const allBudgets = await db.execute('SELECT * FROM budgets LIMIT 10');
-      budgets = allBudgets.rows.map((b) => ({
+      return {
         id: b.id,
         name: b.name,
-        spent: Number(b.spent || 0),
+        spent: actualSpent,
         limit: Number(b.limit_amount || b.limit || 0),
         color: b.color || 'green',
         period: b.period,
-      }));
+      };
+    });
+
+    // Jika budget untuk periode baru ini belum pernah dibuat, inisialisasi kategori standar
+    if (budgets.length === 0) {
+      const defaultCategories = [
+        { name: 'Makan & minum', limit: 2500000, color: 'green' },
+        { name: 'Tempat tinggal', limit: 2000000, color: 'green' },
+        { name: 'Transportasi', limit: 1000000, color: 'green' },
+        { name: 'Belanja', limit: 1500000, color: 'green' },
+        { name: 'Lainnya', limit: 800000, color: 'green' },
+      ];
+
+      budgets = defaultCategories.map((c, i) => {
+        const actualSpent = transactions
+          .filter((t) => t.type === 'expense' && t.category === c.name)
+          .reduce((sum, t) => sum + Math.abs(t.amount), 0);
+
+        return {
+          id: `b-${period.toLowerCase().replace(/\s+/g, '-')}-${i + 1}`,
+          name: c.name,
+          spent: actualSpent,
+          limit: c.limit,
+          color: c.color,
+          period,
+        };
+      });
+
+      // Simpan ke database di latar belakang agar tersimpan permanen
+      for (const b of budgets) {
+        db.execute({
+          sql: 'INSERT OR IGNORE INTO budgets (id, name, spent, limit_amount, color, period) VALUES (?, ?, ?, ?, ?, ?)',
+          args: [b.id, b.name, b.spent, b.limit, b.color, b.period],
+        }).catch(() => {});
+      }
     }
 
-    // Format savings
+    // 5. Savings
     const savings = savingsRes.rows.map((s) => ({
       id: s.id,
       name: s.name,
@@ -82,28 +115,75 @@ export async function GET(request) {
       type: s.type || 'target',
     }));
 
+    // 6. Hitung distribusi Cashflow Mingguan (1-7, 8-14, 15-21, 22-31) berdasarkan tanggal transaksi di bulan ini
+    const monthShort = period.split(' ')[0] ? period.split(' ')[0].slice(0, 3) : 'Bln';
+    const weeklyBuckets = [
+      { label: `1–7 ${monthShort}`, income: 0, expense: 0 },
+      { label: `8–14 ${monthShort}`, income: 0, expense: 0 },
+      { label: `15–21 ${monthShort}`, income: 0, expense: 0 },
+      { label: `22–31 ${monthShort}`, income: 0, expense: 0 },
+    ];
+
+    transactions.forEach((tx) => {
+      // Ekstrak hari dari tanggal transaksi (misal: "08 Agu 2026" atau "2026-08-08")
+      let day = 1;
+      const rawDate = String(tx.date || '');
+      const matchDay = rawDate.match(/^(\d{1,2})/);
+      if (matchDay) {
+        day = parseInt(matchDay[1], 10);
+      } else if (rawDate.includes('-')) {
+        const parts = rawDate.split('-');
+        day = parseInt(parts[2] || '1', 10);
+      }
+
+      const absAmt = Math.abs(tx.amount);
+      const bucketIdx = day <= 7 ? 0 : day <= 14 ? 1 : day <= 21 ? 2 : 3;
+
+      if (tx.type === 'income') {
+        weeklyBuckets[bucketIdx].income += absAmt;
+      } else if (tx.type === 'expense') {
+        weeklyBuckets[bucketIdx].expense += absAmt;
+      }
+    });
+
+    // 7. Hitung ringkasan Cashflow Bulanan dari seluruh transaksi di DB
+    const periodTotals = {};
+    allTxRes.rows.forEach((r) => {
+      const p = r.period || 'Oktober 2026';
+      if (!periodTotals[p]) {
+        periodTotals[p] = { income: 0, expense: 0 };
+      }
+      const amt = Math.abs(Number(r.amount || 0));
+      if (r.type === 'income') {
+        periodTotals[p].income += amt;
+      } else if (r.type === 'expense') {
+        periodTotals[p].expense += amt;
+      }
+    });
+
+    // Ambil 4 bulan umum untuk perbandingan
+    const compareMonths = ['Agustus 2026', 'September 2026', 'Oktober 2026', 'November 2026'];
+    const monthlyBuckets = compareMonths.map((m) => {
+      const short = m.split(' ')[0].slice(0, 3) + ' ' + m.split(' ')[1];
+      const data = periodTotals[m] || { income: 0, expense: 0 };
+      return {
+        label: short,
+        income: data.income,
+        expense: data.expense,
+      };
+    });
+
+    const cashflow = {
+      weekly: weeklyBuckets,
+      monthly: monthlyBuckets,
+    };
+
     const now = new Date();
     const lastSync = `Diperbarui ${now.toLocaleDateString('id-ID', {
       day: 'numeric',
       month: 'short',
       year: 'numeric',
     })}, ${now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }).replace(':', '.')}`;
-
-    const monthShort = period.split(' ')[0] ? period.split(' ')[0].slice(0, 3) : 'Bln';
-    const cashflow = {
-      weekly: [
-        { label: '1–7 ' + monthShort, income: 0, expense: 0 },
-        { label: '8–14 ' + monthShort, income: 0, expense: 0 },
-        { label: '15–21 ' + monthShort, income: 0, expense: 0 },
-        { label: '22–31 ' + monthShort, income: pemasukan, expense: pengeluaran },
-      ],
-      monthly: [
-        { label: 'Jul 2026', income: 0, expense: 0 },
-        { label: 'Agu 2026', income: 0, expense: 0 },
-        { label: 'Sep 2026', income: 0, expense: 0 },
-        { label: period, income: pemasukan, expense: pengeluaran },
-      ],
-    };
 
     return NextResponse.json({
       profile: {
@@ -114,8 +194,9 @@ export async function GET(request) {
         totalSaldo,
         pertambahanSaldo,
         pemasukan,
-        pemasukanDesc: pemasukan > 0 ? 'Pemasukan bulan ini' : 'Belum ada pemasukan',
+        pemasukanDesc: pemasukan > 0 ? `Pemasukan ${period}` : 'Belum ada pemasukan',
         pengeluaran,
+        pengeluaranDesc: pengeluaran > 0 ? `Pengeluaran ${period}` : 'Belum ada pengeluaran',
       },
       cashflow,
       wallets,
