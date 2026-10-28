@@ -10,6 +10,7 @@ import {
   ChevronRight,
   Bell,
   Smartphone,
+  CalendarDays,
   X
 } from 'lucide-react';
 
@@ -27,12 +28,24 @@ export default function MoreMenuModal({
 
   const menuItems = [
     {
+      id: 'kalender',
+      label: 'Kalender & Tagihan',
+      desc: 'Hitung mundur gajian, jadwal bayar utang & tagihan',
+      icon: CalendarDays,
+      color: '#059669',
+      bgColor: '#ecfdf5',
+      action: () => {
+        onSelectNav('kalender');
+        onClose();
+      }
+    },
+    {
       id: 'notifikasi',
       label: 'Notifikasi & Pengingat',
       desc: unreadNotifsCount > 0 ? `${unreadNotifsCount} notifikasi baru butuh perhatian` : 'Peringatan saldo, budget, tagihan & gajian',
       icon: Bell,
-      color: '#059669',
-      bgColor: '#ecfdf5',
+      color: '#0f766e',
+      bgColor: '#f0fdf4',
       action: () => {
         onClose();
         if (onOpenNotifications) onOpenNotifications();

@@ -9,7 +9,8 @@ import {
   Target,
   BarChart3,
   Lightbulb,
-  ArrowUpRight
+  ArrowUpRight,
+  CalendarDays
 } from 'lucide-react';
 
 export default function Sidebar({ isOpen, onClose, activeNav, setActiveNav }) {
@@ -19,6 +20,7 @@ export default function Sidebar({ isOpen, onClose, activeNav, setActiveNav }) {
     { id: 'dompet', label: 'Dompet', icon: Wallet },
     { id: 'anggaran', label: 'Anggaran', icon: PieChart },
     { id: 'target-tabungan', label: 'Target tabungan', icon: Target },
+    { id: 'kalender', label: 'Kalender & Tagihan', icon: CalendarDays },
     { id: 'laporan', label: 'Laporan', icon: BarChart3 },
   ];
 

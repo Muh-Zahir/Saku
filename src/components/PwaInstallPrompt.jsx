@@ -3,7 +3,7 @@
 import React, { useState, useEffect } from 'react';
 import { Download, X, Smartphone, Sparkles, Check } from 'lucide-react';
 
-export default function PwaInstallPrompt({ addToast }) {
+export default function PwaInstallPrompt({ addToast, hideWhenModalOpen = false }) {
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [isStandalone, setIsStandalone] = useState(false);
   const [showBanner, setShowBanner] = useState(false);
@@ -130,7 +130,7 @@ export default function PwaInstallPrompt({ addToast }) {
     localStorage.setItem('saku_pwa_banner_dismissed_until', threeDaysLater.toString());
   };
 
-  if (isStandalone || !showBanner || !deferredPrompt) {
+  if (isStandalone || !showBanner || !deferredPrompt || hideWhenModalOpen) {
     return null;
   }
 

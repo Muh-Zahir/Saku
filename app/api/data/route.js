@@ -13,7 +13,7 @@ export async function GET(request) {
 
     const paydayCycle = getPaydayCycleInfo(period, paydayDay);
 
-    const [walletsRes, txRes, budgetsRes, savingsRes, allTxRes] = await Promise.all([
+    const [walletsRes, txRes, budgetsRes, savingsRes, allTxRes, schedulesRes] = await Promise.all([
       db.execute('SELECT * FROM wallets ORDER BY created_at ASC'),
       db.execute({
         sql: 'SELECT * FROM transactions WHERE period = ? ORDER BY date DESC, created_at DESC',
@@ -26,6 +26,7 @@ export async function GET(request) {
       db.execute('SELECT * FROM savings_goals ORDER BY created_at DESC'),
       // Ambil ringkasan seluruh transaksi untuk siklus gajian & grafik bulanan
       db.execute('SELECT period, type, category, amount, date FROM transactions'),
+      db.execute('SELECT * FROM financial_schedules ORDER BY due_date ASC, created_at ASC'),
     ]);
 
     // 1. Wallets
@@ -228,6 +229,13 @@ export async function GET(request) {
       year: 'numeric',
     })}, ${now.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }).replace(':', '.')}`;
 
+    // 6b. Schedules
+    const schedules = schedulesRes.rows.map((s) => ({
+      ...s,
+      amount: Number(s.amount || 0),
+      is_paid: Boolean(Number(s.is_paid || 0)),
+    }));
+
     return NextResponse.json({
       profile: {
         period,
@@ -246,6 +254,7 @@ export async function GET(request) {
       transactions,
       budgets,
       savings,
+      schedules,
       paydayCycle,
     });
   } catch (error) {

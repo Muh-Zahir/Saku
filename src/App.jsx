@@ -14,6 +14,8 @@ import NotificationModal from './components/NotificationModal';
 import NotificationSettingsModal from './components/NotificationSettingsModal';
 import Toast from './components/Toast';
 import PwaInstallPrompt from './components/PwaInstallPrompt';
+import AddScheduleModal from './components/AddScheduleModal';
+import PaydaySettingModal from './components/PaydaySettingModal';
 
 // Pages
 import DashboardPage from './views/DashboardPage';
@@ -22,6 +24,7 @@ import WalletsPage from './views/WalletsPage';
 import BudgetPage from './views/BudgetPage';
 import SavingsPage from './views/SavingsPage';
 import ReportsPage from './views/ReportsPage';
+import CalendarPage from './views/CalendarPage';
 
 import { Menu, Bell } from 'lucide-react';
 import {
@@ -75,7 +78,8 @@ const INITIAL_DATA = {
     { id: 'b5', name: 'Lainnya', spent: 0, limit: 0, color: 'green' }
   ],
   transactions: [],
-  savings: []
+  savings: [],
+  schedules: []
 };
 
 export default function App() {
@@ -92,6 +96,13 @@ export default function App() {
   const [isAddGoalOpen, setIsAddGoalOpen] = useState(false);
   const [isTransferOpen, setIsTransferOpen] = useState(false);
   const [isAddWalletOpen, setIsAddWalletOpen] = useState(false);
+
+  // Schedule & Payday Modals state
+  const [isAddScheduleOpen, setIsAddScheduleOpen] = useState(false);
+  const [scheduleModalDate, setScheduleModalDate] = useState('');
+  const [editingSchedule, setEditingSchedule] = useState(null);
+  const [isPaydaySettingOpen, setIsPaydaySettingOpen] = useState(false);
+  const [paydayDate, setPaydayDate] = useState(25);
 
   const handleOpenManageBudget = (mode = 'list') => {
     setManageBudgetMode(mode);
@@ -110,11 +121,18 @@ export default function App() {
   const [isNotifModalOpen, setIsNotifModalOpen] = useState(false);
   const [isNotifSettingsOpen, setIsNotifSettingsOpen] = useState(false);
 
-  // Initialize notifications & settings on mount
+  // Initialize notifications, settings & payday on mount
   useEffect(() => {
     setIsMounted(true);
     setNotifications(loadNotifications());
-    setNotifSettings(loadNotifSettings());
+    const settings = loadNotifSettings();
+    setNotifSettings(settings);
+    if (settings?.paydayDate) {
+      setPaydayDate(Number(settings.paydayDate));
+    } else {
+      const savedPayday = localStorage.getItem('saku_payday_date');
+      if (savedPayday) setPaydayDate(parseInt(savedPayday, 10));
+    }
   }, []);
 
   const handleNotifAction = useCallback((target) => {
@@ -126,6 +144,8 @@ export default function App() {
       setActiveNav('dompet');
     } else if (target === 'target-tabungan') {
       setActiveNav('target-tabungan');
+    } else if (target === 'kalender') {
+      setActiveNav('kalender');
     } else if (target === 'laporan') {
       setActiveNav('laporan');
     }
@@ -642,6 +662,136 @@ export default function App() {
     }
   };
 
+  // 10. JADWAL FINANSIAL HANDLERS (Utang, Tagihan, Cicilan)
+  const handleOpenAddSchedule = (dateStr) => {
+    setEditingSchedule(null);
+    setScheduleModalDate(dateStr || '');
+    setIsAddScheduleOpen(true);
+  };
+
+  const handleOpenEditSchedule = (item) => {
+    setEditingSchedule(item);
+    setScheduleModalDate(item.due_date);
+    setIsAddScheduleOpen(true);
+  };
+
+  const handleSaveSchedule = async (scheduleObj) => {
+    const isEdit = Boolean(scheduleObj.id && data.schedules?.some((s) => s.id === scheduleObj.id));
+    const scheduleId = scheduleObj.id || `sch-${Date.now()}`;
+    const preparedObj = { ...scheduleObj, id: scheduleId };
+
+    setData((prev) => {
+      const existing = prev.schedules || [];
+      const updated = isEdit
+        ? existing.map((s) => (s.id === scheduleId ? preparedObj : s))
+        : [preparedObj, ...existing];
+      return { ...prev, schedules: updated };
+    });
+
+    addToast(isEdit ? 'Jadwal berhasil diperbarui!' : 'Jadwal berhasil ditambahkan ke kalender!');
+
+    try {
+      await fetch('/api/schedules', {
+        method: isEdit ? 'PUT' : 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify(preparedObj),
+      });
+      fetchServerData();
+    } catch (err) {
+      console.error('Error saving schedule:', err);
+    }
+  };
+
+  const handleToggleSchedulePaid = async (scheduleId, nextPaid) => {
+    setData((prev) => ({
+      ...prev,
+      schedules: (prev.schedules || []).map((s) =>
+        s.id === scheduleId
+          ? {
+              ...s,
+              is_paid: nextPaid,
+              paid_at: nextPaid ? new Date().toISOString().split('T')[0] : null,
+            }
+          : s
+      ),
+    }));
+
+    try {
+      await fetch('/api/schedules', {
+        method: 'PUT',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: scheduleId, is_paid: nextPaid }),
+      });
+      fetchServerData();
+    } catch (err) {
+      console.error('Error toggling schedule paid on server:', err);
+    }
+  };
+
+  const handleDeleteSchedule = async (scheduleId) => {
+    setData((prev) => ({
+      ...prev,
+      schedules: (prev.schedules || []).filter((s) => s.id !== scheduleId),
+    }));
+    addToast('Jadwal berhasil dihapus dari kalender.');
+
+    try {
+      await fetch(`/api/schedules?id=${scheduleId}`, { method: 'DELETE' });
+      fetchServerData();
+    } catch (err) {
+      console.error('Error deleting schedule on server:', err);
+    }
+  };
+
+  const handleMarkPaidWithTransaction = async (scheduleItem) => {
+    // 1. Mark schedule as paid
+    await handleToggleSchedulePaid(scheduleItem.id, true);
+
+    // 2. Add expense transaction
+    const matchingWallet =
+      data.wallets?.find(
+        (w) => w.id === scheduleItem.wallet_id || w.name === scheduleItem.wallet_name
+      ) || data.wallets?.[0];
+
+    const txCategory =
+      scheduleItem.type === 'debt'
+        ? 'Lainnya'
+        : scheduleItem.type === 'bill'
+        ? 'Tempat tinggal'
+        : 'Lainnya';
+
+    const newTx = {
+      id: `tx-sch-${Date.now()}`,
+      title: `Bayar: ${scheduleItem.title}`,
+      amount: -Math.abs(scheduleItem.amount),
+      date: 'Hari ini',
+      category: txCategory,
+      wallet_id: matchingWallet?.id,
+      wallet_name: matchingWallet?.name || 'BCA',
+      wallet: matchingWallet?.name || 'BCA',
+      type: 'expense',
+      icon: scheduleItem.type === 'debt' ? 'credit-card' : 'zap',
+      notes: scheduleItem.notes
+        ? `Pelunasan jadwal: ${scheduleItem.notes}`
+        : 'Pelunasan jatuh tempo via Kalender Keuangan',
+      period: currentPeriod,
+    };
+
+    handleAddTransaction(newTx);
+    addToast(
+      `"${scheduleItem.title}" lunas & dicatat ke pengeluaran (${matchingWallet?.name || 'Dompet'})!`,
+      'success'
+    );
+  };
+
+  const handleSavePaydayDate = (newDate) => {
+    setPaydayDate(newDate);
+    localStorage.setItem('saku_payday_date', String(newDate));
+    const updatedSettings = { ...(notifSettings || {}), paydayDate: newDate };
+    handleSaveNotifSettings(updatedSettings);
+    addToast(`Tanggal gajian disetel ke tanggal ${newDate}!`, 'success');
+  };
+
   const handleSelectPeriod = (p) => {
     setCurrentPeriod(p);
     fetchServerData(p);
@@ -654,6 +804,7 @@ export default function App() {
       case 'dompet': return 'Dompet';
       case 'anggaran': return 'Anggaran';
       case 'target-tabungan': return 'Target tabungan';
+      case 'kalender': return 'Kalender & Tagihan';
       case 'laporan': return 'Laporan';
       default: return 'Ringkasan';
     }
@@ -714,6 +865,8 @@ export default function App() {
             onOpenAddTx={() => setIsAddTxOpen(true)}
             onOpenManageBudget={() => handleOpenManageBudget('list')}
             onOpenAddGoal={() => setIsAddGoalOpen(true)}
+            onNavigateToCalendar={() => setActiveNav('kalender')}
+            paydayDate={paydayDate}
             addToast={addToast}
           />
         )}
@@ -771,6 +924,24 @@ export default function App() {
           />
         )}
 
+        {activeNav === 'kalender' && (
+          <CalendarPage
+            currentPeriod={currentPeriod}
+            onSelectPeriod={handleSelectPeriod}
+            schedules={data.schedules || []}
+            transactions={data.transactions || []}
+            wallets={data.wallets || []}
+            paydayDate={paydayDate}
+            onOpenAddSchedule={handleOpenAddSchedule}
+            onOpenEditSchedule={handleOpenEditSchedule}
+            onTogglePaid={handleToggleSchedulePaid}
+            onDeleteSchedule={handleDeleteSchedule}
+            onOpenPaydaySetting={() => setIsPaydaySettingOpen(true)}
+            onMarkPaidWithTransaction={handleMarkPaidWithTransaction}
+            addToast={addToast}
+          />
+        )}
+
         {activeNav === 'laporan' && (
           <ReportsPage
             currentPeriod={currentPeriod}
@@ -784,6 +955,22 @@ export default function App() {
       </main>
 
       {/* Modals */}
+      <AddScheduleModal
+        isOpen={isAddScheduleOpen}
+        onClose={() => setIsAddScheduleOpen(false)}
+        onSaveSchedule={handleSaveSchedule}
+        wallets={data.wallets}
+        initialData={editingSchedule}
+        defaultDate={scheduleModalDate}
+      />
+
+      <PaydaySettingModal
+        isOpen={isPaydaySettingOpen}
+        onClose={() => setIsPaydaySettingOpen(false)}
+        currentPaydayDate={paydayDate}
+        onSavePaydayDate={handleSavePaydayDate}
+      />
+
       <AddTransactionModal
         isOpen={isAddTxOpen}
         onClose={() => setIsAddTxOpen(false)}
@@ -863,8 +1050,22 @@ export default function App() {
         addToast={addToast}
       />
 
-      {/* PWA Install Banner */}
-      <PwaInstallPrompt addToast={addToast} />
+      {/* PWA Install Banner — hidden when any modal is open */}
+      <PwaInstallPrompt
+        addToast={addToast}
+        hideWhenModalOpen={
+          isAddTxOpen ||
+          isManageBudgetOpen ||
+          isAddGoalOpen ||
+          isTransferOpen ||
+          isAddWalletOpen ||
+          isAddScheduleOpen ||
+          isPaydaySettingOpen ||
+          isMoreMenuOpen ||
+          isNotifModalOpen ||
+          isNotifSettingsOpen
+        }
+      />
 
       {/* Toast notifications */}
       <Toast toasts={toasts} />

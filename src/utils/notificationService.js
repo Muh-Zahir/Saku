@@ -403,20 +403,71 @@ export function evaluateNotifications(data, settings = DEFAULT_NOTIF_SETTINGS) {
   }
 
   // =========================================================================
-  // 4. BILL DUE DATE WARNING (H-3 dan H-1)
+  // 4. BILL & DEBT DUE DATE WARNING (Pengingat Jatuh Tempo Utang & Tagihan)
   // =========================================================================
   if (settings.billReminder) {
-    // Check any transactions / recurring tagihan categorized as tagihan or utilities
+    // 4a. Evaluasi Jadwal Nyata Pengguna (financial_schedules)
+    if (data.schedules && data.schedules.length > 0) {
+      data.schedules.forEach((sch) => {
+        if (sch.is_paid) return;
+
+        let targetDateStr = sch.due_date;
+        if (sch.recurring === 'monthly') {
+          const day = sch.recurring_day || parseInt(sch.due_date.split('-')[2], 10) || 1;
+          targetDateStr = `${currentYear}-${String(currentMonth + 1).padStart(2, '0')}-${String(day).padStart(2, '0')}`;
+        }
+
+        const targetTime = new Date(targetDateStr).getTime();
+        const todayTime = new Date(todayDateStr).getTime();
+        const diffDays = Math.round((targetTime - todayTime) / (1000 * 60 * 60 * 24));
+
+        const schKey = `sch_due_${sch.id}_${todayDateStr}`;
+
+        if (diffDays === 0) {
+          addIfNew(schKey, {
+            type: 'bill_due',
+            category: 'alert',
+            title: `Jatuh Tempo Hari Ini: ${sch.title}!`,
+            message: `Kewajiban "${sch.title}" sebesar ${formatSimpleIDR(sch.amount)} jatuh tempo HARI INI. Segera selesaikan agar tidak terkena denda atau beban pikiran.`,
+            action: {
+              label: 'Buka Kalender',
+              target: 'kalender',
+            },
+          });
+        } else if (diffDays > 0 && diffDays <= 3) {
+          addIfNew(schKey, {
+            type: 'bill_due',
+            category: 'reminder',
+            title: `Pengingat: ${sch.title} (${diffDays} hari lagi)`,
+            message: `Jadwal ${sch.title} sebesar ${formatSimpleIDR(sch.amount)} akan jatuh tempo dalam ${diffDays} hari (${targetDateStr}). Pastikan saldo dompet mencukupi.`,
+            action: {
+              label: 'Lihat Kalender',
+              target: 'kalender',
+            },
+          });
+        } else if (diffDays < 0 && diffDays >= -5) {
+          addIfNew(schKey, {
+            type: 'bill_due',
+            category: 'alert',
+            title: `Terlewat: ${sch.title} (Lewat ${Math.abs(diffDays)} hari)`,
+            message: `Perhatian! "${sch.title}" telah melewati tanggal jatuh tempo (${targetDateStr}). Yuk segera lunasi!`,
+            action: {
+              label: 'Bayar Sekarang',
+              target: 'kalender',
+            },
+          });
+        }
+      });
+    }
+
+    // 4b. Fallback tagihan items from budgets
     const tagihanItems = (data.budgets || []).filter((b) => {
       const n = (b.name || '').toLowerCase();
       return n.includes('tagihan') || n.includes('listrik') || n.includes('air') || n.includes('wifi') || n.includes('sewa');
     });
 
-    // In finance apps, bills typically recur around end of month or 1st-5th.
-    // If user has a tagihan category with a budget set, notify around late/early month
     tagihanItems.forEach((bill) => {
       const billKey = `bill_due_${bill.id}_${monthPeriodStr}`;
-      // Trigger H-3 reminder if day is between 25-28
       if (currentDate >= 25 && currentDate <= 28) {
         addIfNew(billKey, {
           type: 'bill_due',
@@ -425,7 +476,7 @@ export function evaluateNotifications(data, settings = DEFAULT_NOTIF_SETTINGS) {
           message: `Tagihan ${bill.name} sebesar ${formatSimpleIDR(bill.limit || 250000)} jatuh tempo sebentar lagi. Jangan lupa bayar tepat waktu!`,
           action: {
             label: 'Catat Pembayaran',
-            target: 'add_tx',
+            target: 'kalender',
           },
         });
       }
