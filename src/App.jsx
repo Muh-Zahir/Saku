@@ -676,7 +676,7 @@ export default function App() {
   };
 
   const handleSaveSchedule = async (scheduleObj) => {
-    const isEdit = Boolean(scheduleObj.id && data.schedules?.some((s) => s.id === scheduleObj.id));
+    const isEdit = Boolean(scheduleObj.id);
     const scheduleId = scheduleObj.id || `sch-${Date.now()}`;
     const preparedObj = { ...scheduleObj, id: scheduleId };
 
@@ -691,12 +691,15 @@ export default function App() {
     addToast(isEdit ? 'Jadwal berhasil diperbarui!' : 'Jadwal berhasil ditambahkan ke kalender!');
 
     try {
-      await fetch('/api/schedules', {
+      const res = await fetch('/api/schedules', {
         method: isEdit ? 'PUT' : 'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify(preparedObj),
       });
-      fetchServerData();
+      if (!res.ok) {
+        console.error('Error saving schedule on server:', await res.json().catch(() => ({})));
+      }
+      await fetchServerData();
     } catch (err) {
       console.error('Error saving schedule:', err);
     }
@@ -717,12 +720,15 @@ export default function App() {
     }));
 
     try {
-      await fetch('/api/schedules', {
+      const res = await fetch('/api/schedules', {
         method: 'PUT',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ id: scheduleId, is_paid: nextPaid }),
+        body: JSON.stringify({ id: scheduleId, is_paid: nextPaid, toggle_paid: true }),
       });
-      fetchServerData();
+      if (!res.ok) {
+        console.error('Error toggling schedule paid on server:', await res.json().catch(() => ({})));
+      }
+      await fetchServerData();
     } catch (err) {
       console.error('Error toggling schedule paid on server:', err);
     }
@@ -736,8 +742,15 @@ export default function App() {
     addToast('Jadwal berhasil dihapus dari kalender.');
 
     try {
-      await fetch(`/api/schedules?id=${scheduleId}`, { method: 'DELETE' });
-      fetchServerData();
+      const res = await fetch(`/api/schedules?id=${encodeURIComponent(scheduleId)}`, {
+        method: 'DELETE',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ id: scheduleId }),
+      });
+      if (!res.ok) {
+        console.error('Error deleting schedule on server:', await res.json().catch(() => ({})));
+      }
+      await fetchServerData();
     } catch (err) {
       console.error('Error deleting schedule on server:', err);
     }

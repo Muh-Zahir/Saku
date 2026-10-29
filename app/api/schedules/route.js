@@ -74,7 +74,7 @@ export async function POST(request) {
     const paidAt = isPaidInt ? new Date().toISOString().split('T')[0] : null;
 
     await db.execute({
-      sql: `INSERT INTO financial_schedules 
+      sql: `INSERT OR REPLACE INTO financial_schedules 
             (id, title, type, amount, due_date, recurring, recurring_day, wallet_id, wallet_name, notes, is_paid, paid_at)
             VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
       args: [
@@ -84,10 +84,10 @@ export async function POST(request) {
         numAmount,
         due_date,
         recurring,
-        recurring_day || null,
-        wallet_id || null,
-        wallet_name || null,
-        notes || null,
+        recurring_day ?? null,
+        wallet_id ?? null,
+        wallet_name ?? null,
+        notes ?? null,
         isPaidInt,
         paidAt,
       ],
@@ -122,13 +122,34 @@ export async function PUT(request) {
     await ensureDbReady();
 
     const body = await request.json();
-    const { id, toggle_paid, is_paid, ...fields } = body;
+    const {
+      id,
+      toggle_paid,
+      is_paid,
+      title,
+      type,
+      amount,
+      due_date,
+      recurring,
+      recurring_day,
+      wallet_id,
+      wallet_name,
+      notes,
+    } = body;
 
     if (!id) {
       return NextResponse.json({ error: 'Schedule ID wajib disertakan' }, { status: 400 });
     }
 
-    if (toggle_paid !== undefined || is_paid !== undefined) {
+    // Cek apakah ini hanya request toggle status lunas (tanpa mengubah form data lainnya)
+    const isOnlyTogglePaid =
+      (toggle_paid === true || (is_paid !== undefined && toggle_paid !== false)) &&
+      title === undefined &&
+      due_date === undefined &&
+      amount === undefined &&
+      type === undefined;
+
+    if (isOnlyTogglePaid) {
       const nextPaidVal = toggle_paid !== undefined ? (toggle_paid ? 1 : 0) : (is_paid ? 1 : 0);
       const paidAt = nextPaidVal ? new Date().toISOString().split('T')[0] : null;
 
@@ -140,8 +161,10 @@ export async function PUT(request) {
       return NextResponse.json({ success: true, is_paid: Boolean(nextPaidVal), paid_at: paidAt });
     }
 
-    // General update
-    const { title, type, amount, due_date, recurring, recurring_day, wallet_id, wallet_name, notes } = fields;
+    // General update: edit jadwal finansial lengkap
+    const numAmount = amount !== undefined && amount !== null ? Number(amount) : null;
+    const isPaidInt = is_paid !== undefined ? (is_paid ? 1 : 0) : null;
+    const paidAt = isPaidInt === 1 ? new Date().toISOString().split('T')[0] : (isPaidInt === 0 ? null : null);
 
     await db.execute({
       sql: `UPDATE financial_schedules 
@@ -153,18 +176,26 @@ export async function PUT(request) {
                 recurring_day = ?,
                 wallet_id = ?,
                 wallet_name = ?,
-                notes = ?
+                notes = ?,
+                is_paid = COALESCE(?, is_paid),
+                paid_at = CASE 
+                  WHEN ? IS NOT NULL THEN ? 
+                  ELSE paid_at 
+                END
             WHERE id = ?`,
       args: [
-        title,
-        type,
-        amount !== undefined ? Number(amount) : undefined,
-        due_date,
-        recurring,
-        recurring_day || null,
-        wallet_id || null,
-        wallet_name || null,
-        notes || null,
+        title ?? null,
+        type ?? null,
+        numAmount,
+        due_date ?? null,
+        recurring ?? null,
+        recurring_day ?? null,
+        wallet_id ?? null,
+        wallet_name ?? null,
+        notes ?? null,
+        isPaidInt,
+        isPaidInt,
+        paidAt,
         id,
       ],
     });
@@ -181,8 +212,22 @@ export async function DELETE(request) {
   try {
     await ensureDbReady();
 
-    const { searchParams } = new URL(request.url);
-    const id = searchParams.get('id');
+    let id = null;
+    try {
+      const url = new URL(request.url);
+      id = url.searchParams.get('id');
+    } catch (e) {}
+
+    if (!id && request.nextUrl) {
+      id = request.nextUrl.searchParams.get('id');
+    }
+
+    if (!id) {
+      try {
+        const body = await request.json();
+        id = body?.id;
+      } catch (e) {}
+    }
 
     if (!id) {
       return NextResponse.json({ error: 'Schedule ID wajib disertakan' }, { status: 400 });
