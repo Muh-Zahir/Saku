@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState, useEffect, useCallback } from 'react';
+import React, { useState, useEffect, useCallback, useRef } from 'react';
 import ReactDOM from 'react-dom';
 import Sidebar from './components/Sidebar';
 import Topbar from './components/Topbar';
@@ -285,10 +285,22 @@ export default function App() {
 
   const unreadNotifsCount = notifications.filter((n) => !n.read).length;
 
+  const currentPeriodRef = useRef(currentPeriod);
+  useEffect(() => {
+    currentPeriodRef.current = currentPeriod;
+  }, [currentPeriod]);
+
+  const paydayDateRef = useRef(paydayDate);
+  useEffect(() => {
+    paydayDateRef.current = paydayDate;
+  }, [paydayDate]);
+
   // Sinkronisasi data dari backend API
-  const fetchServerData = useCallback(async (period = currentPeriod) => {
+  const fetchServerData = useCallback(async (period) => {
+    const targetPeriod = period || currentPeriodRef.current;
+    const targetPayday = paydayDateRef.current;
     try {
-      const res = await fetch(`/api/data?period=${encodeURIComponent(period)}&paydayDay=${paydayDate}`);
+      const res = await fetch(`/api/data?period=${encodeURIComponent(targetPeriod)}&paydayDay=${targetPayday}`);
       if (res.ok) {
         const serverData = await res.json();
         setData((prev) => ({
@@ -297,24 +309,27 @@ export default function App() {
           profile: {
             ...prev.profile,
             ...serverData.profile,
+            period: targetPeriod,
           },
         }));
       }
     } catch (e) {
       console.warn('Gagal menghubungi backend API, menggunakan data lokal:', e);
     }
-  }, [currentPeriod, paydayDate]);
+  }, []);
 
-  // Hydrate from localStorage on client mount, lalu fetch dari database backend
+  // Hydrate from localStorage on client mount, lalu fetch data bulan berjalan dari database backend
   useEffect(() => {
     setIsMounted(true);
+    const initialPeriod = getCurrentPeriodStr();
     try {
       const isClean = localStorage.getItem('saku_data_clean_v2');
       if (isClean === 'true') {
         const saved = localStorage.getItem('saku_react_state');
-        if (saved) setData(JSON.parse(saved));
-        // Selalu override period ke bulan saat ini agar tidak stuck di bulan lama
-        setCurrentPeriod(getCurrentPeriodStr());
+        if (saved) {
+          const parsed = JSON.parse(saved);
+          setData(parsed);
+        }
       } else {
         localStorage.setItem('saku_data_clean_v2', 'true');
         localStorage.setItem('saku_react_state', JSON.stringify(INITIAL_DATA));
@@ -323,8 +338,11 @@ export default function App() {
     } catch (e) {
       console.warn('Failed reading localStorage', e);
     }
-    fetchServerData();
-  }, [fetchServerData]);
+    // Set ke bulan saat ini saat awal buka / reload
+    setCurrentPeriod(initialPeriod);
+    fetchServerData(initialPeriod);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   // Persist to localStorage on data changes
   useEffect(() => {
@@ -807,13 +825,16 @@ export default function App() {
 
   const handleSavePaydayDate = (newDate) => {
     setPaydayDate(newDate);
+    paydayDateRef.current = newDate;
     localStorage.setItem('saku_payday_date', String(newDate));
     const updatedSettings = { ...(notifSettings || {}), paydayDate: newDate };
     handleSaveNotifSettings(updatedSettings);
+    fetchServerData();
     addToast(`Tanggal gajian disetel ke tanggal ${newDate}!`, 'success');
   };
 
   const handleSelectPeriod = (p) => {
+    currentPeriodRef.current = p;
     setCurrentPeriod(p);
     fetchServerData(p);
     addToast(`Periode diubah ke ${p}`);
