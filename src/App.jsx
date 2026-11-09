@@ -39,9 +39,15 @@ import {
   playChime
 } from './utils/notificationService';
 
+const MONTH_NAMES_ID = ['Januari','Februari','Maret','April','Mei','Juni','Juli','Agustus','September','Oktober','November','Desember'];
+function getCurrentPeriodStr() {
+  const now = new Date();
+  return `${MONTH_NAMES_ID[now.getMonth()]} ${now.getFullYear()}`;
+}
+
 const INITIAL_DATA = {
   profile: {
-    period: 'Oktober 2026',
+    period: getCurrentPeriodStr(),
     lastSync: 'Belum ada transaksi'
   },
   metrics: {
@@ -87,7 +93,7 @@ export default function App() {
 
   const [activeNav, setActiveNav] = useState('ringkasan');
   const [isMoreMenuOpen, setIsMoreMenuOpen] = useState(false);
-  const [currentPeriod, setCurrentPeriod] = useState(data.profile.period);
+  const [currentPeriod, setCurrentPeriod] = useState(getCurrentPeriodStr);
 
   // Modals state
   const [isAddTxOpen, setIsAddTxOpen] = useState(false);
@@ -282,7 +288,7 @@ export default function App() {
   // Sinkronisasi data dari backend API
   const fetchServerData = useCallback(async (period = currentPeriod) => {
     try {
-      const res = await fetch(`/api/data?period=${encodeURIComponent(period)}`);
+      const res = await fetch(`/api/data?period=${encodeURIComponent(period)}&paydayDay=${paydayDate}`);
       if (res.ok) {
         const serverData = await res.json();
         setData((prev) => ({
@@ -297,7 +303,7 @@ export default function App() {
     } catch (e) {
       console.warn('Gagal menghubungi backend API, menggunakan data lokal:', e);
     }
-  }, [currentPeriod]);
+  }, [currentPeriod, paydayDate]);
 
   // Hydrate from localStorage on client mount, lalu fetch dari database backend
   useEffect(() => {
@@ -307,6 +313,8 @@ export default function App() {
       if (isClean === 'true') {
         const saved = localStorage.getItem('saku_react_state');
         if (saved) setData(JSON.parse(saved));
+        // Selalu override period ke bulan saat ini agar tidak stuck di bulan lama
+        setCurrentPeriod(getCurrentPeriodStr());
       } else {
         localStorage.setItem('saku_data_clean_v2', 'true');
         localStorage.setItem('saku_react_state', JSON.stringify(INITIAL_DATA));

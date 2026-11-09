@@ -246,7 +246,7 @@ export default function BudgetPage({
             </div>
             <p className="payday-banner-desc">
               {cycleMode === 'payday'
-                ? `Anggaran otomatis di-reset ke Rp 0 setiap tanggal ${paydayCycle?.resetDay || 25} saat gajian masuk. Menampilkan pengeluaran dari gaji baru.`
+                ? `Anggaran otomatis di-reset ke Rp 0 setiap tanggal ${paydayCycle?.resetDay || 25}. Pengeluaran dihitung dari ${paydayCycle?.cycleLabel || currentPeriod}.`
                 : `Menampilkan seluruh pengeluaran dari awal hingga akhir bulan kalender (${paydayCycle?.calendarLabel || currentPeriod}).`}
             </p>
           </div>
